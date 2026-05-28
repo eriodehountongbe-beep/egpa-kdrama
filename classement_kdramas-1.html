@@ -628,37 +628,53 @@
   }
   .comment-send:hover { background: rgba(179,157,219,.35); }
   .no-comments { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 10px; }
-  /* ── RESPONSIVE MOBILE ─────────────────────────── */
-  @media (max-width: 600px) {
 
-    /* Hero */
-    .hero { padding: 36px 16px 28px; }
-
-    /* Tabs */
-    .tabs { padding: 14px 12px 0; gap: 6px; }
-    .tab-btn { padding: 6px 13px; font-size: 12px; }
-
-    /* Grille : 2 colonnes fixes sur mobile */
-    .drama-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-
-    /* Section padding */
-    .section { padding: 28px 12px 16px; }
-    .section-title { font-size: 24px; }
-
-    /* Modale : empile poster + contenu verticalement */
-    .modal-overlay { padding: 0; align-items: flex-end; }
-    .modal { max-height: 92vh; border-radius: 16px 16px 0 0; }
-    .modal-inner { flex-direction: column; }
-    .modal-poster { width: 100%; height: 200px; }
-    .modal-poster img { border-radius: 16px 16px 0 0; object-fit: cover; }
-    .modal-poster-ph { min-height: 140px; border-radius: 16px 16px 0 0; }
-    .modal-content { padding: 18px 16px 24px; }
-    .modal-title { font-size: 18px; }
-
-    /* Stats bar */
-    .stats-bar { gap: 14px; padding: 16px 12px; }
-    .stat-num { font-size: 22px; }
+  /* ── SANS CLASSEMENT ─────────────────────────────────────── */
+  .unseen .section-title { color: #c9a84c; }
+  .unseen .section-header { border-color: rgba(201,168,76,.25); }
+  .voir-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: rgba(201,168,76,.85);
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 50px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
   }
+  .stat.unseen .stat-num { color: #c9a84c; }
+  .tab-btn[data-cat="unseen"].active {
+    color: #c9a84c;
+    border-color: #c9a84c;
+    background: rgba(201,168,76,.1);
+  }
+  /* classement vote */
+  .class-vote-wrap {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+  .class-vote-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #c9a84c; margin-bottom: 10px;
+  }
+  .class-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .class-btn {
+    flex: 1; min-width: 48px; padding: 7px 4px;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.05); color: var(--text);
+    font-size: 12px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    transition: all .2s; text-align: center;
+  }
+  .class-btn:hover:not(:disabled) { background: rgba(255,255,255,.12); border-color: #c9a84c; }
+  .class-btn.selected { border-color: #c9a84c; background: rgba(201,168,76,.2); color: #c9a84c; }
+  .class-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .class-vote-bars { display: flex; gap: 3px; margin-bottom: 8px; }
+  .class-bar { height: 4px; border-radius: 4px; transition: width .4s; min-width: 2px; }
+  .class-vote-status { font-size: 11px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -676,10 +692,11 @@
 
 <div class="stats-bar">
   <div class="stat master"><div class="stat-num" id="cnt-master">27</div><div class="stat-lbl">⭐⭐⭐⭐⭐ Master</div></div>
-  <div class="stat tresbien"><div class="stat-num" id="cnt-tresbien">73</div><div class="stat-lbl">⭐⭐⭐⭐ Très bien</div></div>
+  <div class="stat tresbien"><div class="stat-num" id="cnt-tresbien">75</div><div class="stat-lbl">⭐⭐⭐⭐ Très bien</div></div>
   <div class="stat bien"><div class="stat-num" id="cnt-bien">68</div><div class="stat-lbl">⭐⭐⭐ Bien</div></div>
   <div class="stat assez"><div class="stat-num" id="cnt-assez">12</div><div class="stat-lbl">⭐⭐ Assez bien</div></div>
   <div class="stat passable"><div class="stat-num" id="cnt-passable">2</div><div class="stat-lbl">⭐ Passable</div></div>
+  <div class="stat unseen"><div class="stat-num" id="cnt-unseen">2</div><div class="stat-lbl">🎬 Sans classement</div></div>
 </div>
 
 <div class="nav-tabs">
@@ -689,6 +706,7 @@
   <button class="tab-btn" data-cat="bien">⭐⭐⭐ Bien</button>
   <button class="tab-btn" data-cat="assez">⭐⭐ Assez bien</button>
   <button class="tab-btn" data-cat="passable">⭐ Passable</button>
+  <button class="tab-btn" data-cat="unseen">🎬 Sans classement</button>
 </div>
 
 <div id="sections-container"></div>
@@ -712,7 +730,7 @@ const DRAMAS = {
       ["Crash Landing on You","Une héritière sud-coréenne atterrit accidentellement en Corée du Nord après un accident de parapente et tombe amoureuse d'un officier de l'armée nord-coréenne.","Chef-d'œuvre romantique absolu. Hyun Bin et Son Ye-jin créent une alchimie qui transcende les frontières — au sens propre comme au figuré.","Romance / Thriller","16 ép.",2019],
       ["Goblin","Un guerrier immortel de l'ère Goryeo cherche sa fiancée réincarnée pour mettre fin à sa malédiction éternelle.","Magnifique visuellement, écriture poétique, cast inoubliable. Gong Yoo est la définition du male lead parfait.","Fantasy / Romance","16 ép.",2016],
       ["Reply 1988","La vie quotidienne de cinq familles vivant dans le même quartier de Séoul à la fin des années 80.","Drame familial nostalgique d'une profondeur rare. L'amitié, le temps qui passe — impossible de ne pas pleurer.","Famille / Tranche de vie","20 ép.",2015],
-      ["The Glory","Une femme victime de harcèlement scolaire élabore pendant des années une vengeance minutieuse contre ses bourreaux.","Song Hye-kyo bouleversante dans ce thriller implacable. La vengeance n'a jamais été aussi bien écrite.","Thriller / Revenge","16 ép.",2022],
+      ["The Glory","Une femme victime de harcèlement scolaire élabore pendant des années une vengeance minutieuse contre ses bourreaux.","Song Hye-kyo bouleversante dans ce thriller implacable. La vengeance n'a jamais été aussi bien écrite.","Thriller / Revenge","S1: 8 ép. / S2: 8 ép.",2022],
       ["Hospital Playlist (1,2)","Cinq médecins amis depuis leurs années de fac exercent ensemble tout en formant un groupe de musique.","Feel-good d'exception. On ne veut jamais quitter ces personnages — drôle, émouvant, humain à chaque épisode.","Médical / Comédie","S1: 12 ép. / S2: 12 ép.",2020],
       ["Moving","Des parents aux capacités surhumaines tentent de protéger leurs enfants tout en cachant leur passé d'agents secrets.","Blockbuster pour le petit écran. Action épique et écriture émotionnelle — une révolution dans le drama coréen.","Action / Super-héros","20 ép.",2023],
       ["Vincenzo","Un avocat mafieux italo-coréen retourne en Corée et fait équipe avec une avocate excentrique contre une grande entreprise.","Jouissif, stylé, irrésistible. Song Joong-ki au sommet de sa forme dans un drama qui réinvente tout.","Thriller / Comédie","20 ép.",2021],
@@ -822,7 +840,9 @@ const DRAMAS = {
       ["Hi Bye Mama","Une mère fantôme réapparaît pendant 49 jours pour retrouver sa famille.","Kim Tae-hee touchante. Émotionnellement manipulateur.","Fantasy / Famille","16 ép.",2020],
       ["Tell Me That You Love Me","Un homme sourd et une femme qui refoule ses émotions apprennent à se faire confiance et à s'aimer.","Jung Woo-sung et Shin Hyun-been bouleversants. Mélodrame lent mais d'une profondeur émotionnelle rare.","Romance / Mélodrame","16 ép.",2022],
       ["Angel's Last Mission: Love","Un ange espiègle chargé de trouver l'amour pour une ballerine froide et aveugle finit par tomber amoureux d'elle.","Shin Hye-sun éblouissante, L de Infinite touchant. Fantasy romantique avec de belles références au ballet. Émouvant.","Fantasy / Romance","32 ép.",2019],
-      ["Shopping King Louis","Un chaebol amnésique est recueilli par une fille de campagne simple.","Seo In-guk adorable dans cette comédie légère.","Romance / Comédie","16 ép.",2016]
+      ["Shopping King Louis","Un chaebol amnésique est recueilli par une fille de campagne simple.","Seo In-guk adorable dans cette comédie légère.","Romance / Comédie","16 ép.",2016],
+      ["Under the Queen's Umbrella","Dans le palais royal de Joseon, une reine se bat pour protéger ses fils et leur succession face aux intrigues de la cour.","Kim Hye-soo royale et magnétique. Drama de palais palpitant avec une héroïne puissante et des fils attachants — rythme soutenu du début à la fin.","Historique / Drame","16 ép.",2022],
+      ["Lovely Runner","Une fan inconditionnelle d'un idol voyage dans le passé et se retrouve à ses côtés — bien décidée à changer son destin tragique.","Byeon Woo-seok révélé au grand public dans ce time-travel romantique addictif. Chimie explosive, nostalgie des années 2000, coups de cœur garantis.","Romance / Fantastique","16 ép.",2024]
     ]
   },
   "bien": {
@@ -938,6 +958,222 @@ const DRAMAS = {
     ]
   }
 };
+
+
+// ── SANS CLASSEMENT ──────────────────────────────────────────────────────────
+const UNSEEN_DRAMAS = [
+  {
+    title: "Perfect Crown",
+    synopsis: "Dans une Corée contemporaine à monarchie constitutionnelle, une héritière de chaebol née hors mariage et un prince sans titre ni fortune concluent un mariage arrangé — chacun y cherchant ce qui lui manque.",
+    year: 2026,
+    genre: "Romance / Comédie",
+    eps: "12 ép.",
+    platforms: [["Disney+","https://www.disneyplus.com","pb-disney"]]
+  },
+  {
+    title: "Hyde, Jekyll, Me",
+    synopsis: "Gu Seo-jin, héritier d'un parc d'attractions, souffre d'une double personnalité depuis un traumatisme d'enfance. Il se retrouve à affronter la directrice d'un cirque qu'il veut expulser — avant de tomber amoureux de ses deux personnalités.",
+    year: 2015,
+    genre: "Romance / Psychologique",
+    eps: "20 ép.",
+    platforms: [["Netflix","https://www.netflix.com/title/81027106","pb-netflix"]]
+  }
+];
+
+const FORCED_IDS_UNSEEN = {};
+
+const CLASS_MAP = { M:'master', TB:'tresbien', B:'bien', AB:'assez', P:'passable' };
+const CLASS_COLORS = { M:'#b39ddb', TB:'#64b5f6', B:'#69f0ae', AB:'#ffd54f', P:'#ef9a9a' };
+const CLASS_THRESHOLD = 10;
+const _classVoteStore = {};
+
+function getClassVotes(title) {
+  return _classVoteStore[title] || { M:0, TB:0, B:0, AB:0, P:0, voted: null };
+}
+function saveClassVotes(title, data) { _classVoteStore[title] = data; }
+
+function buildClassVoteHTML(title) {
+  const v = getClassVotes(title);
+  const total = Object.keys(CLASS_MAP).reduce((s,k) => s + v[k], 0);
+  const t = title.replace(/'/g, "\'");
+
+  const bars = Object.keys(CLASS_MAP).map(k => {
+    const pct = total ? Math.round(v[k]/total*100) : 0;
+    return '<div class="class-bar" style="background:' + CLASS_COLORS[k] + ';flex:' + (pct||1) + '" title="' + k + ': ' + v[k] + ' votes"></div>';
+  }).join('');
+
+  const btns = Object.keys(CLASS_MAP).map(k =>
+    '<button class="class-btn ' + (v.voted===k?'selected':'') + '" onclick="castClassVote(\'' + t + '\',\'' + k + '\')" ' + (v.voted && v.voted!==k ? 'disabled' : '') + '>' + k + '</button>'
+  ).join('');
+
+  let winner = null, maxV = 0;
+  for (const k of Object.keys(CLASS_MAP)) { if (v[k] > maxV) { maxV = v[k]; winner = k; } }
+
+  let status = '';
+  if (maxV >= CLASS_THRESHOLD && winner) {
+    status = '<span style="color:' + CLASS_COLORS[winner] + '">🏆 Rejoint la catégorie <strong>' + CLASS_MAP[winner].toUpperCase() + '</strong> !</span>';
+  } else if (total > 0 && winner) {
+    status = 'En tête : <strong style="color:' + CLASS_COLORS[winner] + '">' + winner + '</strong> (' + maxV + '/' + CLASS_THRESHOLD + ' votes)';
+  } else {
+    status = CLASS_THRESHOLD + ' votes pour intégrer une catégorie';
+  }
+
+  const changeBtn = v.voted ? '<button class="vote-change" onclick="resetClassVote(\'' + t + '\')">↩ Changer mon avis</button>' : '';
+
+  return '<div class="class-vote-wrap">' +
+    '<div class="class-vote-label">📊 Où classer ce drama ?</div>' +
+    '<div class="class-btns">' + btns + '</div>' +
+    '<div class="class-vote-bars">' + bars + '</div>' +
+    '<div class="class-vote-status">' + status + '</div>' +
+    changeBtn +
+    '</div>';
+}
+
+function castClassVote(title, cat) {
+  const v = getClassVotes(title);
+  // Toggle off if same button
+  if (v.voted === cat) { v[cat] = Math.max(0, v[cat]-1); v.voted = null; saveClassVotes(title, v); refreshClassVoteUI(title); return; }
+  if (v.voted !== null) return;
+  v[cat]++;
+  v.voted = cat;
+  saveClassVotes(title, v);
+  // First voter immediately sets the category
+  promoteUnseenDrama(title, CLASS_MAP[cat]);
+}
+
+function resetClassVote(title) {
+  const v = getClassVotes(title);
+  if (!v.voted) return;
+  v[v.voted] = Math.max(0, v[v.voted] - 1);
+  v.voted = null;
+  saveClassVotes(title, v);
+  refreshClassVoteUI(title);
+}
+
+function refreshClassVoteUI(title) {
+  const el = document.getElementById('class-vote-' + CSS.escape(title));
+  if (el) el.innerHTML = buildClassVoteHTML(title);
+}
+
+function promoteUnseenDrama(title, targetCat) {
+  const idx = UNSEEN_DRAMAS.findIndex(d => d.title === title);
+  if (idx === -1) return;
+  const d = UNSEEN_DRAMAS[idx];
+  UNSEEN_DRAMAS.splice(idx, 1);
+  DRAMAS[targetCat].items.push([d.title, d.synopsis, 'Classé par la communauté.', d.genre, d.eps || '', d.year || '']);
+  rebuildUnseenSection();
+  rebuildGrid(targetCat);
+  updateCounts();
+  closeModalBtn();
+  alert('"' + title + '" a rejoint la catégorie ' + targetCat.toUpperCase() + ' !');
+}
+
+function buildUnseenSection() {
+  const container = document.getElementById('sections-container');
+  const old = document.querySelector('section[data-cat="unseen"]');
+  if (old) old.remove();
+  if (UNSEEN_DRAMAS.length === 0) { updateCounts(); return; }
+
+  const section = document.createElement('section');
+  section.className = 'section unseen';
+  section.dataset.cat = 'unseen';
+  section.innerHTML =
+    '<div class="section-header">' +
+      '<div class="section-stars">🎬</div>' +
+      '<div class="section-title">SANS CLASSEMENT</div>' +
+      '<div class="section-count">' + UNSEEN_DRAMAS.length + ' dramas</div>' +
+    '</div>' +
+    '<div class="drama-grid" id="grid-unseen"></div>';
+  container.appendChild(section);
+
+  const grid = section.querySelector('#grid-unseen');
+  UNSEEN_DRAMAS.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'drama-card';
+    card.dataset.title = d.title.toLowerCase();
+    card.dataset.cat = 'unseen';
+    const genrePrimary = (d.genre || 'Drama').split('/')[0].trim();
+    const yearBadge = d.year ? '<div class="year-badge">' + d.year + '</div>' : '';
+    const epsBadge = d.eps ? '<div class="eps-badge">' + d.eps + '</div>' : '';
+    card.innerHTML =
+      '<div class="poster-wrap">' +
+        '<img src="" alt="' + d.title + '" data-title="' + encodeURIComponent(d.title) + '">' +
+        '<div class="poster-placeholder" style="display:none">🎬</div>' +
+        '<div class="genre-badge">' + genrePrimary + '</div>' +
+        '<div class="voir-badge">À voir</div>' +
+        yearBadge + epsBadge +
+      '</div>' +
+      '<div class="card-body">' +
+        '<div class="card-title">' + d.title + '</div>' +
+        '<div class="card-synopsis">' + d.synopsis + '</div>' +
+      '</div>';
+    card.addEventListener('click', () => openUnseenModal(d));
+    grid.appendChild(card);
+    loadUnseenPoster(card.querySelector('img'), d.title);
+  });
+  updateCounts();
+}
+
+function rebuildUnseenSection() { buildUnseenSection(); }
+
+async function loadUnseenPoster(img, title) {
+  const showFallback = () => { img.style.display='none'; img.nextElementSibling.style.display='flex'; };
+  try {
+    let posterPath = null;
+    if (FORCED_IDS_UNSEEN[title]) {
+      const res = await fetch('https://api.themoviedb.org/3/tv/' + FORCED_IDS_UNSEEN[title] + '?api_key=' + KEY);
+      const data = await res.json();
+      posterPath = data.poster_path || null;
+    } else {
+      const searchTitle = title.replace(/\(.*?\)/g,'').trim();
+      const res = await fetch('https://api.themoviedb.org/3/search/tv?api_key=' + KEY + '&query=' + encodeURIComponent(searchTitle) + '&language=fr-FR');
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const item = data.results.find(r => r.origin_country && r.origin_country.includes('KR')) || data.results[0];
+        posterPath = item ? item.poster_path : null;
+      }
+    }
+    if (posterPath) {
+      img.onerror = showFallback;
+      img.src = 'https://image.tmdb.org/t/p/w342' + posterPath;
+    } else { showFallback(); }
+  } catch(e) { showFallback(); }
+}
+
+function openUnseenModal(d) {
+  const catColors_local = '#c9a84c';
+  const icons = { Netflix:'▶', 'Disney+':'✦', Viki:'▷', VoirDrama:'🎬' };
+  const platformBadges = (d.platforms || []).map(([name, url, cls]) =>
+    '<a class="platform-badge ' + cls + '" href="' + url + '" target="_blank" rel="noopener">' + (icons[name]||'▶') + ' ' + name + '</a>'
+  ).join('');
+  const vdSlug = d.title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
+  const vdBadge = '<a class="platform-badge pb-voirdrama" href="https://voirdrama.to/drama/' + vdSlug + '/" target="_blank" rel="noopener">🎬 VoirDrama</a>';
+
+  const inner = document.getElementById('modal-inner');
+  inner.innerHTML =
+    '<div class="modal-poster" id="unseen-modal-poster-wrap">' +
+      '<img src="" alt="' + d.title + '" id="unseen-modal-img">' +
+      '<div class="modal-poster-ph" style="display:none">🎬</div>' +
+    '</div>' +
+    '<div class="modal-content">' +
+      '<div class="modal-cat-badge" style="color:' + catColors_local + '">🎬 Sans classement</div>' +
+      '<div class="modal-title">' + d.title + '</div>' +
+      '<div class="modal-genre">' + (d.genre||'Drama') + (d.year ? ' · ' + d.year : '') + '</div>' +
+      (d.eps ? '<div class="modal-eps">📺 ' + d.eps + '</div>' : '') +
+      '<div class="modal-label">Synopsis</div>' +
+      '<div class="modal-synopsis">' + d.synopsis + '</div>' +
+      '<div class="modal-label" style="margin-top:16px">Où regarder</div>' +
+      '<div class="modal-platforms">' + platformBadges + vdBadge + '</div>' +
+      '<div id="class-vote-' + CSS.escape(d.title) + '">' + buildClassVoteHTML(d.title) + '</div>' +
+    '</div>';
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  const img = document.getElementById('unseen-modal-img');
+  loadUnseenPoster(img, d.title);
+}
+
 
 // POSTER IMAGE FETCHING via TMDB-like query
 const posterCache = {};
@@ -1136,6 +1372,8 @@ const PLATFORMS = {
   "Delivery Man":                [["Viki","https://www.viki.com/tv/40366c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
   "The Wonderfool":              [["Viki","https://www.viki.com/tv/41220c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
   "A Virtuous Business":         [["Viki","https://www.viki.com/tv/41150c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Under the Queen's Umbrella":  [["Netflix","https://www.netflix.com/title/81498455","pb-netflix"],["Viki","https://www.viki.com/tv/39218c","pb-viki"]],
+  "Lovely Runner":               [["Viki","https://www.viki.com/tv/41030c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
   "Sweet Home (2,3)":            [["Netflix","https://www.netflix.com/title/81081174","pb-netflix"]],
   "Gaduri Restaurant":           [["Viki","https://www.viki.com/tv/37749c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
   "Bring It On, Ghost":          [["Viki","https://www.viki.com/tv/30386c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
@@ -1213,7 +1451,7 @@ function buildSections() {
   updateCounts();
 }
 
-const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virtuous Business": 255086, "D-Day": 63910,"Extraordinary Attorney Woo": 197067 };
+const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virtuous Business": 255086, "D-Day": 63910,"Extraordinary Attorney Woo": 197067, "Under the Queen's Umbrella": 156406, "Lovely Runner": 230923 };
 const KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
 async function loadPoster(img, title) {
@@ -1357,42 +1595,13 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
       <div class="modal-label">Avis</div>
       <div class="modal-avis">${avis}</div>
       ${buildPlatformHTML(title)}
-      <div id="modal-vote-placeholder"></div>
-      <div id="modal-comments-placeholder"></div>
+      ${buildVoteHTML(title, catCls)}
+      ${buildCommentsHTML(title)}
     </div>
   `;
 
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // render dynamic parts
-  renderModalDynamic(title, catCls);
-}
-
-async function renderModalDynamic(title, catCls) {
-  // Votes
-  const voteData = await getVotesAPI(title);
-  const votePlaceholder = document.getElementById('modal-vote-placeholder');
-  if (votePlaceholder) votePlaceholder.outerHTML = buildVoteHTMLFromData(title, catCls, voteData);
-
-  // Comments placeholder HTML
-  const commentsHtml = `
-    <div class="comments-section">
-      <div class="comments-label" id="comments-label-${CSS.escape(title)}">💬 Commentaires</div>
-      <div class="comment-list" id="comment-list-${CSS.escape(title)}"><div class="no-comments">Chargement...</div></div>
-      <div class="comment-input-wrap">
-        <input class="comment-input" id="comment-input-${CSS.escape(title)}" placeholder="Ton avis sur ce drama..." maxlength="300">
-        <button class="comment-send" id="comment-send-${CSS.escape(title)}">Envoyer</button>
-      </div>
-    </div>`;
-  const commentsPlaceholder = document.getElementById('modal-comments-placeholder');
-  if (commentsPlaceholder) commentsPlaceholder.outerHTML = commentsHtml;
-
-  // Attach send handler
-  const sendBtn = document.getElementById('comment-send-' + CSS.escape(title));
-  if (sendBtn) sendBtn.addEventListener('click', () => postCommentClient(title));
-
-  // Load comments
-  await renderComments(title);
 }
 
 function closeModal(e) {
@@ -1446,6 +1655,8 @@ function updateCounts() {
     const el = document.getElementById(`cnt-${key}`);
     if (el) el.textContent = cat.items.length;
   }
+  const unEl = document.getElementById('cnt-unseen');
+  if (unEl) unEl.textContent = UNSEEN_DRAMAS.length;
 }
 
 // ESC to close modal
@@ -1456,49 +1667,24 @@ const CAT_ORDER = ['passable','assez','bien','tresbien','master'];
 const CAT_LABELS = { master:'⭐⭐⭐⭐⭐ MASTER', tresbien:'⭐⭐⭐⭐ TRÈS BIEN', bien:'⭐⭐⭐ BIEN', assez:'⭐⭐ ASSEZ BIEN', passable:'⭐ PASSABLE' };
 const VOTE_THRESHOLD = 10;
 
-const API_BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost') ? 'http://localhost:3000/api' : 'https://egpa-kdrama.onrender.com/api';
-
-
-function getUserId() {
-  try {
-    let id = localStorage.getItem('kd_user');
-    if (!id) {
-      id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('u-' + Date.now() + '-' + Math.random().toString(36).slice(2));
-      localStorage.setItem('kd_user', id);
-    }
-    return id;
-  } catch(e) { return 'u-anon'; }
+function getVotes(title) {
+  try { const d = JSON.parse(localStorage.getItem('votes_' + title)) || {}; return { up: d.up||0, down: d.down||0, perfect: d.perfect||0, voted: d.voted||null }; }
+  catch { return { up: 0, down: 0, perfect: 0, voted: null }; }
+}
+function saveVotes(title, data) {
+  try { localStorage.setItem('votes_' + title, JSON.stringify(data)); } catch {}
 }
 
-async function getVotesAPI(title) {
-  try {
-    const userId = getUserId();
-    const res = await fetch(`${API_BASE}/votes/${encodeURIComponent(title)}?userId=${encodeURIComponent(userId)}`);
-    if (!res.ok) throw new Error('network');
-    return await res.json();
-  } catch(e) { return { up:0, down:0, perfect:0, net:0, voted: null }; }
-}
-
-async function castVoteAPI(title, vote) {
-  try {
-    const userId = getUserId();
-    const res = await fetch(`${API_BASE}/votes/${encodeURIComponent(title)}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, vote })
-    });
-    if (!res.ok) throw new Error('network');
-    return await res.json();
-  } catch(e) { return null; }
-}
-
-function buildVoteHTMLFromData(title, catCls, v) {
+function buildVoteHTML(title, catCls) {
+  const v = getVotes(title);
   const total = v.up + v.down + v.perfect;
+  const upPct = total ? Math.round(v.up / total * 100) : 33;
   const catIdx = CAT_ORDER.indexOf(catCls);
   const canUp = catIdx < CAT_ORDER.length - 1;
   const canDown = catIdx > 0;
-  const netScore = (v.up||0) - (v.down||0);
+  const netScore = v.up - v.down;
   const t = title.replace(/'/g, "\\'");
-  const hasVoted = v.voted !== null && v.voted !== undefined;
+  const hasVoted = v.voted !== null;
 
   let statusMsg = '';
   if (v.voted === 'perfect') {
@@ -1512,59 +1698,91 @@ function buildVoteHTMLFromData(title, catCls, v) {
   }
 
   const changeBtn = hasVoted
-    ? `<button class="vote-change" onclick="resetVoteClient('${t}','${catCls}')">↩ Changer mon avis</button>`
+    ? `<button class="vote-change" onclick="resetVote('${t}', '${catCls}')">↩ Changer mon avis</button>`
     : '';
 
   return `
-    <div class="vote-section" id="vote-section-${CSS.escape(title)}">
+    <div class="vote-section">
       <div class="vote-label">Ce drama mérite-t-il mieux ou moins ?</div>
       <div class="vote-desc">Au bout de ${VOTE_THRESHOLD} votes d'écart, il change de classe automatiquement.</div>
       <div class="vote-buttons">
-        <button class="vote-btn vote-up ${v.voted==='up'?'active':''}" onclick="castVoteClient('${t}','up','${catCls}')" ${hasVoted && v.voted!=='up' ? 'disabled' : ''}>▲ Mérite mieux <small>(${v.up||0})</small></button>
-        <button class="vote-btn vote-perfect ${v.voted==='perfect'?'active':''}" onclick="castVoteClient('${t}','perfect','${catCls}')" ${hasVoted && v.voted!=='perfect' ? 'disabled' : ''}>✦ Place idéale <small>(${v.perfect||0})</small></button>
-        <button class="vote-btn vote-down ${v.voted==='down'?'active':''}" onclick="castVoteClient('${t}','down','${catCls}')" ${hasVoted && v.voted!=='down' ? 'disabled' : ''}>▼ Mérite moins <small>(${v.down||0})</small></button>
+        <button class="vote-btn vote-up ${v.voted==='up'?'active':''}" onclick="castVote('${t}','up','${catCls}')" ${hasVoted && v.voted!=='up' ? 'disabled' : ''}>▲ Mérite mieux <small>(${v.up})</small></button>
+        <button class="vote-btn vote-perfect ${v.voted==='perfect'?'active':''}" onclick="castVote('${t}','perfect','${catCls}')" ${hasVoted && v.voted!=='perfect' ? 'disabled' : ''}>✦ Place idéale <small>(${v.perfect})</small></button>
+        <button class="vote-btn vote-down ${v.voted==='down'?'active':''}" onclick="castVote('${t}','down','${catCls}')" ${hasVoted && v.voted!=='down' ? 'disabled' : ''}>▼ Mérite moins <small>(${v.down})</small></button>
       </div>
       <div>${statusMsg}</div>
       ${changeBtn}
     </div>`;
 }
 
-window.castVoteClient = async function(title, dir, catCls) {
-  const resp = await castVoteAPI(title, dir);
-  if (!resp) return alert('Erreur réseau, réessayez');
-  // Update modal vote section
-  const container = document.querySelector('.modal-overlay .modal-content');
-  if (container) {
-    const voteContainer = container.querySelector('.vote-section') || container.querySelector('#modal-vote-placeholder');
-    if (voteContainer) {
-      voteContainer.outerHTML = buildVoteHTMLFromData(title, catCls, resp);
-    }
+function castVote(title, dir, catCls) {
+  const v = getVotes(title);
+  // Toggle off if clicking same button again
+  if (v.voted === dir) {
+    v[dir]--;
+    v.voted = null;
+    saveVotes(title, v);
+    refreshVoteSection(title, catCls);
+    return;
   }
+  if (v.voted !== null) return; // already voted differently, must reset first
+  if (dir === 'up') v.up++;
+  else if (dir === 'down') v.down++;
+  else v.perfect++;
+  v.voted = dir;
+  saveVotes(title, v);
 
-  // If threshold reached, move locally (client-side)
-  const net = resp.up - resp.down;
+  if (dir === 'perfect') { refreshVoteSection(title, catCls); return; }
+
+  const netScore = v.up - v.down;
   let currentCat = catCls;
   for (const [key, cat] of Object.entries(DRAMAS)) {
     if (cat.items.some(d => d[0] === title)) { currentCat = key; break; }
   }
-  const catIdx = CAT_ORDER.indexOf(currentCat);
-  if (net >= VOTE_THRESHOLD && catIdx < CAT_ORDER.length - 1) moveDrama(title, currentCat, CAT_ORDER[catIdx + 1]);
-  else if (net <= -VOTE_THRESHOLD && catIdx > 0) moveDrama(title, currentCat, CAT_ORDER[catIdx - 1]);
-};
 
-window.resetVoteClient = async function(title, catCls) {
-  // Toggle off by re-sending the current vote (server toggles when same vote received)
-  const v = await getVotesAPI(title);
-  if (v && v.voted) {
-    await castVoteAPI(title, v.voted);
+  const catIdx = CAT_ORDER.indexOf(currentCat);
+  if (netScore >= VOTE_THRESHOLD && catIdx < CAT_ORDER.length - 1) {
+    moveDrama(title, currentCat, CAT_ORDER[catIdx + 1]);
+  } else if (netScore <= -VOTE_THRESHOLD && catIdx > 0) {
+    moveDrama(title, currentCat, CAT_ORDER[catIdx - 1]);
+  } else {
+    refreshVoteSection(title, currentCat);
   }
-  const fresh = await getVotesAPI(title);
-  const container = document.querySelector('.modal-overlay .modal-content');
-  if (container) {
-    const voteContainer = container.querySelector('.vote-section') || container.querySelector('#modal-vote-placeholder');
-    if (voteContainer) voteContainer.outerHTML = buildVoteHTMLFromData(title, catCls, fresh);
-  }
-};
+}
+
+function resetVote(title, catCls) {
+  const v = getVotes(title);
+  if (!v.voted) return;
+  // Undo the previous vote
+  if (v.voted === 'up') v.up = Math.max(0, v.up - 1);
+  else if (v.voted === 'down') v.down = Math.max(0, v.down - 1);
+  else v.perfect = Math.max(0, v.perfect - 1);
+  v.voted = null;
+  saveVotes(title, v);
+  refreshVoteSection(title, catCls);
+}
+
+function moveDrama(title, fromCat, toCat) {
+  const fromItems = DRAMAS[fromCat].items;
+  const idx = fromItems.findIndex(d => d[0] === title);
+  if (idx === -1) return;
+  const drama = fromItems.splice(idx, 1)[0];
+  DRAMAS[toCat].items.unshift(drama);
+
+  // Reset votes after promotion
+  saveVotes(title, { up: 0, down: 0, voted: null });
+
+  // Rebuild both grids
+  rebuildGrid(fromCat);
+  rebuildGrid(toCat);
+  updateCounts();
+
+  // Close modal and reopen with new cat
+  closeModalBtn();
+  setTimeout(() => {
+    alert(`"${title}" a été déplacé vers ${CAT_LABELS[toCat]} ! 🎉`);
+  }, 200);
+}
 
 function rebuildGrid(catKey) {
   const grid = document.getElementById(`grid-${catKey}`);
@@ -1597,143 +1815,66 @@ function rebuildGrid(catKey) {
   });
 }
 
-// Find drama metadata by title across DRAMAS
-function findDramaByTitle(title) {
-  for (const [catKey, cat] of Object.entries(DRAMAS)) {
-    for (const drama of cat.items) {
-      if (drama[0] === title) return { drama, catKey };
-    }
-  }
-  return null;
-}
-
-// Fetch sorted list of dramas from server and render a global ranking section
-async function fetchSortedDramas() {
-  try {
-    const titles = [];
-    for (const cat of Object.values(DRAMAS)) cat.items.forEach(d => titles.push(d[0]));
-    const res = await fetch(`${API_BASE}/dramas/sort`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titles })
-    });
-    if (!res.ok) return;
-    const sorted = await res.json();
-    buildGlobalRankingSection(sorted);
-  } catch(e) { /* ignore */ }
-}
-
-function buildGlobalRankingSection(sorted) {
-  const container = document.getElementById('sections-container');
-  // remove existing
-  const existing = document.getElementById('global-ranking-section');
-  if (existing) existing.remove();
-
-  const section = document.createElement('section');
-  section.className = 'section';
-  section.id = 'global-ranking-section';
-  section.innerHTML = `
-    <div class="section-header">
-      <div class="section-stars">Top</div>
-      <div class="section-title">Classement global</div>
-      <div class="section-count">${sorted.length} dramas</div>
-    </div>
-    <div class="drama-grid" id="grid-global"></div>
-  `;
-  // insert at top
-  container.insertBefore(section, container.firstChild);
-
-  const grid = document.getElementById('grid-global');
-  const max = Math.min(sorted.length, 24);
-  for (let i = 0; i < max; i++) {
-    const item = sorted[i];
-    const info = findDramaByTitle(item.title);
-    if (!info) continue;
-    const [title, synopsis, avis, genre, eps, year] = info.drama;
-    const card = document.createElement('div');
-    card.className = 'drama-card';
-    card.dataset.title = title.toLowerCase();
-    card.dataset.genre = genre.toLowerCase();
-    card.dataset.cat = info.catKey;
-    const genrePrimary = genre.split('/')[0].trim();
-    card.innerHTML = `
-      <div class="poster-wrap">
-        <img src="" alt="${title}" loading="lazy">
-        <div class="poster-placeholder" style="display:none">🎬</div>
-        <div class="genre-badge">${genrePrimary}</div>
-        ${eps ? `<div class="eps-badge">${eps}</div>` : ''}
-        ${year ? `<div class="year-badge">${year}</div>` : ''}
-      </div>
-      <div class="card-body">
-        <div class="card-title">${title} <span style="float:right; font-size:12px; color:var(--muted);">${item.aggregates.net || 0}</span></div>
-        <div class="card-synopsis">${synopsis}</div>
-        <div class="card-avis">${avis}</div>
-      </div>`;
-    card.addEventListener('click', () => openModal(title, synopsis, avis, genre, eps, year, '', info.catKey, card.querySelector('img').src));
-    grid.appendChild(card);
-    loadPoster(card.querySelector('img'), title);
-  }
-}
-
-// refreshVoteSection is now server-driven via render in modal
 function refreshVoteSection(title, catCls) {
-  // no-op kept for compatibility
+  const voteEl = document.querySelector('.vote-section');
+  if (voteEl) voteEl.outerHTML = buildVoteHTML(title, catCls);
 }
 
-// ── COMMENTS (server-backed) ────────────────────────────────────────────────
-async function getCommentsAPI(title) {
-  try {
-    const res = await fetch(`${API_BASE}/comments/${encodeURIComponent(title)}`);
-    if (!res.ok) throw new Error('network');
-    return await res.json();
-  } catch(e) { return []; }
+// ── COMMENTS ────────────────────────────────────────────────────────────────
+function getComments(title) {
+  try { return JSON.parse(localStorage.getItem('comments_' + title)) || []; }
+  catch { return []; }
+}
+function saveComments(title, list) {
+  try { localStorage.setItem('comments_' + title, JSON.stringify(list)); } catch {}
 }
 
-async function postCommentAPI(title, user, text) {
-  try {
-    const res = await fetch(`${API_BASE}/comments/${encodeURIComponent(title)}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user, text })
-    });
-    if (!res.ok) throw new Error('network');
-    return await res.json();
-  } catch(e) { return null; }
-}
-
-async function renderComments(title) {
-  const comments = await getCommentsAPI(title);
-  const listEl = document.getElementById('comment-list-' + CSS.escape(title));
-  if (!listEl) return;
+function buildCommentsHTML(title) {
+  const comments = getComments(title);
   const listHTML = comments.length === 0
     ? `<div class="no-comments">Aucun commentaire — sois le premier !</div>`
     : comments.map(c => `
         <div class="comment-item">
-          <div class="comment-meta">${new Date(c.created_at).toLocaleString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}</div>
+          <div class="comment-meta">${c.date}</div>
           ${c.text}
         </div>`).join('');
-  listEl.innerHTML = listHTML;
-  const label = document.getElementById('comments-label-' + CSS.escape(title));
-  if (label) label.textContent = `💬 Commentaires (${comments.length})`;
+  return `
+    <div class="comments-section">
+      <div class="comments-label">💬 Commentaires (${comments.length})</div>
+      <div class="comment-list" id="comment-list-${CSS.escape(title)}">${listHTML}</div>
+      <div class="comment-input-wrap">
+        <input class="comment-input" id="comment-input-${CSS.escape(title)}" placeholder="Ton avis sur ce drama..." maxlength="300">
+        <button class="comment-send" onclick="postComment('${title.replace(/'/g,"\\'")}')">Envoyer</button>
+      </div>
+    </div>`;
 }
 
-async function postCommentClient(title) {
+function postComment(title) {
   const inputId = 'comment-input-' + CSS.escape(title);
   const input = document.getElementById(inputId);
   if (!input) return;
   const text = input.value.trim();
   if (!text) return;
-  // optional: use stored user name or null
-  const user = 'Visiteur';
-  const resp = await postCommentAPI(title, user, text);
-  if (!resp) return alert('Erreur lors de l\'envoi du commentaire');
+  const comments = getComments(title);
+  const now = new Date();
+  const date = now.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  comments.push({ text, date });
+  saveComments(title, comments);
   input.value = '';
-  await renderComments(title);
+  const listEl = document.getElementById('comment-list-' + CSS.escape(title));
+  if (listEl) {
+    listEl.innerHTML = comments.map(c => `
+      <div class="comment-item">
+        <div class="comment-meta">${c.date}</div>
+        ${c.text}
+      </div>`).join('');
+    const label = listEl.closest('.comments-section').querySelector('.comments-label');
+    if (label) label.textContent = `💬 Commentaires (${comments.length})`;
+  }
 }
 
 buildSections();
-// Fetch server-side ranking and show global classement
-fetchSortedDramas();
-// Refresh every 20s
-setInterval(fetchSortedDramas, 20000);
+buildUnseenSection();
 </script>
 </body>
 </html>
