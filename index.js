@@ -22,7 +22,7 @@ const DATABASE_URL = process.env.DATABASE_URL || process.env.SUPABASE_URL || nul
 if (!DATABASE_URL) {
   console.warn('WARNING: DATABASE_URL not set. The API will run but requests that use the DB will fail.');
 }
-const pool = new Pool({ connectionString: DATABASE_URL, ssl: (DATABASE_URL && DATABASE_URL.includes('postgres')) ? { rejectUnauthorized: false } : false });
+const pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_URL ? { rejectUnauthorized: false } : false });
 
 async function ensureSchema() {
   const client = await pool.connect();
@@ -134,7 +134,20 @@ app.post('/api/comments/:title', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Kdrama API listening on http://localhost:${PORT}`));
+
+async function start() {
+  if (DATABASE_URL) {
+    try {
+      await ensureSchema();
+      console.log('Database schema OK');
+    } catch (err) {
+      console.error('Schema creation failed:', err.message);
+    }
+  }
+  app.listen(PORT, () => console.log(`Kdrama API listening on http://localhost:${PORT}`));
+}
+
+start();
 
 // Return aggregates for all titles present in votes
 app.get('/api/aggregates', async (req, res) => {
