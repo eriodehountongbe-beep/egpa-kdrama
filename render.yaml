@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: kdrama-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false

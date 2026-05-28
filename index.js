@@ -1,0 +1,184 @@
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const path = require('path');
+const { Pool } = require('pg');
+require('dotenv').config();
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Serve frontend static files from parent folder (project root)
+app.use(express.static(path.join(__dirname, '..')));
+
+// Convenience root route -> classement_kdramas-1.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'classement_kdramas-1.html'));
+});
+
+// Postgres connection via DATABASE_URL (e.g. Supabase)
+const DATABASE_URL = process.env.DATABASE_URL || process.env.SUPABASE_URL || null;
+if (!DATABASE_URL) {
+  console.warn('WARNING: DATABASE_URL not set. The API will run but requests that use the DB will fail.');
+}
+const pool = new Pool({ connectionString: DATABASE_URL, ssl: (DATABASE_URL && DATABASE_URL.includes('postgres')) ? { rejectUnauthorized: false } : false });
+
+async function ensureSchema() {
+  const client = await pool.connect();
+  try {
+    await client.query(`CREATE TABLE IF NOT EXISTS votes (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      vote_type TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+    )`);
+    await client.query(`CREATE TABLE IF NOT EXISTS comments (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      "user" TEXT,
+      text TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+    )`);
+    await client.query('CREATE INDEX IF NOT EXISTS idx_votes_title ON votes(title)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_comments_title ON comments(title)');
+  } finally {
+    client.release();
+  }
+}
+
+// Helpers
+async function getAggregates(title) {
+  const client = await pool.connect();
+  try {
+    const res = await client.query('SELECT vote_type, COUNT(*) as cnt FROM votes WHERE title = $1 GROUP BY vote_type', [title]);
+    const agg = { up: 0, down: 0, perfect: 0 };
+    res.rows.forEach(r => { if (r.vote_type === 'up') agg.up = parseInt(r.cnt); else if (r.vote_type === 'down') agg.down = parseInt(r.cnt); else if (r.vote_type === 'perfect') agg.perfect = parseInt(r.cnt); });
+    agg.net = agg.up - agg.down;
+    return agg;
+  } finally { client.release(); }
+}
+
+// Health
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+// Votes: get aggregates and optionally the caller's vote
+app.get('/api/votes/:title', async (req, res) => {
+  const title = req.params.title;
+  const userId = req.query.userId || null;
+  try {
+    const agg = await getAggregates(title);
+    let voted = null;
+    if (userId) {
+      const client = await pool.connect();
+      try {
+        const r = await client.query('SELECT vote_type FROM votes WHERE title = $1 AND user_id = $2 LIMIT 1', [title, userId]);
+        if (r.rows[0]) voted = r.rows[0].vote_type;
+      } finally { client.release(); }
+    }
+    res.json(Object.assign({ voted }, agg));
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+});
+
+// Cast vote (toggle semantics: same vote removes it)
+app.post('/api/votes/:title', async (req, res) => {
+  const title = req.params.title;
+  const { userId, vote } = req.body || {};
+  if (!userId || !vote) return res.status(400).json({ error: 'userId and vote required' });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const existingRes = await client.query('SELECT id, vote_type FROM votes WHERE title = $1 AND user_id = $2 LIMIT 1', [title, userId]);
+    const existing = existingRes.rows[0];
+    if (existing && existing.vote_type === vote) {
+      await client.query('DELETE FROM votes WHERE id = $1', [existing.id]);
+    } else if (existing) {
+      await client.query('UPDATE votes SET vote_type = $1, created_at = now() WHERE id = $2', [vote, existing.id]);
+    } else {
+      await client.query('INSERT INTO votes (title, user_id, vote_type) VALUES ($1, $2, $3)', [title, userId, vote]);
+    }
+    await client.query('COMMIT');
+    const agg = await getAggregates(title);
+    const userRowRes = await client.query('SELECT vote_type FROM votes WHERE title = $1 AND user_id = $2 LIMIT 1', [title, userId]);
+    const userRow = userRowRes.rows[0];
+    res.json(Object.assign({ voted: userRow ? userRow.vote_type : null }, agg));
+  } catch (err) { await client.query('ROLLBACK'); console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+
+// Comments: list
+app.get('/api/comments/:title', async (req, res) => {
+  const title = req.params.title;
+  const client = await pool.connect();
+  try {
+    const r = await client.query('SELECT id, "user", text, created_at FROM comments WHERE title = $1 ORDER BY created_at ASC', [title]);
+    res.json(r.rows.map(row => ({ id: row.id, user: row.user, text: row.text, created_at: row.created_at })));
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+
+// Comments: post
+app.post('/api/comments/:title', async (req, res) => {
+  const title = req.params.title;
+  const { user, text } = req.body || {};
+  if (!text) return res.status(400).json({ error: 'text required' });
+  const client = await pool.connect();
+  try {
+    const r = await client.query('INSERT INTO comments (title, "user", text) VALUES ($1, $2, $3) RETURNING id, "user", text, created_at', [title, user || 'Anonyme', text]);
+    // return full list
+    const rows = await client.query('SELECT id, "user", text, created_at FROM comments WHERE title = $1 ORDER BY created_at ASC', [title]);
+    res.json(rows.rows.map(row => ({ id: row.id, user: row.user, text: row.text, created_at: row.created_at })));
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Kdrama API listening on http://localhost:${PORT}`));
+
+// Return aggregates for all titles present in votes
+app.get('/api/aggregates', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const r = await client.query('SELECT title, vote_type, COUNT(*) as cnt FROM votes GROUP BY title, vote_type');
+    const aggMap = {};
+    r.rows.forEach(v => {
+      if (!aggMap[v.title]) aggMap[v.title] = { up:0, down:0, perfect:0 };
+      if (v.vote_type === 'up') aggMap[v.title].up = parseInt(v.cnt);
+      else if (v.vote_type === 'down') aggMap[v.title].down = parseInt(v.cnt);
+      else if (v.vote_type === 'perfect') aggMap[v.title].perfect = parseInt(v.cnt);
+    });
+    Object.keys(aggMap).forEach(t => { aggMap[t].net = aggMap[t].up - aggMap[t].down; });
+    res.json(aggMap);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+
+// Sort a provided list of titles by server-side aggregates and return sorted list with aggregates
+app.post('/api/dramas/sort', (req, res) => {
+  // Titles must be provided in body
+  (async () => {
+    const titles = (req.body && Array.isArray(req.body.titles)) ? req.body.titles : [];
+    const client = await pool.connect();
+    try {
+      if (titles.length === 0) return res.json([]);
+      // fetch aggregates for provided titles
+      const r = await client.query('SELECT title, vote_type, COUNT(*) as cnt FROM votes WHERE title = ANY($1) GROUP BY title, vote_type', [titles]);
+      const aggMap = {};
+      r.rows.forEach(v => {
+        if (!aggMap[v.title]) aggMap[v.title] = { up:0, down:0, perfect:0 };
+        if (v.vote_type === 'up') aggMap[v.title].up = parseInt(v.cnt);
+        else if (v.vote_type === 'down') aggMap[v.title].down = parseInt(v.cnt);
+        else if (v.vote_type === 'perfect') aggMap[v.title].perfect = parseInt(v.cnt);
+      });
+      const out = titles.map(title => ({ title, aggregates: aggMap[title] ? Object.assign({ net: aggMap[title].up - aggMap[title].down }, aggMap[title]) : { up:0, down:0, perfect:0, net:0 } }));
+      out.sort((a,b) => {
+        if (b.aggregates.net !== a.aggregates.net) return b.aggregates.net - a.aggregates.net;
+        if (b.aggregates.perfect !== a.aggregates.perfect) return b.aggregates.perfect - a.aggregates.perfect;
+        return b.aggregates.up - a.aggregates.up;
+      });
+      res.json(out);
+    } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+    finally { client.release(); }
+  })();
+});

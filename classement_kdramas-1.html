@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Classement K-Dramas</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --master:    #1A1A2E;
+    --tresbien:  #0D3B6E;
+    --bien:      #145A32;
+    --assez:     #7D6608;
+    --passable:  #922B21;
+    --bg: #0a0a0f;
+    --card-bg: #13131e;
+    --text: #e8e4f0;
+    --muted: #8880a0;
+    --accent: #b39ddb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HERO */
+  .hero {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,60,200,.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow: 0 0 60px rgba(179,157,219,.4);
+    line-height: 1;
+  }
+  .hero-sub {
+    margin-top: 12px;
+    font-size: 15px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .hero-search {
+    margin: 28px auto 0;
+    max-width: 420px;
+    position: relative;
+  }
+  .hero-search input {
+    width: 100%;
+    padding: 12px 20px 12px 44px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(179,157,219,.25);
+    border-radius: 50px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .hero-search input:focus { border-color: var(--accent); }
+  .hero-search input::placeholder { color: var(--muted); }
+  .hero-search svg {
+    position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+    opacity: .5; pointer-events: none;
+  }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px 20px 0;
+  }
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover, .tab-btn.active {
+    color: #fff;
+    border-color: currentColor;
+  }
+  .tab-btn[data-cat="master"].active      { color: #b39ddb; border-color: #b39ddb; background: rgba(179,157,219,.1); }
+  .tab-btn[data-cat="tresbien"].active    { color: #64b5f6; border-color: #64b5f6; background: rgba(100,181,246,.1); }
+  .tab-btn[data-cat="bien"].active        { color: #69f0ae; border-color: #69f0ae; background: rgba(105,240,174,.1); }
+  .tab-btn[data-cat="assez"].active       { color: #ffd54f; border-color: #ffd54f; background: rgba(255,213,79,.1); }
+  .tab-btn[data-cat="passable"].active    { color: #ef9a9a; border-color: #ef9a9a; background: rgba(239,154,154,.1); }
+
+  /* SECTION */
+  .section { padding: 40px 20px 20px; max-width: 1400px; margin: 0 auto; }
+  .section.hidden { display: none; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .section-stars { font-size: 22px; }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+  }
+  .section-count {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--muted);
+    background: rgba(255,255,255,.06);
+    padding: 4px 12px;
+    border-radius: 50px;
+  }
+  .master    .section-title { color: #b39ddb; }
+  .tresbien  .section-title { color: #64b5f6; }
+  .bien      .section-title { color: #69f0ae; }
+  .assez     .section-title { color: #ffd54f; }
+  .passable  .section-title { color: #ef9a9a; }
+
+  /* GRID */
+  .drama-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  /* CARD */
+  .drama-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.06);
+    transition: transform .25s, box-shadow .25s;
+    cursor: pointer;
+    position: relative;
+  }
+  .drama-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.5);
+    border-color: rgba(179,157,219,.2);
+  }
+  .drama-card.hidden { display: none; }
+
+  .poster-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2/3;
+    background: #1e1e2e;
+    overflow: hidden;
+  }
+  .poster-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .4s;
+  }
+  .drama-card:hover .poster-wrap img { transform: scale(1.04); }
+
+
+  .year-badge {
+    position: absolute;
+    top: 8px; left: 8px;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(6px);
+    color: rgba(255,255,255,.75);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 50px;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .eps-badge {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(6px);
+    color: rgba(255,255,255,.65);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 50px;
+    letter-spacing: .5px;
+    font-weight: 600;
+  }
+  .modal-eps {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .poster-placeholder {
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: rgba(255,255,255,.1);
+    background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+  }
+
+  .genre-badge {
+    position: absolute;
+    bottom: 8px; left: 8px;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(6px);
+    color: rgba(255,255,255,.75);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 50px;
+    letter-spacing: .5px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .card-body {
+    padding: 12px 14px 14px;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    color: #fff;
+  }
+  .card-synopsis {
+    font-size: 11.5px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-avis {
+    font-size: 12px;
+    color: #c8c0e0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.8);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #1a1a2a;
+    border-radius: 16px;
+    max-width: 680px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 40px 100px rgba(0,0,0,.6);
+    animation: modalIn .25s ease;
+  }
+  @keyframes modalIn { from { opacity:0; transform: scale(.96) translateY(10px); } }
+  .modal-inner {
+    display: flex;
+    gap: 0;
+  }
+  .modal-poster {
+    width: 220px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .modal-poster img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 16px 0 0 16px;
+  }
+  .modal-poster-ph {
+    width: 100%; height: 100%; min-height: 320px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+    border-radius: 16px 0 0 16px;
+  }
+  .modal-content {
+    padding: 28px 28px 28px 24px;
+    flex: 1;
+  }
+  .modal-cat-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .modal-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .modal-genre {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .modal-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .modal-synopsis {
+    font-style: italic;
+    font-size: 13.5px;
+    color: #b0a8c8;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .modal-avis {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .modal-platforms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 4px;
+  }
+  .platform-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    text-decoration: none;
+    cursor: default;
+    transition: opacity .2s, transform .15s;
+    white-space: nowrap;
+  }
+  .platform-badge:hover { opacity: .85; transform: translateY(-1px); }
+  .pb-netflix   { background: #e50914; color: #fff; }
+  .pb-disney    { background: #113ccf; color: #fff; }
+  .pb-viki      { background: #1da0f2; color: #fff; }
+  .pb-viu       { background: #ffcc00; color: #111; }
+  .pb-voirdrama { background: #9c27b0; color: #fff; }
+  .pb-frstream { background:  #e65100; color: #fff; }
+  .pb-tving     { background: #ff5c00; color: #fff; }
+  .pb-wavve     { background: #0095ff; color: #fff; }
+  .pb-kocowa    { background: #00b894; color: #fff; }
+  .pb-youtube   { background: #ff0000; color: #fff; }
+  .pb-other     { background: rgba(255,255,255,.12); color: var(--text); }
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: rgba(255,255,255,.1);
+    border: none;
+    color: #fff;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,.2); }
+  .modal-wrap { position: relative; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 24px 20px;
+    background: rgba(255,255,255,.03);
+    border-top: 1px solid rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    margin-bottom: 10px;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; }
+  .stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat.master .stat-num   { color: #b39ddb; }
+  .stat.tresbien .stat-num { color: #64b5f6; }
+  .stat.bien .stat-num     { color: #69f0ae; }
+  .stat.assez .stat-num    { color: #ffd54f; }
+  .stat.passable .stat-num { color: #ef9a9a; }
+
+  /* EMPTY STATE */
+  .no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 15px;
+    display: none;
+    grid-column: 1 / -1;
+  }
+  .no-results.show { display: block; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(179,157,219,.3); border-radius: 3px; }
+
+  /* PLATFORM DISCLAIMER */
+  .platform-disclaimer {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-style: italic;
+    opacity: .8;
+  }
+
+  /* VOTE SYSTEM */
+  .vote-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+  .vote-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .vote-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .vote-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .vote-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .vote-up   { background: rgba(105,240,174,.15); color: #69f0ae; border: 1px solid rgba(105,240,174,.3); }
+  .vote-down { background: rgba(239,154,154,.15); color: #ef9a9a; border: 1px solid rgba(239,154,154,.3); }
+  .vote-up:hover:not(:disabled)   { background: rgba(105,240,174,.28); }
+  .vote-down:hover:not(:disabled) { background: rgba(239,154,154,.28); }
+  .vote-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .vote-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .4s, background .4s;
+  }
+  .vote-status {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .vote-promoted {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    background: rgba(105,240,174,.15);
+    color: #69f0ae;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .vote-demoted {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    background: rgba(239,154,154,.15);
+    color: #ef9a9a;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .vote-perfect {
+    background: rgba(179,157,219,.15);
+    color: #b39ddb;
+    border: 1px solid rgba(179,157,219,.3);
+  }
+  .vote-perfect:hover:not(:disabled) { background: rgba(179,157,219,.28); }
+  .vote-perfect.active {
+    background: rgba(179,157,219,.35);
+    color: #fff;
+    border-color: #b39ddb;
+    box-shadow: 0 0 10px rgba(179,157,219,.3);
+  }
+  .vote-up.active {
+    background: rgba(105,240,174,.35);
+    color: #fff;
+    border-color: #69f0ae;
+    box-shadow: 0 0 10px rgba(105,240,174,.3);
+  }
+  .vote-down.active {
+    background: rgba(239,154,154,.35);
+    color: #fff;
+    border-color: #ef9a9a;
+    box-shadow: 0 0 10px rgba(239,154,154,.3);
+  }
+  .vote-change {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .vote-change:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* COMMENTS */
+  .comments-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+  .comments-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .comment-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .comment-item {
+    background: rgba(255,255,255,.04);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .comment-meta {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .comment-input-wrap { display: flex; gap: 8px; }
+  .comment-input {
+    flex: 1;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 9px 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .comment-input:focus { border-color: var(--accent); }
+  .comment-input::placeholder { color: var(--muted); }
+  .comment-send {
+    padding: 9px 16px;
+    background: rgba(179,157,219,.2);
+    border: 1px solid rgba(179,157,219,.35);
+    border-radius: 8px;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .2s;
+  }
+  .comment-send:hover { background: rgba(179,157,219,.35); }
+  .no-comments { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-title">K-Drama<br>Classement</div>
+  <div class="hero-sub">200+ séries • classées & commentées</div>
+  <div class="hero-search">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.5)" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="search" placeholder="Rechercher un drama..." autocomplete="off">
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat master"><div class="stat-num" id="cnt-master">27</div><div class="stat-lbl">⭐⭐⭐⭐⭐ Master</div></div>
+  <div class="stat tresbien"><div class="stat-num" id="cnt-tresbien">73</div><div class="stat-lbl">⭐⭐⭐⭐ Très bien</div></div>
+  <div class="stat bien"><div class="stat-num" id="cnt-bien">68</div><div class="stat-lbl">⭐⭐⭐ Bien</div></div>
+  <div class="stat assez"><div class="stat-num" id="cnt-assez">12</div><div class="stat-lbl">⭐⭐ Assez bien</div></div>
+  <div class="stat passable"><div class="stat-num" id="cnt-passable">2</div><div class="stat-lbl">⭐ Passable</div></div>
+</div>
+
+<div class="nav-tabs">
+  <button class="tab-btn active" data-cat="all">Tous</button>
+  <button class="tab-btn" data-cat="master">⭐⭐⭐⭐⭐ Master</button>
+  <button class="tab-btn" data-cat="tresbien">⭐⭐⭐⭐ Très bien</button>
+  <button class="tab-btn" data-cat="bien">⭐⭐⭐ Bien</button>
+  <button class="tab-btn" data-cat="assez">⭐⭐ Assez bien</button>
+  <button class="tab-btn" data-cat="passable">⭐ Passable</button>
+</div>
+
+<div id="sections-container"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-wrap">
+    <div class="modal" id="modal">
+      <div class="modal-inner" id="modal-inner"></div>
+    </div>
+    <button class="modal-close" onclick="closeModalBtn()">✕</button>
+  </div>
+</div>
+
+<script>
+const DRAMAS = {
+  "master": {
+    label: "⭐⭐⭐⭐⭐ MASTER",
+    cls: "master",
+    items: [
+      ["Crash Landing on You","Une héritière sud-coréenne atterrit accidentellement en Corée du Nord après un accident de parapente et tombe amoureuse d'un officier de l'armée nord-coréenne.","Chef-d'œuvre romantique absolu. Hyun Bin et Son Ye-jin créent une alchimie qui transcende les frontières — au sens propre comme au figuré.","Romance / Thriller","16 ép.",2019],
+      ["Goblin","Un guerrier immortel de l'ère Goryeo cherche sa fiancée réincarnée pour mettre fin à sa malédiction éternelle.","Magnifique visuellement, écriture poétique, cast inoubliable. Gong Yoo est la définition du male lead parfait.","Fantasy / Romance","16 ép.",2016],
+      ["Reply 1988","La vie quotidienne de cinq familles vivant dans le même quartier de Séoul à la fin des années 80.","Drame familial nostalgique d'une profondeur rare. L'amitié, le temps qui passe — impossible de ne pas pleurer.","Famille / Tranche de vie","20 ép.",2015],
+      ["The Glory","Une femme victime de harcèlement scolaire élabore pendant des années une vengeance minutieuse contre ses bourreaux.","Song Hye-kyo bouleversante dans ce thriller implacable. La vengeance n'a jamais été aussi bien écrite.","Thriller / Revenge","S1: 8 ép. / S2: 8 ép.",2022],
+      ["Hospital Playlist (1,2)","Cinq médecins amis depuis leurs années de fac exercent ensemble tout en formant un groupe de musique.","Feel-good d'exception. On ne veut jamais quitter ces personnages — drôle, émouvant, humain à chaque épisode.","Médical / Comédie","S1: 12 ép. / S2: 12 ép.",2020],
+      ["Moving","Des parents aux capacités surhumaines tentent de protéger leurs enfants tout en cachant leur passé d'agents secrets.","Blockbuster pour le petit écran. Action épique et écriture émotionnelle — une révolution dans le drama coréen.","Action / Super-héros","20 ép.",2023],
+      ["Vincenzo","Un avocat mafieux italo-coréen retourne en Corée et fait équipe avec une avocate excentrique contre une grande entreprise.","Jouissif, stylé, irrésistible. Song Joong-ki au sommet de sa forme dans un drama qui réinvente tout.","Thriller / Comédie","20 ép.",2021],
+      ["Squid Game (1)","Des gens criblés de dettes participent à des jeux d'enfants mortels pour gagner une fortune.","Phénomène mondial amplement mérité. Critique sociale acérée dans un emballage visuel impeccable.","Thriller / Survival","9 ép.",2021],
+      ["Itaewon Class","Un jeune homme sort de prison et ouvre un petit bar pour se venger du groupe qui a ruiné sa vie.","Revenge drama addictif au héros ultra charismatique. Park Seo-joon incarne la détermination pure.","Revenge / Romance","16 ép.",2020],
+      ["Arthdal Chronicles","Une épopée fantastique qui retrace la naissance d'une civilisation ancienne et ses conflits de pouvoir.","Ambitieux comme peu osent l'être. Un Game of Thrones à la coréenne, worldbuilding impressionnant.","Fantasy / Épopée","S1: 18 ép. / S2: 12 ép.",2019],
+      ["Dr. Romantic (1,2,3)","Un chirurgien de génie excentrique dirige un hôpital de province et forme une nouvelle génération.","Han Suk-kyu magistral dans cette série médicale captivante. Chaque saison tient ses promesses.","Médical / Drama","S1: 16 ép. / S2: 16 ép. / S3: 16 ép.",2016],
+      ["Alchemy of Souls (1,2)","Dans un monde fantastique, une puissante sorcière piégée dans un corps affaibli sert un noble pour regagner son statut.","Fantasy romantique magistrale. La saison 1 est un bijou absolu — duo magnétique, worldbuilding riche.","Fantasy / Romance","S1: 20 ép. / S2: 10 ép.",2022],
+      ["Queen of Tears","Un couple d'héritiers en instance de divorce tente de réconcilier leur mariage face à de sombres secrets familiaux.","Romance grand spectacle. Kim Soo-hyun et Kim Ji-won — émotions intenses, rebondissements constants.","Romance / Drame","16 ép.",2024],
+      ["It's Okay Not to Be Okay","Un travailleur social croise une autrice de livres pour enfants traumatisée par son passé.Un chemin vers la guérison émotionnelle s'ouvre pour un auteur de livres pour enfants antisocial et un employé d'un hôpital psychiatrique","Poétique et courageux sur la santé mentale. Kim Soo-hyun et Seo Ye-ji irrésistibles dans ce conte adulte.","Romance / Psychologique","16 ép.",2020],
+      ["Twenty-Five Twenty-One","À la fin des années 90, une escrimeuse déterminée et un jeune homme ruiné se retrouvent liés.","Kim Tae-ri éblouissante. Nostalgie, jeunesse et amour impossible — rires et larmes en alternance.","Romance / Jeunesse","16 ép.",2022],
+      ["Twinkling Watermelon","Un lycéen voyage dans le passé et rencontre ses parents à leur âge, découvrant des secrets familiaux.","Voyage temporel touchant, musicalité omniprésente. Une surprise émotionnelle qui laisse une empreinte.","Romance / Fantastique","16 ép.",2023],
+      ["My Dearest","Lors de l'invasion mandchoue de Joseon, une femme libre croise un homme qui change sa vie à jamais.","Romance historique épique et poignante. Ahn Eun-jin révélée dans un drama d'époque somptueux.","Historique / Romance","21 ép.",2023],
+      ["When Life Gives You Tangerine","Saga familiale retraçant la vie d'une femme de l'île de Jeju à travers plusieurs décennies.","Fresque émouvante et puissante. Han Ji-min magistrale dans ce drama-fleuve qui touche tous les cœurs.","Famille / Mélodrame","16 ép.",2025],
+      ["Mr. Queen","L'âme d'un chef cuisinier contemporain se réveille dans le corps de la reine consort sous Joseon.","Shin Hye-sun phénoménale dans ce rôle comique. L'un des dramas historiques les plus drôles du genre.","Comédie / Historique","20 ép.",2020],
+      ["King the Land","Un héritier d'empire hôtelier exigeant et une employée au sourire imparable s'affrontent puis se rapprochent.","Yoona et Junho avec une alchimie indéniable. Léger, pétillant — idéal pour se détendre.","Romance / Comédie","16 ép.",2023],
+      ["Castaway Diva","Une chanteuse qui a passé 15 ans sur une île déserte revient et tente de réaliser son rêve.","Park Eun-bin lumineuse dans ce feel-good sur la résilience. Touchant, drôle et musicalement riche.","Comédie / Musique","12 ép.",2023],
+      ["Familiar Wife","Un homme marié épuisé change le passé grâce à un voyage temporel, avec des conséquences imprévues.","Ji Sung excellent dans ce drama sur le regret et les choix de vie. Émouvant jusqu'au bout.","Romance / Fantastique","16 ép.",2018],
+      ["Dali and the Cocky Prince","La directrice d'un musée en faillite fait face à un héritier arrogant qui convoite ses propriétés.","Kim Min-jae et Park Gyu-young attachants. Comédie romantique plaisante et prévisible mais efficace.","Romance / Comédie","16 ép.",2021],
+      ["Can This Love Be Translated","Un auteur de manhwa tombe amoureux de sa traductrice anonyme.","Concept charmant pour les amateurs de livres. Reste trop sage — manque de tension romantique.","Romance / Comédie","12 ép.",2026],
+      ["My Sweet Mobster","Une directrice de contenu pour idols tombe amoureuse d'un ancien gangster reconverti.","Romance improbable correcte. Chimie entre Im Soo-hyang et Oh Se-hun mais dans les sentiers battus.","Romance / Action","16 ép.",2024],
+      ["While You Were Sleeping","Une jeune femme et un procureur partagent des rêves prémonitoires pour éviter des morts imminentes.","Lee Jong-suk dans un drama fantastique romantique bien construit. La romance est belle.","Romance / Fantastique","32 ép.",2017],
+      ["Mouse","Un détective traque un tueur en série psychopathe né avec un gène du mal, thriller intense et complexe.","Thriller ambitieux, Lee Seung-gi en mode dark. Trop de twists vers la fin mais addictif.","Thriller / Crime","20 ép.",2021]
+    ]
+  },
+  "tresbien": {
+    label: "⭐⭐⭐⭐ TRÈS BIEN",
+    cls: "tresbien",
+    items: [
+      ["Taxi Driver (1,2,3)","Un chauffeur de taxi travaille secrètement pour une agence qui offre des vengeances aux victimes abandonnées.","Cocktail irrésistible d'action, humour et justice populaire. Lee Je-hoon parfait en justicier.","Action / Revenge","S1: 16 ép. / S2: 16 ép. / S3: 16 ép.",2021],
+      ["One Dollar Lawyer","Un avocat qui ne facture qu'un dollar défend les victimes laissées pour compte.","Namgoong Min convaincant dans ce rôle excentrique. Feel-good juridique avec un beau message.","Juridique / Comédie","12 ép.",2022],
+      ["The Midnight Studio","Un photographe qui capture les esprits des morts rencontre une femme vivante qui ne se souvient pas de son passé.","Atmosphère soignée, romantisme fantastique. Manque un peu de rythme vers le milieu.","Fantasy / Romance","12 ép.",2024],
+      ["Our Unwritten Seoul","Deux personnes blessées se retrouvent liées par une ville et des hasards répétés.","Romance contemplative qui célèbre Séoul. Belles images, récit parfois sans direction claire.","Romance / Slice of life","12 ép.",2024],
+      ["Doctor John","Un médecin emprisonné pour euthanasie est libéré pour travailler dans un centre de gestion de la douleur.","Ji Sung exceptionnel dans ce rôle complexe. Réflexions profondes sur la douleur et l'éthique médicale.","Médical / Drama","32 ép.",2019],
+      ["Would You Marry Me","Le fiancé de Meri la trompe et elle perd son logement suite à une arnaque. Sans le sou ni toit, elle rencontre un inconnu qui porte le même nom que son ex. Quand elle remporte un concours offrant une maison de luxe aux jeunes mariés, elle demande à Kim Woo-joo de jouer son mari pour décrocher le prix.","Choi Woo-sik et Jung So-min — alchimie évidente et comédie légère. Un des rom-coms les plus charmants de 2025.","Romance / Comédie","12 ép.",2025],
+      ["The Winning Try","Un rugbyman en déclin retrouve sa passion grâce à une équipe amateur et une rencontre inattendue.","Drama sportif sincère et motivant. Belles performances et énergie communicative.","Sport / Drama","16 ép.",2024],
+      ["The Great Show","Un député populiste superficiel devient malgré lui le tuteur d'enfants qui changent sa vision du monde.","Song Seung-heon attachant dans ce drama politique feel-good. Léger mais efficace.","Comédie / Politique","32 ép.",2019],
+      ["Welcome to Waikiki (1,2)","Des roommates tenant un guesthouse font face à des situations comiques et des dramas amoureux.","Sitcom légère avec des gags efficaces. La saison 1 est plus fraîche — idéal pour décompresser.","Comédie / Romance","S1: 20 ép. / S2: 16 ép.",2018],
+      ["Extraordinary Attorney Woo","Une jeune avocate atteinte d'autisme au QI exceptionnel intègre un grand cabinet juridique et défend des affaires hors du commun tout en naviguant dans un monde qui ne la comprend pas toujours.","Park Eun-bin époustouflante dans ce rôle inoubliable. Mélange parfait d'humour, d'émotion et de réflexion sur la différence. Un drama qui marque vraiment.","Juridique / Drama","16 ép.",2022],
+      ["Celebrity","Une femme ordinaire devient influenceuse et découvre les sombres coulisses du monde des célébrités.","Park Gyu-young convaincante dans cette satire des réseaux sociaux. S'essoufle en fin de saison.","Thriller / Contemporain","12 ép.",2023],
+      ["In Your Radiant Season","Un jeune homme ordinaire et une étudiante brillante cachant une maladie s'aiment malgré tout.","Mélodrame romantique sincère mais conventionnel. Pour les amateurs de love stories touchantes.","Romance / Mélodrame","12 ép.",2026],
+      ["Dynamite Kiss","Un romancier cynique et une éditrice enthousiaste travaillent ensemble et se remettent en question.","Romance éditoriale légère avec de jolies références littéraires. Trop court pour vraiment développer.","Romance / Comédie","8 ép.",2025],
+      ["My Man Is Cupid","Un dieu de l'amour vieux de 200 ans cherche la femme à qui il doit récupérer une flèche.","Concept ambitieux mais exécution inégale. Romance lente à décoller, arcs inachevés.","Fantasy / Romance","16 ép.",2023],
+      ["My Roommate Is a Gumiho","Un esprit renard millénaire absorbe sa sphère de pouvoir dans une étudiante et doit vivre avec elle.","Comédie romantique fantastique légère. Jang Ki-yong charmant mais superficiel.","Fantasy / Comédie","16 ép.",2021],
+      ["Perfect Marriage Revenge","Une femme trahie par son mari voyage dans le passé pour se venger en épousant son ennemi.","Quelques moments satisfaisants mais écriture paresseuse. Le potentiel revenge est sous-exploité.","Revenge / Romance","16 ép.",2023],
+      ["Vagabond","Un cascadeur dont le neveu est mort dans un crash suspect s'allie à un agent gouvernemental.","Lee Seung-gi convaincant, action bien filmée. Scénario qui part dans tous les sens en fin de saison.","Action / Thriller","16 ép.",2019],
+      ["My Love from the Star","Un extraterrestre bloqué sur Terre depuis 400 ans tombe amoureux d'une star de cinéma capricieuse.","Jun Ji-hyun absolument parfaite. Mélange unique de fantaisie, romance et humour décapant.","Fantasy / Comédie","21 ép.",2013],
+      ["Signal","Un enquêteur du présent communique par walkie-talkie avec un détective du passé.","Scénario extrêmement intelligent — l'une des meilleures séries policières coréennes.","Crime / Thriller","16 ép.",2016],
+      ["Flower of Evil","Un homme au passé trouble voit son mariage mis à l'épreuve quand sa femme commence à enquêter sur lui.","Lee Joon-gi exceptionnel. Thriller romantique à la tension permanente qui prend aux tripes.","Thriller / Romance","16 ép.",2020],
+      ["The Manipulated","Un enquêteur découvre qu'il est manipulé par des forces inconnues dans un jeu psychologique dangereux.","Quelques bonnes idées mais résolution finale décevante. Thriller ambitieux qui manque sa cible.","Thriller / Psychologique","12 ép.",2022],
+      ["Link: Eat, Love, Kill","Un homme ressent physiquement les émotions d'une femme inconnue — notamment sa faim et ses peurs.","Yeo Jin-goo et Moon Ga-young ont de la chimie. Concept original mais exécution inégale.","Fantastique / Crime","16 ép.",2022],
+      ["Mental Coach Jegal","Un ancien champion de tir arc devient coach mental pour athlètes en difficulté.","Sujet rare — la psychologie du sport. Intéressant mais la romance trop secondaire.","Sport / Drama","16 ép.",2022],
+      ["I Hear Your Voice","Un lycéen lisant dans les pensées aide une avocate contre un meurtrier qui les traque.","Lee Jong-suk et Lee Bo-young bien. Hésite entre thriller et comédie romantique.","Fantastique / Juridique","18 ép.",2013],
+      ["When the Weather Is Fine","Une femme retourne dans sa ville natale enneigée et se reconnecte avec un libraire solitaire.","Beau visuellement. Rythme extrêmement lent qui teste la patience.","Romance / Slice of life","16 ép.",2020],
+      ["Our Movie","Des étudiants en cinéma réalisent un film ensemble et tombent amoureux.","Sincère mais manque de la finesse nécessaire pour émouvoir vraiment.","Romance / Jeunesse","8 ép.",2023],
+      ["All of Us Are Dead","Un lycée devient le point de départ d'une épidémie de zombies.","Meilleur zombie drama coréen. Tension maximale, personnages attachants.","Horreur / Survie","12 ép.",2022],
+      ["Bo Ra! Deborah","Une auteure de livres de rupture dont la propre histoire d'amour est exposée tente de se reconstruire.","Yoo In-na correcte dans cette comédie romantique légère. Sans prétention mais agréable.","Romance / Comédie","12 ép.",2022],
+      ["Love All Play","Une joueuse de badminton et un entraîneur strict partagent frustrations sportives et romantiques.","Sport rare à l'écran. Chimie entre les acteurs mais rythme souvent mou.","Sport / Romance","16 ép.",2022],
+      ["The Red Sleeve","Une couturière de la cour de Joseon résiste à l'amour d'un prince héritier pour préserver sa liberté.","Romance historique d'une rare beauté. Écriture subtile, costumes somptueux.","Historique / Romance","17 ép.",2021],
+      ["Welcome to Samdal-ri","Une photographe revient dans son village natal après un scandale et retrouve son premier amour.","Ji Chang-wook et Shin Hye-sun. Atmosphère de Jeju magnifique — lent mais doux.","Romance / Slice of life","16 ép.",2023],
+      ["Hometown Cha-Cha-Cha","Une dentiste citadine s'installe dans un village côtier et tombe amoureuse du villageois polyvalent.","Cozy drama parfait. Kim Seon-ho — feel-good assumé.","Romance / Comédie","16 ép.",2021],
+      ["Healer","Un coursier aux capacités hors-normes et une journaliste débutante enquêtent sur des secrets.","Ji Chang-wook charismatique. Thriller romantique efficace qui vieillit bien.","Action / Romance","20 ép.",2014],
+      ["Weightlifting Fairy Kim Bok Joo","Une haltérophile prometteuse jongle entre sa passion et un nageur national.","L'une des comédies romantiques les plus fraîches et authentiques.","Romance / Sport","16 ép.",2016],
+      ["Strong Woman Do Bong Soon","Une femme dotée d'une force surhumaine est embauchée comme garde du corps d'un PDG excentrique.","Park Bo-young irrésistible dans cette comédie loufoque. Duo avec Park Hyung-sik parfait.","Comédie / Romance","16 ép.",2017],
+      ["Hotel Del Luna","Une femme dirige un hôtel pour les esprits des défunts, condamnée à y rester jusqu'à expiation.","IU époustouflante dans ce conte fantastique élégant. Visuellement splendide et mélancolique.","Fantasy / Romance","16 ép.",2019],
+      ["Pinocchio","Un jeune homme élevé sous une fausse identité devient journaliste pour rétablir la vérité.","Drama journalistique touchant. Lee Jong-suk et Park Shin-hye parfaits.","Contemporain / Romance","20 ép.",2014],
+      ["Big Mouth","Un avocat de troisième zone se retrouve emprisonné accusé d'être un génial criminel.","Lee Jong-suk dans un rôle atypique. Thriller en prison correct, certains arcs traînent.","Thriller / Crime","16 ép.",2022],
+      ["Love Scout","Une recruteuse spécialisée aide les gens à trouver l'amour selon des critères précis.","Concept mal exploité. Romance tardive, personnages secondaires irritants.","Romance / Comédie","12 ép.",2024],
+      ["See You in My 19th Life","Une femme avec des souvenirs de toutes ses vies passées retrouve l'homme aimé.","Shin Hye-sun parfaite. Bien commencé mais rythme ralentissant.","Fantasy / Romance","12 ép.",2023],
+      ["W: Two Worlds Apart","Une chirurgienne est aspirée dans un webtoon et y rencontre le héros principal.","Concept original brillamment exécuté. Thriller aux règles renversantes.","Fantasy / Thriller","16 ép.",2016],
+      ["Mad for Each Other","Deux voisins névrosés se disputent constamment avant de réaliser qu'ils se ressemblent.","Moments drôles mais humour répétitif. Idée de base sympa.","Comédie / Romance","13 ép.",2021],
+      ["Gyeongseong Creature (1,2)","Dans le Séoul de 1940 sous occupation japonaise, deux individus enquêtent sur des disparitions monstrueuses.","Ambitieux, décors impeccables. La saison 1 est la meilleure.","Horreur / Historique","S1: 10 ép. / S2: 7 ép.",2023],
+      ["A Killer Paradox","Un étudiant tue accidentellement un criminel et découvre un instinct involontaire pour les malfaiteurs.","Cho Chang-seung impressionnant. Thriller psychologique perturbant et addictif.","Thriller / Crime","8 ép.",2024],
+      ["Reborn Rich","Un secrétaire tué par son patron se réincarne dans le corps d'un petit-fils du même chaebol.","Song Joong-ki magistral. Intrigue économique, politique et vengeance.","Revenge / Drama","16 ép.",2022],
+      ["Hellbound (1,2)","Des créatures surnaturelles annoncent la mort de personnes et les entraînent en enfer.","Satire sociale brillante. Yeon Sang-ho confirme son génie.","Horreur / Social","S1: 6 ép. / S2: 6 ép.",2021],
+      ["When the Phone Rings","Un mariage arrangé entre un porte-parole présidentiel et une interprète prend une tournure lors d'un enlèvement.","Thriller romantique haletant. Tension romantique crescendo.","Thriller / Romance","12 ép.",2024],
+      ["The Innocent Man","Un médecin sacrifie tout pour une femme qui le trahit, puis croise la fille adoptive de celle-ci.","Song Joong-ki dramatique au meilleur de sa forme. Melo intense.","Mélodrame / Romance","20 ép.",2012],
+      ["Bulgasal: Immortal Souls","Un être immortel de 600 ans traque celle qui lui a volé son âme lors d'une vie passée.","Fantasy sombre et atmosphérique. Narration multi-temporelle fascinante.","Fantasy / Horreur","16 ép.",2021],
+      ["Chicago Typewriter","Un écrivain et une fan découvrent leurs liens avec des résistants coréens des années 1930.","Romance, patriotisme et mystère. Yoo Ah-in brillant.","Historique / Fantasy","16 ép.",2017],
+      ["Happiness","Dans un immeuble en quarantaine, les résidents survivent à un virus transformant les gens.","Han Hyo-joo excellente. Horreur sociale efficace.","Horreur / Thriller","12 ép.",2021],
+      ["Start-Up","Des jeunes entrepreneurs se battent pour lancer leur startup dans la Silicon Valley coréenne.","Univers tech immersif. Triangle amoureux divisif mais plaisant.","Romance / Contemporain","16 ép.",2020],
+      ["Uncanny Counter","Des humains aux pouvoirs surnaturels chassent les démons s'échappant du purgatoire.","Jo Byeong-kyu crève l'écran. Action et humour en dosage parfait.","Action / Fantasy","16 ép.",2020],
+      ["Bloodhounds 1,2","Deux anciens boxeurs combattent un réseau de prêteurs usuraires.","Woo Do-hwan excellent. Action chorégraphiée à la perfection.","Action / Thriller","S1: 8 ép. / S2: 8 ép.",2023],
+      ["Thirty but Seventeen (Still 17)","Une femme physiquement de 30 ans mais mentalement de 17 reprend sa vie après un accident.","Yang Se-jong et Shin Hye-sun adorables. Comédie romantique douce.","Romance / Comédie","32 ép.",2018],
+      ["What's Wrong with Secretary Kim","Un vice-président narcissique panique quand sa secrétaire annonce sa démission.","Park Seo-joon et Park Min-young alchimie parfaite. Comédie de bureau délicieuse.","Romance / Comédie","16 ép.",2018],
+      ["The Crowned Clown","Un bouffon doit se substituer au roi pour le protéger.","Yeo Jin-goo brillant en double rôle. Historique touchant.","Historique / Drama","16 ép.",2019],
+      ["Search WWW","Trois femmes travaillant dans des moteurs de recherche rivaux naviguent leur vie pro et amoureuse.","Drama féministe moderne, trio de femmes fortes.","Contemporain / Romance","16 ép.",2019],
+      ["Do You Like Brahms","Une étudiante en violon tardive tombe amoureuse d'un pianiste prodige tiraillé entre son passé et ses sentiments.","Park Eun-bin et Kim Min-jae d'une douceur rare. Slowburn musical contemplatif et sincère.","Romance / Musique","16 ép.",2020],
+      ["May I Help You","Une directrice funéraire qui entend les dernières volontés des défunts s'associe à un exécuteur testamentaire bourru.","Hyeri touchante dans ce drama feel-good sur le deuil et la guérison. Mélange d'humour et d'émotion.","Fantasy / Romance","16 ép.",2022],
+      ["Our Beloved Summer","Un couple qui s'était promis de ne jamais se revoir est réuni lors d'un documentaire.","Choi Woo-shik et Kim Da-mi. Romance nostalgique.","Romance / Slice of life","16 ép.",2021],
+      ["Record of Youth","Un jeune mannequin avec de grandes ambitions d'acteur navigue entre famille, rêves et amour.","Park Bo-gum touchant. Réaliste et émouvant.","Contemporain / Romance","16 ép.",2020],
+      ["Fight for My Way","Deux amis d'enfance qui ont grandi en faisant des compromis reprennent espoir ensemble.","Park Seo-joon et Kim Ji-won complicité palpable. Feel-good authentique.","Romance / Sport","16 ép.",2017],
+      ["The Eternal Monarch (King)","Un roi d'une monarchie parallèle passe à travers un portail vers la République de Corée.","Lee Min-ho dans un drama ambitieux. Romance entre deux mondes captivante.","Fantasy / Romance","16 ép.",2020],
+      ["Typhoon Family","Une famille dysfonctionnelle se réunit et fait face à des révélations bouleversantes.","Drame familial intense. Révélations bien dosées.","Thriller / Famille","12 ép.",2024],
+      ["Because This Is My First Life","Une scénariste sans logement et un développeur web s'arrangent pour cohabiter.","Lee Min-ki et Jung So-min attachants. Romance réaliste.","Romance / Slice of life","16 ép.",2017],
+      ["The Light in Your Eyes","Une jeune femme qui contrôle le temps vieillit rapidement.","Han Ji-min sublime. Drama émouvant sur le temps.","Fantasy / Mélodrame","12 ép.",2019],
+      ["Go Back Couple","Un couple marié mécontent revit leurs années d'université et se redécouvre.","Concept sympathique, original et drôle. Romance nostalgique.","Romance / Comédie","12 ép.",2017],
+      ["Sweet Home (1)","Dans un immeuble en confinement, des résidents survivent à une apocalypse de monstres.","Song Kang dans un rôle complexe. Effets spéciaux impressionnants.","Horreur / Action","10 ép.",2020],
+      ["Penthouse (1,2)","Des familles riches se livrent une guerre sans merci pour contrôler un immeuble de luxe.","Makjang assumé à 1000%. Camp, outrancier, totalement addictif.","Mélodrame / Makjang","S1: 21 ép. / S2: 13 ép.",2020],
+      ["Crazy Love","Un PDG amnésique s'allie à son assistante qui prétend être sa fiancée.","Kim Jae-wook et Krystal drôles ensemble. Distraction agréable.","Romance / Comédie","16 ép.",2022],
+      ["Run On","Un ex-sprinter et une traductrice aux visions opposées tombent lentement amoureux.","Romance indie contemplative pour amateurs de slowburn.","Romance / Slice of life","16 ép.",2020],
+      ["When the Camellia Blooms","Une mère célibataire tient un bar dans une petite ville face aux préjugés et un tueur.","Gong Hyo-jin touchante dans ce mélange de comédie et thriller.","Romance / Thriller","40 ép.",2019],
+      ["Ghost Doctor","L'âme d'un chirurgien arrogant se retrouve piégée dans le corps d'un jeune interne maladroit.","Rain et Kim Bum bonne dynamique. Comédie médicale fun.","Médical / Comédie","16 ép.",2022],
+      ["Tomorrow with You","Un homme qui peut voyager dans le futur épouse une femme dans l'espoir de changer son destin tragique.","Shin Min-a et Lee Je-hoon attachants. Romance temporelle douce mais rythme lent.","Romance / Fantastique","16 ép.",2017],
+      ["Death Game","Un homme doit survivre à une série de jeux mortels organisés par un groupe mystérieux.","Quelques moments de tension. Manque le budget pour se démarquer.","Thriller / Survie","10 ép.",2023],
+      ["Our Universe","Une astrophysicienne et un astronaute développent une relation épistolaire.","Concept émouvant sur papier mais manque de substance.","Romance / Drama","8 ép.",2023],
+      ["Hi Bye Mama","Une mère fantôme réapparaît pendant 49 jours pour retrouver sa famille.","Kim Tae-hee touchante. Émotionnellement manipulateur.","Fantasy / Famille","16 ép.",2020],
+      ["Tell Me That You Love Me","Un homme sourd et une femme qui refoule ses émotions apprennent à se faire confiance et à s'aimer.","Jung Woo-sung et Shin Hyun-been bouleversants. Mélodrame lent mais d'une profondeur émotionnelle rare.","Romance / Mélodrame","16 ép.",2022],
+      ["Angel's Last Mission: Love","Un ange espiègle chargé de trouver l'amour pour une ballerine froide et aveugle finit par tomber amoureux d'elle.","Shin Hye-sun éblouissante, L de Infinite touchant. Fantasy romantique avec de belles références au ballet. Émouvant.","Fantasy / Romance","32 ép.",2019],
+      ["Shopping King Louis","Un chaebol amnésique est recueilli par une fille de campagne simple.","Seo In-guk adorable dans cette comédie légère.","Romance / Comédie","16 ép.",2016]
+    ]
+  },
+  "bien": {
+    label: "⭐⭐⭐ BIEN",
+    cls: "bien",
+    items: [
+      ["Business Proposal","Une femme va à un rencard arrangé à la place de son amie et se retrouve face à son PDG.","Ahn Hyo-seop et Kim Se-jeun pétillants. Guilty pleasure assumé et efficace.","Romance / Comédie","12 ép.",2022],
+      ["The Law Cafe","Une avocate directe ouvre un café juridique dans l'immeuble d'un ancien procureur.","Lee Seung-gi et Lee Se-young agréables. Léger mais manque d'urgence.","Juridique / Romance","16 ép.",2022],
+      ["Again My Life","Un procureur tué par un politicien corrompu revit sa vie depuis ses années d'études.","Lee Joon-gi bien mais vilains caricaturaux. Concept solide, exécution inégale.","Revenge / Action","16 ép.",2022],
+      ["Resident Playbook","La vie agitée d'un groupe d'internes dans un hôpital universitaire.","Dans la veine de Hospital Playlist mais moins abouti.","Médical / Romance","16 ép.",2024],
+      ["Nine Puzzles","Une profileuse criminelle et le détective qui l'a jadis suspectée d'un meurtre s'associent pour résoudre une série de meurtres liés à des pièces de puzzle.","Kim Da-mi excentrique et Son Suk-ku sobre — duo inattendu qui fonctionne. Thriller solide et bien construit.","Thriller / Crime","11 ép.",2025],
+      ["Why Her","Maître Oh Soo-jae est contrainte d'enseigner dans une faculté de droit après avoir mal géré une affaire importante. Gong Chan, un étudiant amoureux d'elle, tente de l'aider à retrouver sa place au cabinet.","Hwang In-yeop charismatique et So Kyung-won magnétique. Thriller juridique avec une romance intense — tension bien dosée.","Juridique / Thriller","16 ép.",2022],
+      ["Love in the Moonlight","Un prince héritier espiègle découvre que son serviteur déguisé en garçon est en réalité une femme.","Park Bo-gum irrésistible dans ce sageuk léger et romanesque. Comédie historique plaisante.","Historique / Romance","18 ép.",2016],
+      ["I'm Not a Robot","Un homme allergique aux humains commande un robot féminin — mais c'est une vraie femme qui joue le rôle.","Concept original et attachant. Yoo Seung-ho et Chae Soo-bin ont une chimie inattendue.","Romance / Comédie","32 ép.",2017],
+      ["Kill It","Un tueur à gages cherche sa sœur vivante tout en évitant une inspectrice.","Chang Ki-yong charismatique, action bien filmée. Scénario qui s'emmêle.","Action / Thriller","12 ép.",2019],
+      ["Tomorrow","Un jeune homme en quête d'emploi se retrouve accidentellement recruté par une équipe de gestionnaires des âmes chargée de prévenir les suicides.","Rowoon sobre et touchant dans ce rôle inattendu. Drama courageux sur la santé mentale, l'espoir et le deuil.","Fantasy / Drama","16 ép.",2022],
+      ["If You Wish Upon Me","Un jeune ex-détenu condamné aux travaux d'intérêt général intègre une équipe de bénévoles qui exauce les derniers vœux des patients en soins palliatifs.","Ji Chang-wook sobre et habité dans ce rôle atypique. Drama de guérison sincère et bouleversant sur la vie et la mort.","Drama / Humain","16 ép.",2022],
+      ["Unlock My Boss","L'âme d'un PDG milliardaire se retrouve piégée dans le smartphone d'un employé.","Concept original. Divertissant en surface mais peu de profondeur.","Comédie / Fantasy","12 ép.",2022],
+      ["D-Day","Un chirurgien urgentiste tente de sauver des vies lors d'un séisme dévastateur à Séoul.","Ha Seok-jin convaincant dans ce disaster drama tendu. Bonne gestion du chaos et de l'urgence.","Action / Médical","16 ép.",2015],
+      ["Live Up to Your Name","Un acupuncteur de l'ère Joseon voyage dans le Séoul contemporain et fait équipe avec une chirurgienne moderne.","Kim Nam-gil et Kim Ah-joong ont une alchimie parfaite. Comédie médicale historique fraîche et originale.","Médical / Fantastique","16 ép.",2017],
+      ["The Witch's Diner","Un restaurant où une sorcière accorde les désirs des clients en échange d'un sacrifice.","Anthologie courte et originale. Fable morale par épisode.","Fantasy / Horreur"],
+      ["Little Women","Trois sœurs pauvres se retrouvent mêlées à un complot de la famille la plus influente de Corée.","Thriller psychologique sophistiqué et bien écrit.","Thriller / Drama"],
+      ["Doctor Lawyer","Un chirurgien sans licence devient avocat pour se venger de ceux qui ont ruiné sa carrière.","Im Soo-hyang et So Ji-sub corrects. Revenge médico-juridique.","Médical / Juridique"],
+      ["My Perfect Stranger","Un journaliste et une femme voyagent dans le passé pour empêcher des meurtres.","Bons moments. La romance se développe bien.","Fantastique / Thriller"],
+      ["Bride of the Century","Un héritier épouse une roturière ressemblant à sa fiancée disparue pour éviter une malédiction.","Charme rétro old-school. Lee Hong-ki attachant.","Fantasy / Romance"],
+      ["Tomorrow","Un jeune homme intègre accidentellement l'équipe des esprits chargée d'empêcher les suicides.","Courageux sur la santé mentale. Rowoon étonne.","Fantasy / Social"],
+      ["Lovers of the Red Sky","Sous Joseon, une peintre unique est liée à un astrologue dans une histoire de magie ancienne.","Kim Yoo-jung et Ahn Hyo-seop avec grâce. Visuellement beau.","Historique / Fantasy"],
+      ["The Sound of Magic","Une lycéenne pauvre croise un magicien vivant dans un parc abandonné.","Ji Chang-wook. Musical drama poétique et onirique.","Musical / Fantasy"],
+      ["She Was Pretty","Une femme autrefois jolie devenue ordinaire retrouve son premier amour — qui lui est désormais supérieur hiérarchique.","Hwang Jung-eum et Park Seo-joon pétillants. Comédie romantique légère et feel-good.","Romance / Comédie","16 ép.",2015],
+      ["Move to Heaven","Un jeune homme autiste et son oncle ex-boxeur gèrent une entreprise de nettoyage des affaires des morts.","Tang Jun-sang époustouflant. Émouvant sur le deuil.","Drama / Slice of life","10 ép.",2021],
+      ["Kairos","Un homme du présent et une femme du passé communiquent à travers le temps.","Thriller temporel original, bien ficelé. Tension constante.","Thriller / Fantastique","16 ép.",2020],
+      ["Yumi's Cells (1,2)","Les émotions d'une jeune femme sont personnifiées en petites créatures guidant ses décisions.","Kim Go-eun adorable. Concept animé original et inventif.","Comédie / Romance","S1: 14 ép. / S2: 14 ép.",2021],
+      ["Spring Fever","Une femme dans une maison de retraite redécouvre sa vie et l'amour.","Doux et sincère. Quelques moments touchants.","Romance / Slice of life","12 ép.",2024],
+      ["Tastefully Yours","Un chef exigeant et une cuisinière autodidacte apprennent à travailler ensemble.","Culinaire et savoureux. Belle évolution des personnages.","Culinaire / Romance","12 ép.",2024],
+      ["The Judge from Hell","Une juge implacable et un détective enquêtent sur des meurtres en cachant leurs natures surnaturelles.","Park Shin-hye en grande forme. Thriller fantastique original.","Fantastique / Thriller","16 ép.",2024],
+      ["Memorist","Un détective lisant les souvenirs en touchant les gens traque un tueur insaisissable.","Yoo Seung-ho convaincant. Concept de pouvoir intéressant.","Thriller / Fantastique","16 ép.",2020],
+      ["Head Over Heels","Deux personnes aux visions opposées de l'amour se retrouvent forcées de collaborer.","Légère et feel-good. Couple principal charmant.","Romance / Comédie","12 ép.",2024],
+      ["Fated to Love You","Un homme tout-puissant se retrouve involontairement marié à une femme ordinaire.","Jang Hyuk hilarant. Comédie romantique classique qui vieillit bien.","Romance / Comédie","20 ép.",2014],
+      ["The Tale of Nokdu","Un homme déguisé en femme s'infiltre dans un village de veuves.","Jang Dong-yoon convaincant. Comédie historique légère.","Historique / Comédie","32 ép.",2019],
+      ["Island","Des êtres surnaturels et des humains s'affrontent sur l'île de Jeju pour empêcher l'éveil d'un démon.","Cha Eun-woo et Kim Nam-gil dans un fantasy sombre. Visuellement fort mais scénario inégal.","Fantasy / Action","S1: 6 ép. / S2: 6 ép.",2022],
+      ["Doctor Slump","Deux anciens rivaux du lycée se retrouvent tous deux au fond du gouffre.","Park Hyung-sik et Park Shin-hye dans une romance sur le burnout.","Romance / Contemporain","16 ép.",2024],
+      ["Flex x Cop","Un inspecteur héritier milliardaire travaille en binôme avec une policière de terrain.","Ahn Bo-hyun attachant. Buddy cop comedy légère et fun.","Action / Comédie","16 ép.",2024],
+      ["No Gain No Love","Une femme calculatrice qui déteste perdre organise un faux mariage pour récupérer ses cadeaux de noce et obtenir une promotion.","Shin Min-a pétillante, Kim Young-dae charmant. Comédie romantique fraîche avec un second couple attachant.","Romance / Comédie","12 ép.",2024],
+      ["D.P.","Un jeune soldat intègre la brigade de poursuite des déserteurs et découvre les réalités brutales du service militaire.","Jung Hae-in sobre et percutant. Critique sociale acérée sur le harcèlement militaire — court et intense.","Action / Militaire","S1: 6 ép. / S2: 6 ép.",2021],
+      ["Something in the Rain","Une femme dans la trentaine tombe amoureuse du meilleur ami de son frère cadet.","Son Ye-jin et Jung Hae-in alchimie magnétique. Slowburn réaliste mais fin décevante.","Romance / Contemporain","16 ép.",2018],
+      ["Branding in Seongsu","Dans le quartier branché de Séongsu, une directrice artistique et un chef développent leurs projets.","Drama contemporain stylé. Atmosphère branchée de Séoul.","Romance / Contemporain","12 ép.",2024],
+      ["The K2","Un ancien mercenaire protège la fille illégitime d'un candidat à la présidence.","Ji Chang-wook charismatique en action. Combats impeccables.","Action / Thriller","16 ép.",2016],
+      ["Love Next Door","Deux anciens meilleurs amis se retrouvent voisins et redécouvrent leurs sentiments.","Jung Hae-in et Jung So-min ont de la chimie.","Romance / Comédie","16 ép.",2024],
+      ["Hot Stove League","Le nouveau directeur général d'une équipe de baseball tente de la redresser.","Cho Seung-woo excellent dans ce drame sportif hors-terrain.","Sport / Drama","16 ép.",2019],
+      ["Miss Night and Day","Une femme alterne entre son âge actuel et 20 ans de plus.","Concept body-swap original. Développement inégal.","Comédie / Fantastique","16 ép.",2024],
+      ["Touch Your Heart","Une actrice en disgrâce devient secrétaire dans un cabinet d'avocats.","Yoo In-na et Lee Dong-wook ont la chimie de Goblin. Trop court.","Romance / Comédie","16 ép.",2019],
+      ["The Real Has Come","Un homme célibataire travaillant comme gynécologue-obstétricien rencontre une mère célibataire qui élève seule son enfant. Ils décident de se lancer dans une nouvelle relation fictive.","Makjang familial parfois amusant.","Mélodrame / Famille","50 ép.",2023],
+      ["My Strange Hero","Un lycéen renvoyé injustement revient comme enseignant pour rétablir la vérité.","Yoo Seung-ho convaincant. Romance scolaire correcte.","Romance / Scolaire","32 ép.",2018],
+      ["Doctor Prisoner","Un médecin injustement renvoyé prend un poste en prison pour mener sa vengeance.","Quelques bonnes idées. Nam Goong-min fait ce qu'il peut.","Médical / Thriller","16 ép.",2019],
+      ["Hyper Knife","Un neurochirurgien d'élite fait face à une crise médicale et personnelle.","Correct sans être mémorable. Scènes chirurgicales bien réalisées.","Médical / Drama","12 ép.",2024],
+      ["What Comes After Love","Deux personnes après une rupture apprennent à cicatriser et faire confiance à nouveau.","Romance de guérison douce et honnête.","Romance / Slice of life","10 ép.",2024],
+      ["The Heavenly Idol","Un saint d'une dimension divine se retrouve piégé dans le corps d'un idol coréen.","Kim Min-kyu parfait en saint perdu dans le K-pop. Souvent hilarante.","Comédie / Fantasy","12 ép.",2022],
+      ["Chief Detective 1958","Un prequel retrace les débuts d'un jeune inspecteur dans le Séoul des années 50.","Lee Je-hoon dans une époque réussie. Ambiance policière vintage.","Crime / Historique","12 ép.",2024],
+      ["Where Stars Land","Un employé avec un bras cybernétique caché travaille dans un aéroport.","Lee Je-hoon et Chae Soo-bin plaisants. Arc du bras sous-développé.","Romance / Contemporain","32 ép.",2018],
+      ["At a Distance, Spring Is Green","La vie universitaire de trois étudiants aux personnalités et origines opposées.","Peu connu mais sincère. Slice-of-life universitaire juste.","Slice of life / Jeunesse","12 ép.",2021],
+      ["My Dearest Nemesis","Deux rivaux découvrent que leurs alter-egos en ligne sont leurs ennemis jurés au bureau.","Choi Siwon et Kim Jae-kyung bonne alchimie. Identity reveal drama mignon.","Romance / Comédie","12 ép.",2023],
+      ["Wok of Love","Un chef étoilé déchu et une businesswoman s'associent pour un restaurant de rue.","Jang Hyuk charismatique. Cast solide mais récit décousu.","Culinaire / Comédie","40 ép.",2018],
+      ["Backstreet Rookie","Un gérant de supérette croise une lycéenne insolente devenue plus tard son employée.","Ji Chang-wook et Kim Yoo-jung ont de la chimie. Controversé.","Romance / Comédie","16 ép.",2020],
+      ["Phantom Lawyer","Un avocat fantôme aide son successeur vivant depuis l'au-delà.","Concept original. Exécution manquant de rigueur.","Juridique / Fantasy","12 ép.",2023],
+      ["Dinner Mate","Une journaliste food et un psychiatre partagent leurs repas après leurs ruptures.","Concept sympa pour les amateurs de nourriture. Trop de clichés.","Romance / Contemporain","32 ép.",2020],
+      ["Not Others","Une mère et sa fille naviguent leurs relations complexes avec les hommes.","Réaliste sur les dynamiques mère-fille. Honnête.","Famille / Drama","16 ép.",2023],
+      ["Bad Memory Eraser","Un homme dont le cerveau efface les mauvais souvenirs tente de reconstruire des relations.","Concept émouvant. A du cœur mais manque de profondeur.","Fantasy / Romance","12 ép.",2024],
+      ["Family by Choice","Des enfants d'un même orphelinat se retrouvent adultes et forment une famille de choix.","Feel-good sur la famille reconstruite. Attachant.","Famille / Romance","16 ép.",2024],
+      ["Cashero","Un homme ordinaire se retrouve dans la peau d'un super-héros sans le vouloir.","Légère mais trop dérivative. Quelques gags réussis.","Comédie / Super-héros","10 ép.",2023],
+      ["Summer Strike","Une femme épuisée abandonne tout pour s'installer dans un village côtier.","Beau visuellement. Trop lent même pour un drama de guérison.","Slice of life / Romance","12 ép.",2022],
+      ["The Nice Guy","Un homme brisé par l'amour et la trahison cherche à se reconstruire.","Song Joong-ki intense. Mélodrame sombre.","Mélodrame / Romance","20 ép.",2012],
+      ["Mercy for None","Un avocat impitoyable choisit de tout sacrifier pour une cause plus grande.","Dilemmes moraux bien posés. Trop de raccourcis narratifs.","Juridique / Drama","12 ép.",2024],
+      ["The Tyrant","Un roi brutal commence à douter après avoir rencontré une femme courageuse.","Jolies images mais personnages peu fouillés.","Historique / Fantasy","04 ép.",2024],
+      ["Boyfriend on Demand","Une femme qui ne croit plus en l'amour loue un petit ami pour des événements pro.","Concept amusant mais joue trop la sécurité.","Romance / Comédie","12 ép.",2024],
+      ["Gaus Electronics","Les aventures absurdes des employés d'une grande entreprise aux réunions surréalistes.","Satire mordante du monde corporatif coréen. Culte.","Comédie / Satire","8 ép.",2022],
+      ["From Now On, Showtime","Un illusionniste voyant des fantômes s'associe à une policière sceptique.","Park Hae-jin et Jin Ki-joo agréables. Comédie policière légère.","Comédie / Fantasy","16 ép.",2022],
+      ["Love Alarm 1","Une application mobile qui sonne quand quelqu'un dans un rayon de 10m est amoureux de toi bouleverse la société.","Kim So-hyun dans un drama dystopique romantique original. La saison 1 pose des questions fascinantes.","Romance / Sci-fi","8 ép.",2019],
+      ["Red Swan","La femme d'un conglomérat découvre les sombres secrets de sa belle-famille.","Kim Ha-neul et Rain dans un thriller de chaebol correct.","Thriller / Romance","16 ép.",2024],
+      ["Gu Family Book","Un demi-gumiho du 18e siècle cherche à devenir humain.","Lee Seung-gi dans un rôle fantasy. Correct pour l'époque.","Fantasy / Historique","24 ép.",2013],
+      ["Terius Behind Me","Un agent secret en retraite devient baby-sitter inattendu de ses voisins.","So Ji-sub adorable avec les enfants. Fun et détendu.","Action / Comédie","32 ép.",2018],
+      ["The Girl Who Sees Scents","Une femme voyant les parfums aide un détective à traquer un tueur.","Concept olfactif original mais enquête trop simple.","Crime / Comédie","16 ép.",2015],
+      ["Karma","Un détective revient des morts pour résoudre son propre meurtre.","Quelques scènes efficaces. Trop de zones d'ombre.","Thriller / Fantastique","12 ép.",2024],
+      ["Hit the Top","Un rockeur des années 90 voyage dans le futur et doit s'adapter.","Yoon Shi-yoon attachant. Fun mais prévisible.","Comédie / Fantastique","32 ép.",2017],
+      ["Delivery Man","Un coursier découvre une connexion mystérieuse avec les destinataires de ses colis.","Concept feel-good sincère. Manque de cohérence narrative.","Fantasy / Romance","12 ép.",2023],
+      ["The Wonderfool","Un homme excentrique apporte de la magie dans la vie d'une femme épuisée.","Moments d'humour bien trouvés. Fil directeur manquant.","Comédie / Fantasy","12 ép.",2024],
+      ["A Virtuous Business","Quatre femmes rurales lancent un commerce de produits adultes en 1992 pour trouver leur indépendance.","Kim So-yeon lumineuse dans cette comédie féminine pleine de chaleur. Rafraîchissant et attachant.","Comédie / Drama","12 ép.",2024]
+    ]
+  },
+  "assez": {
+    label: "⭐⭐ ASSEZ BIEN",
+    cls: "assez",
+    items: [
+      ["Sweet Home (2,3)","Suite de l'apocalypse monstrueuse dans un contexte élargi hors de l'immeuble originel.","L'ambiance de la saison 1 se perd. Bons moments mais manquent de cohésion et d'intensité.","Horreur / Action","S2: 8 ép. / S3: 8 ép.",2023],
+      ["Gaduri Restaurant","Les aventures quotidiennes d'un restaurant de quartier et de ses clients réguliers.","Humble et sincère pour les amateurs de slice-of-life gastronomique. Chaleureux.","Culinaire / Slice of life","16 ép.",2021],
+      ["Bring It On, Ghost","Un chasseur de fantômes rencontre l'esprit d'une étudiante coincée entre deux mondes.","OK Taecyeon sympa. Comédie fantastique légère mais manque de profondeur.","Fantasy / Comédie","16 ép.",2016],
+      ["Penthouse (3)","La troisième saison de la guerre entre familles riches pour l'immeuble de luxe.","Makjang qui s'emballe trop. La troisième saison pousse le camp à ses extrêmes.","Mélodrame / Makjang","14 ép.",2021],
+      ["The Golden Spoon","Un lycéen pauvre échange sa destinée avec un camarade riche grâce à une cuillère magique.","Concept intéressant sur les inégalités. Bien joué mais rebondissements prévisibles.","Fantastique / Drama","16 ép.",2022],
+      ["Chocolate","Un chef médecin et une cuisinière se retrouvent dans un centre de soins palliatifs.","Ha Ji-won et Yoon Kye-sang corrects. Trop mélo et trop lent.","Romance / Médical","16 ép.",2019],
+      ["Duty After School","Des lycéens sont mobilisés par l'armée pour combattre des entités extraterrestres.","Concept original. Quelques personnages attachants mais manque de budget.","Action / Sci-fi","10 ép.",2023],
+      ["Jealousy Incarnate","Un présentateur météo et une maquilleuse sont liés par un cancer du sein masculin.","Sujet inattendu et audacieux. Jo Jung-suk et Gong Hyo-jin ont de la chimie.","Romance / Comédie","40 ép.",2016],
+      ["She Would Never Know","Une chargée de marketing apprend les codes du travail auprès d'une supérieure qu'elle aime.","Romance de bureau douce. Scénario plat.","Romance / Contemporain","16 ép.",2021],
+      ["Search","Des soldats en zone frontalière découvrent une bête mortelle dans la zone démilitarisée.","Thriller militaire court et intense. Ambiance paranoïaque bien dosée.","Thriller / Militaire","10 ép.",2020],
+      ["Behind Your Touch","Une vétérinaire voit les souvenirs en touchant des fessiers et aide un détective bougon.","Han Ji-min comique, Lee Min-ki bourru. Délicieusement absurde.","Comédie / Crime","16 ép.",2023],
+      ["Introverted Boss","Un PDG extrêmement introverti forme un duo avec une employée déterminée.","Hésitation entre comédie et mélodrame. Concept sous-exploité.","Romance / Comédie","16 ép.",2017]
+    ]
+  },
+  "passable": {
+    label: "⭐ PASSABLE",
+    cls: "passable",
+    items: [
+      ["The Great Shaman Ga Doo Shim","Une lycéenne refusant ses pouvoirs de chamane doit les accepter pour protéger son école.","De l'énergie mais reste dans les conventions du genre. Kim Sae-ron et Nam Da-reum sympas.","Fantasy / Scolaire","12 ép.",2021],
+      ["Love Alarm 2","Suite de la saison 1 où les conséquences de l'application sur la société se déroulent.","Décevant après une saison 1 prometteuse. Les choix narratifs frustrent plus qu'ils ne satisfont.","Romance / Sci-fi","6 ép.",2021]
+    ]
+  }
+};
+
+// POSTER IMAGE FETCHING via TMDB-like query
+const posterCache = {};
+
+async function fetchPoster(title) {
+  if (posterCache[title] !== undefined) return posterCache[title];
+  // Use OMDB/TMDB style search via a free proxy
+  const query = encodeURIComponent(title + ' korean drama');
+  // We'll use a placeholder service and dynamically load
+  const url = `https://www.themoviedb.org/search?query=${encodeURIComponent(title)}`;
+  posterCache[title] = null;
+  return null;
+}
+
+// Map of known TMDB IDs for poster fetching
+const TMDB_IDS = {
+  "Crash Landing on You": "92685",
+  "Goblin": "67913",
+  "Reply 1988": "62767",
+  "The Glory": "204993",
+  "Hospital Playlist (1,2)": "91557",
+  "Moving": "213577",
+  "Vincenzo": "110491",
+  "Squid Game (1)": "93405",
+  "Itaewon Class": "95864",
+  "Arthdal Chronicles": "88228",
+  "Dr. Romantic (1,2,3)": "66622",
+  "Alchemy of Souls (1,2)": "142535",
+  "Queen of Tears": "237728",
+  "It's Okay Not to Be Okay": "100110",
+  "Twenty-Five Twenty-One": "115014",
+  "Twinkling Watermelon": "228395",
+  "My Dearest": "223751",
+  "When Life Gives You Tangerine": "263853",
+  "Mr. Queen": "109581",
+  "King the Land": "212175",
+  "Signal": "66732",
+  "Flower of Evil": "107907",
+  "Hotel Del Luna": "87108",
+  "My Love from the Star": "54622",
+  "The Glory": "204993",
+  "Hellbound (1,2)": "90462",
+  "Squid Game (1)": "93405",
+  "All of Us Are Dead": "92685",
+  "A Killer Paradox": "248698",
+  "When the Phone Rings": "261186",
+};
+
+// ── PLATEFORMES DE STREAMING ────────────────────────────────────────
+const PLATFORMS = {
+  "Crash Landing on You":        [["Netflix","https://www.netflix.com/title/81159258","pb-netflix"],["Viki","https://www.viki.com/tv/37174c","pb-viki"]],
+  "Goblin":                      [["Netflix","https://www.netflix.com/title/80142188","pb-netflix"],["Viki","https://www.viki.com/tv/30073c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Reply 1988":                  [["Netflix","https://www.netflix.com/title/80060769","pb-netflix"],["Viki","https://www.viki.com/tv/26094c","pb-viki"]],
+  "The Glory":                   [["Netflix","https://www.netflix.com/title/81518796","pb-netflix"]],
+  "Hospital Playlist (1,2)":     [["Netflix","https://www.netflix.com/title/81091387","pb-netflix"]],
+  "Moving":                      [["Disney+","https://www.disneyplus.com/series/moving/1Gp3M8PFDktm","pb-disney"]],
+  "Vincenzo":                    [["Netflix","https://www.netflix.com/title/81291830","pb-netflix"],["Viki","https://www.viki.com/tv/37775c","pb-viki"]],
+  "Squid Game (1)":              [["Netflix","https://www.netflix.com/title/81040344","pb-netflix"]],
+  "Itaewon Class":               [["Netflix","https://www.netflix.com/title/81094215","pb-netflix"],["Viki","https://www.viki.com/tv/36174c","pb-viki"]],
+  "Arthdal Chronicles":          [["Netflix","https://www.netflix.com/title/81010991","pb-netflix"]],
+  "Dr. Romantic (1,2,3)":        [["Viki","https://www.viki.com/tv/32524c","pb-viki"],["Viu","https://www.viu.com","pb-viu"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Alchemy of Souls (1,2)":      [["Netflix","https://www.netflix.com/title/81497215","pb-netflix"]],
+  "Queen of Tears":              [["Netflix","https://www.netflix.com/title/81707766","pb-netflix"]],
+  "It's Okay Not to Be Okay":    [["Netflix","https://www.netflix.com/title/81193309","pb-netflix"]],
+  "Twenty-Five Twenty-One":      [["Netflix","https://www.netflix.com/title/81436791","pb-netflix"]],
+  "Twinkling Watermelon":        [["Viki","https://www.viki.com/tv/40079c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "My Dearest":                  [["Viki","https://www.viki.com/tv/40002c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "When Life Gives You Tangerine":[["Netflix","https://www.netflix.com/title/81707760","pb-netflix"]],
+  "Can This Love Be Translated": [["French Stream", "https://fs17.lol/15124069-comment-traduire-cet-amour-saison-1-2026.html", "pb-frstream"]],
+  "In Your Radiant Season":      [["French Stream", "https://fs17.lol/15126899-in-your-radiant-season-saison-1-2026.html", "pb-frstream"]],
+  "Love All Play":               [["French Stream", "https://fs17.lol/15111322-love-all-play-saison-1.html", "pb-frstream"]],
+  "Mr. Queen":                   [["Viki","https://www.viki.com/tv/36896c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "King the Land":               [["Netflix","https://www.netflix.com/title/81694548","pb-netflix"]],
+  "Signal":                      [["Netflix","https://www.netflix.com/title/80095103","pb-netflix"],["Viki","https://www.viki.com/tv/29003c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Flower of Evil":              [["Viki","https://www.viki.com/tv/37506c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Hotel Del Luna":              [["Viki","https://www.viki.com/tv/35583c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "My Love from the Star":       [["Viki","https://www.viki.com/tv/20711c","pb-viki"],["Netflix","https://www.netflix.com","pb-netflix"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Hellbound (1,2)":             [["Netflix","https://www.netflix.com/title/81265063","pb-netflix"]],
+  "All of Us Are Dead":          [["Netflix","https://www.netflix.com/title/81080179","pb-netflix"]],
+  "A Killer Paradox":            [["Netflix","https://www.netflix.com/title/81694562","pb-netflix"]],
+  "When the Phone Rings":        [["Netflix","https://www.netflix.com/title/81694556","pb-netflix"]],
+  "W: Two Worlds Apart":         [["Viki","https://www.viki.com/tv/29539c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Mad for Each Other":          [["Netflix","https://www.netflix.com/title/81436460","pb-netflix"]],
+  "Gyeongseong Creature (1,2)":  [["Netflix","https://www.netflix.com/title/81438891","pb-netflix"]],
+  "Reborn Rich":                 [["Viki","https://www.viki.com/tv/38947c","pb-viki"],["Disney+","https://www.disneyplus.com","pb-disney"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Innocent Man":            [["Viki","https://www.viki.com/tv/5484c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Bulgasal: Immortal Souls":    [["Netflix","https://www.netflix.com/title/81437184","pb-netflix"]],
+  "Chicago Typewriter":          [["Viki","https://www.viki.com/tv/31898c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Happiness":                   [["Viki","https://www.viki.com/tv/38174c","pb-viki"],["Disney+","https://www.disneyplus.com","pb-disney"]],
+  "Start-Up":                    [["Netflix","https://www.netflix.com/title/81290293","pb-netflix"]],
+  "Uncanny Counter":             [["Netflix","https://www.netflix.com/title/81283688","pb-netflix"]],
+  "Bloodhounds 1,2":             [["Netflix","https://www.netflix.com/title/81517074","pb-netflix"]],
+  "Thirty but Seventeen (Still 17)":[["Viki","https://www.viki.com/tv/34310c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "What's Wrong with Secretary Kim":[["Viki","https://www.viki.com/tv/33571c","pb-viki"],["Netflix","https://www.netflix.com","pb-netflix"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Crowned Clown":           [["Netflix","https://www.netflix.com/title/81045589","pb-netflix"],["Viki","https://www.viki.com/tv/35174c","pb-viki"]],
+  "Search WWW":                  [["Viki","https://www.viki.com/tv/35508c","pb-viki"],["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Do You Like Brahms":          [["Netflix","https://www.netflix.com/title/81289889","pb-netflix"],["Viki","https://www.viki.com/tv/37339c","pb-viki"]],
+  "May I Help You":              [["Viki","https://www.viki.com/tv/39513c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Our Beloved Summer":          [["Netflix","https://www.netflix.com/title/81436427","pb-netflix"]],
+  "Record of Youth":             [["Netflix","https://www.netflix.com/title/81235016","pb-netflix"]],
+  "Fight for My Way":            [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/31936c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Eternal Monarch (King)":  [["Netflix","https://www.netflix.com/title/81242029","pb-netflix"]],
+  "Typhoon Family":              [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Because This Is My First Life":[["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/31890c","pb-viki"]],
+  "The Light in Your Eyes":      [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/34882c","pb-viki"]],
+  "Go Back Couple":              [["Viki","https://www.viki.com/tv/33030c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Sweet Home (1)":              [["Netflix","https://www.netflix.com/title/81081174","pb-netflix"]],
+  "Penthouse (1,2)":             [["Viki","https://www.viki.com/tv/37665c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Crazy Love":                  [["Viki","https://www.viki.com/tv/39067c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Run On":                      [["Netflix","https://www.netflix.com/title/81289979","pb-netflix"]],
+  "When the Camellia Blooms":    [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/35585c","pb-viki"]],
+  "Ghost Doctor":                [["Viki","https://www.viki.com/tv/38683c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Tomorrow with You":           [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/31494c","pb-viki"]],
+  "Hi Bye Mama":                 [["Netflix","https://www.netflix.com/title/81168978","pb-netflix"]],
+  "Tell Me That You Love Me":    [["Netflix","https://www.netflix.com/title/81513847","pb-netflix"]],
+  "Angel's Last Mission: Love":  [["Viki","https://www.viki.com/tv/35395c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Shopping King Louis":         [["Viki","https://www.viki.com/tv/30485c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Death Game":                  [["Viki","https://www.viki.com/tv/40589c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Our Universe":                [["Netflix","https://www.netflix.com","pb-netflix"],["French Stream","https://fs17.lol/15124298--saison-1-2026.html","pb-frstream"]],
+  "Lovers of the Red Sky":       [["Viki","https://www.viki.com/tv/37990c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Business Proposal":           [["Netflix","https://www.netflix.com/title/81436438","pb-netflix"]],
+  "The Law Cafe":                [["Viki","https://www.viki.com/tv/39140c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Again My Life":               [["Viki","https://www.viki.com/tv/38789c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Resident Playbook":           [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Nine Puzzles":                [["Disney+","https://www.disneyplus.com","pb-disney"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Why Her":                     [["Viki","https://www.viki.com/tv/39046c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Love in the Moonlight":       [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/29825c","pb-viki"]],
+  "I'm Not a Robot":             [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/33247c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Kill It":                     [["Viki","https://www.viki.com/tv/35328c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Tomorrow":                    [["Netflix","https://www.netflix.com/title/81438888","pb-netflix"]],
+  "If You Wish Upon Me":         [["Viki","https://www.viki.com/tv/39236c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Unlock My Boss":              [["Viki","https://www.viki.com/tv/38940c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "D-Day":                       [["Viki","https://www.viki.com/tv/26028c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Live Up to Your Name":        [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/33048c","pb-viki"]],
+  "The Witch's Diner":           [["Viki","https://www.viki.com/tv/37887c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Little Women":                [["Netflix","https://www.netflix.com/title/81451374","pb-netflix"]],
+  "Doctor Lawyer":               [["Viki","https://www.viki.com/tv/38985c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "My Perfect Stranger":         [["Viki","https://www.viki.com/tv/39563c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Bride of the Century":        [["Viki","https://www.viki.com/tv/20842c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Sound of Magic":          [["Netflix","https://www.netflix.com/title/81436424","pb-netflix"]],
+  "She Was Pretty":              [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/26572c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Move to Heaven":              [["Netflix","https://www.netflix.com/title/81345928","pb-netflix"]],
+  "Kairos":                      [["Viki","https://www.viki.com/tv/37499c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Yumi's Cells (1,2)":          [["Viki","https://www.viki.com/tv/37988c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Spring Fever":                [["Netflix","https://www.netflix.com","pb-netflix"],["French Stream","https://fs17.lol/15123984-fivre-printanire-saison-1-2026.html","pb-frstream"]],
+  "Tastefully Yours":            [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "The Judge from Hell":         [["Viki","https://www.viki.com/tv/40906c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Memorist":                    [["Viki","https://www.viki.com/tv/36450c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Head Over Heels":             [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Fated to Love You":           [["Viki","https://www.viki.com/tv/21505c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Tale of Nokdu":           [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/35594c","pb-viki"]],
+  "Island":                      [["Amazon Prime","https://www.primevideo.com","pb-other"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Doctor Slump":                [["Netflix","https://www.netflix.com/title/81694546","pb-netflix"]],
+  "Flex x Cop":                  [["Disney+","https://www.disneyplus.com","pb-disney"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "No Gain No Love":             [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "D.P.":                        [["Netflix","https://www.netflix.com/title/81280792","pb-netflix"]],
+  "Something in the Rain":       [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/33854c","pb-viki"]],
+  "Branding in Seongsu":         [["Viki","https://www.viki.com/tv/41140c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The K2":                      [["Viki","https://www.viki.com/tv/30618c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Love Next Door":              [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Hot Stove League":            [["Viki","https://www.viki.com/tv/35810c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Miss Night and Day":          [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Touch Your Heart":            [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/35196c","pb-viki"]],
+  "The Real Has Come":           [["Viki","https://www.viki.com/tv/39688c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "My Strange Hero":             [["Viki","https://www.viki.com/tv/35050c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Doctor Prisoner":             [["Viki","https://www.viki.com/tv/35356c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Hyper Knife":                 [["Viki","https://www.viki.com/tv/41010c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "What Comes After Love":       [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "The Heavenly Idol":           [["Viki","https://www.viki.com/tv/39615c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Chief Detective 1958":        [["Disney+","https://www.disneyplus.com","pb-disney"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Where Stars Land":            [["Viki","https://www.viki.com/tv/34495c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "At a Distance, Spring Is Green":[["Viki","https://www.viki.com/tv/37775c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "My Dearest Nemesis":          [["Viki","https://www.viki.com/tv/40382c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Wok of Love":                 [["Viki","https://www.viki.com/tv/34039c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Backstreet Rookie":           [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/36906c","pb-viki"]],
+  "Phantom Lawyer":              [["Viki","https://www.viki.com/tv/40296c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Dinner Mate":                 [["Viki","https://www.viki.com/tv/36778c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Not Others":                  [["Disney+","https://www.disneyplus.com","pb-disney"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Bad Memory Eraser":           [["Viki","https://www.viki.com/tv/41185c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Family by Choice":            [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Cashero":                     [["Viki","https://www.viki.com/tv/40588c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Summer Strike":               [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "The Nice Guy":                [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/5765c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Mercy for None":              [["Viki","https://www.viki.com/tv/41241c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Tyrant":                  [["Netflix","https://www.netflix.com","pb-netflix"]],
+  "Boyfriend on Demand":         [["Netflix","https://www.netflix.com","pb-netflix"],["French Stream","https://fs17.lol/15125299-boyfriend-on-demand-saison-1-2026.html","pb-frstream"]],
+  "Gaus Electronics":            [["Viki","https://www.viki.com/tv/39110c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "From Now On, Showtime":       [["Viki","https://www.viki.com/tv/38978c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Love Alarm 1":                [["Netflix","https://www.netflix.com/title/80235323","pb-netflix"]],
+  "Red Swan":                    [["Disney+","https://www.disneyplus.com","pb-disney"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Gu Family Book":              [["Viki","https://www.viki.com/tv/10261c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Terius Behind Me":            [["Viki","https://www.viki.com/tv/34422c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Girl Who Sees Scents":    [["Viki","https://www.viki.com/tv/22778c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Karma":                       [["Viki","https://www.viki.com/tv/41050c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Hit the Top":                 [["Viki","https://www.viki.com/tv/32186c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Delivery Man":                [["Viki","https://www.viki.com/tv/40366c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Wonderfool":              [["Viki","https://www.viki.com/tv/41220c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "A Virtuous Business":         [["Viki","https://www.viki.com/tv/41150c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Sweet Home (2,3)":            [["Netflix","https://www.netflix.com/title/81081174","pb-netflix"]],
+  "Gaduri Restaurant":           [["Viki","https://www.viki.com/tv/37749c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Bring It On, Ghost":          [["Viki","https://www.viki.com/tv/30386c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Penthouse (3)":               [["Viki","https://www.viki.com/tv/37665c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Golden Spoon":            [["Disney+","https://www.disneyplus.com","pb-disney"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Chocolate":                   [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/35621c","pb-viki"]],
+  "Duty After School":           [["Viki","https://www.viki.com/tv/40098c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Jealousy Incarnate":          [["Viki","https://www.viki.com/tv/30393c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "She Would Never Know":        [["Viki","https://www.viki.com/tv/37654c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Search":                      [["Viki","https://www.viki.com/tv/37390c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Behind Your Touch":           [["Netflix","https://www.netflix.com/title/81566827","pb-netflix"]],
+  "Introverted Boss":            [["Viki","https://www.viki.com/tv/31487c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "The Great Shaman Ga Doo Shim":[["Viki","https://www.viki.com/tv/37786c","pb-viki"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
+  "Love Alarm 2":                [["Netflix","https://www.netflix.com/title/80235323","pb-netflix"]],
+};
+
+// Build the page
+function buildSections() {
+  const container = document.getElementById('sections-container');
+  
+  for (const [catKey, cat] of Object.entries(DRAMAS)) {
+    const section = document.createElement('section');
+    section.className = `section ${cat.cls}`;
+    section.dataset.cat = catKey;
+
+    // Count
+    const count = cat.items.length;
+
+    section.innerHTML = `
+      <div class="section-header">
+        <div class="section-stars">${cat.label.split(' ')[0]}</div>
+        <div class="section-title">${cat.label.replace(/^[⭐]+ /, '')}</div>
+        <div class="section-count">${count} dramas</div>
+      </div>
+      <div class="drama-grid" id="grid-${catKey}"></div>
+    `;
+
+    container.appendChild(section);
+
+    const grid = section.querySelector(`#grid-${catKey}`);
+
+    cat.items.forEach((drama, idx) => {
+      const [title, synopsis, avis, genre, eps, year] = drama;
+      const card = document.createElement('div');
+      card.className = 'drama-card';
+      card.dataset.title = title.toLowerCase();
+      card.dataset.genre = genre.toLowerCase();
+      card.dataset.cat = catKey;
+
+      const genrePrimary = genre.split('/')[0].trim();
+
+      card.innerHTML = `
+        <div class="poster-wrap">
+          <img src="" alt="${title}" data-title="${encodeURIComponent(title)}">
+          <div class="poster-placeholder" style="display:none">🎬</div>
+          <div class="genre-badge">${genrePrimary}</div>
+          ${eps ? `<div class="eps-badge">${eps}</div>` : ''}
+          ${year ? `<div class="year-badge">${year}</div>` : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-title">${title}</div>
+          <div class="card-synopsis">${synopsis}</div>
+          <div class="card-avis">${avis}</div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => openModal(title, synopsis, avis, genre, eps, year, cat.label, cat.cls, card.querySelector('img').src));
+      grid.appendChild(card);
+
+      // Load poster
+      loadPoster(card.querySelector('img'), title);
+    });
+  }
+
+  updateCounts();
+}
+
+const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virtuous Business": 255086, "D-Day": 63910,"Extraordinary Attorney Woo": 197067 };
+const KEY = '8265bd1679663a7ea12ac168da84d2e8';
+
+async function loadPoster(img, title) {
+  const showFallback = () => { img.style.display='none'; img.nextElementSibling.style.display='flex'; };
+  try {
+    let posterPath = null;
+    if (FORCED_IDS[title]) {
+      const res = await fetch(`https://api.themoviedb.org/3/tv/${FORCED_IDS[title]}?api_key=${KEY}`);
+      const data = await res.json();
+      posterPath = data.poster_path || null;
+    } else {
+      const searchTitle = title.replace(/\(.*?\)/g, '').replace(/[12,3]+$/, '').trim();
+      const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        const item = data.results.find(r => r.origin_country && r.origin_country.includes('KR')) || data.results[0];
+        posterPath = item ? item.poster_path : null;
+      }
+    }
+    if (posterPath) {
+      img.onerror = showFallback;
+      img.src = `https://image.tmdb.org/t/p/w342${posterPath}`;
+    } else {
+      showFallback();
+    }
+  } catch(e) {
+    showFallback();
+  }
+}
+
+function buildPlatformHTML(title) {
+  let list = PLATFORMS[title] ? [...PLATFORMS[title]] : [];
+  // Dramas multi-saisons : liens séparés par saison
+  const VD_SEASONS = {
+    "The Glory":                   [["S1","the-glory"],["S2","the-glory-2"]],
+    "Hospital Playlist (1,2)":     [["S1","hospital-playlist"],["S2","hospital-playlist-2"]],
+    "Arthdal Chronicles":          [["S1","arthdal-chronicles"],["S2","arthdal-chronicles-the-sword-of-aramun"]],
+    "Dr. Romantic (1,2,3)":        [["S1","dr-romantic"],["S2","dr-romantic-2"],["S3","dr-romantic-3"]],
+    "Alchemy of Souls (1,2)":      [["S1","alchemy-of-souls"],["S2","alchemy-of-souls-2-light-and-shadow"]],
+    "Taxi Driver (1,2,3)":         [["S1","taxi-driver"],["S2","taxi-driver-2"],["S3","taxi-driver-3"]],
+    "Welcome to Waikiki (1,2)":    [["S1","welcome-to-waikiki"],["S2","welcome-to-waikiki-2"]],
+    "Gyeongseong Creature (1,2)":  [["S1","gyeongseong-creature"],["S2","gyeongseong-creature-2"]],
+    "Hellbound (1,2)":             [["S1","hellbound"],["S2","hellbound-2"]],
+    "Bloodhounds 1,2":             [["S1","bloodhounds"],["S2","bloodhounds-2"]],
+    "Penthouse (1,2)":             [["S1","the-penthouse"],["S2","the-penthouse-war-in-life-2"]],
+    "Sweet Home (2,3)":            [["S2","sweet-home-2"],["S3","sweet-home-3"]],
+    "Yumi's Cells (1,2)":          [["S1","yumis-cells"],["S2","yumis-cells-2"]],
+    "Island":                      [["S1","island"],["S2","island-2"]],
+    "D.P.":                        [["S1","dp"],["S2","dp-2"]],
+  };
+
+  // Slugs manuels pour les titres dont la génération auto est incorrecte
+  const VD_SLUGS = {
+    "Hospital Playlist (1,2)":           "hospital-playlist",
+    "Squid Game (1)":                    "squid-game",
+    "Dr. Romantic (1,2,3)":             "dr-romantic",
+    "Alchemy of Souls (1,2)":           "alchemy-of-souls",
+    "Hellbound (1,2)":                   "hellbound",
+    "Gyeongseong Creature (1,2)":       "gyeongseong-creature",
+    "Bloodhounds 1,2":                   "bloodhounds",
+    "Thirty but Seventeen (Still 17)":  "still-17",
+    "The Eternal Monarch (King)":        "the-king-eternal-monarch",
+    "Sweet Home (1)":                    "sweet-home",
+    "Sweet Home (2,3)":                  "sweet-home-2",
+    "Penthouse (1,2)":                   "the-penthouse",
+    "Penthouse (3)":                     "the-penthouse-3",
+    "Angel's Last Mission: Love":        "angels-last-mission-love",
+    "Bulgasal: Immortal Souls":          "bulgasal-immortal-souls",
+    "W: Two Worlds Apart":              "w-two-worlds-apart",
+    "Yumi's Cells (1,2)":               "yumis-cells",
+    "The Witch's Diner":                "the-witchs-diner",
+    "What's Wrong with Secretary Kim":  "whats-wrong-with-secretary-kim",
+    "I'm Not a Robot":                  "im-not-a-robot",
+    "D.P.":                             "dp",
+    "Extraordinary Attorney Woo": "extraordinary-attorney-woo",
+    "D-Day":                            "d-day",
+    "Love Alarm 1":                     "love-alarm",
+    "Love Alarm 2":                     "love-alarm-2",
+    "Bring It On, Ghost":               "bring-it-on-ghost",
+    "From Now On, Showtime":            "from-now-on-showtime",
+    "At a Distance, Spring Is Green":   "at-a-distance-spring-is-green",
+    "It's Okay Not to Be Okay":         "its-okay-to-not-be-okay",
+    "Search WWW":                       "search-www",
+    "Do You Like Brahms":               "do-you-like-brahms",
+    "Arthdal Chronicles":               "arthdal-chronicles",
+  };
+  const vdSlug = VD_SLUGS[title] || title
+    .toLowerCase()
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+  const vdUrl = `https://voirdrama.to/drama/${vdSlug}/`;
+  list = list.filter(([name]) => name !== 'VoirDrama');
+  list.push(["VoirDrama", vdUrl, "pb-voirdrama"]);
+  const icons = { Netflix:'▶', 'Disney+':'✦', Viki:'▷', Viu:'◈', VoirDrama:'🎬', Tving:'T', Wavve:'W', Kocowa:'K', 'Amazon Prime':'📦', YouTube:'▶' };
+
+  // Construire les badges VoirDrama (un par saison si multi-saisons, sinon un seul)
+  let vdBadges = '';
+  if (VD_SEASONS[title]) {
+    vdBadges = VD_SEASONS[title].map(([label, slug]) =>
+      `<a class="platform-badge pb-voirdrama" href="https://voirdrama.to/drama/${slug}/" target="_blank" rel="noopener">🎬 VoirDrama ${label}</a>`
+    ).join('');
+  } else {
+    const vdSlug = VD_SLUGS[title] || title
+      .toLowerCase()
+      .replace(/['']/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+    vdBadges = `<a class="platform-badge pb-voirdrama" href="https://voirdrama.to/drama/${vdSlug}/" target="_blank" rel="noopener">🎬 VoirDrama</a>`;
+  }
+
+  const otherBadges = list.map(([name, url, cls]) =>
+    `<a class="platform-badge ${cls}" href="${url}" target="_blank" rel="noopener">${icons[name]||'▶'} ${name}</a>`
+  ).join('');
+
+  return `<div class="modal-label" style="margin-top:16px">Où regarder</div><div class="modal-platforms">${otherBadges}${vdBadges}</div><div class="platform-disclaimer">⚠️ Ces plateformes sont indiquées à titre indicatif — le drama n'est pas forcément disponible sur toutes, mais au moins sur l'une d'elles.</div>`;
+}
+
+function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, imgSrc) {
+  const catColors = { master: '#b39ddb', tresbien: '#64b5f6', bien: '#69f0ae', assez: '#ffd54f', passable: '#ef9a9a' };
+  const color = catColors[catCls] || '#fff';
+
+  const inner = document.getElementById('modal-inner');
+  inner.innerHTML = `
+    <div class="modal-poster">
+      ${imgSrc && !imgSrc.includes('undefined') ? 
+        `<img src="${imgSrc}" alt="${title}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+         <div class="modal-poster-ph" style="display:none">🎬</div>` :
+        `<div class="modal-poster-ph">🎬</div>`
+      }
+    </div>
+    <div class="modal-content">
+      <div class="modal-cat-badge" style="color:${color}">${catLabel}</div>
+      <div class="modal-title">${title}</div>
+      <div class="modal-genre">${genre}${year ? ` · ${year}` : ''}</div>
+      ${eps ? `<div class="modal-eps">📺 ${eps}</div>` : ''}
+      <div class="modal-label">Synopsis</div>
+      <div class="modal-synopsis">${synopsis}</div>
+      <div class="modal-label">Avis</div>
+      <div class="modal-avis">${avis}</div>
+      ${buildPlatformHTML(title)}
+      <div id="modal-vote-placeholder"></div>
+      <div id="modal-comments-placeholder"></div>
+    </div>
+  `;
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // render dynamic parts
+  renderModalDynamic(title, catCls);
+}
+
+async function renderModalDynamic(title, catCls) {
+  // Votes
+  const voteData = await getVotesAPI(title);
+  const votePlaceholder = document.getElementById('modal-vote-placeholder');
+  if (votePlaceholder) votePlaceholder.outerHTML = buildVoteHTMLFromData(title, catCls, voteData);
+
+  // Comments placeholder HTML
+  const commentsHtml = `
+    <div class="comments-section">
+      <div class="comments-label" id="comments-label-${CSS.escape(title)}">💬 Commentaires</div>
+      <div class="comment-list" id="comment-list-${CSS.escape(title)}"><div class="no-comments">Chargement...</div></div>
+      <div class="comment-input-wrap">
+        <input class="comment-input" id="comment-input-${CSS.escape(title)}" placeholder="Ton avis sur ce drama..." maxlength="300">
+        <button class="comment-send" id="comment-send-${CSS.escape(title)}">Envoyer</button>
+      </div>
+    </div>`;
+  const commentsPlaceholder = document.getElementById('modal-comments-placeholder');
+  if (commentsPlaceholder) commentsPlaceholder.outerHTML = commentsHtml;
+
+  // Attach send handler
+  const sendBtn = document.getElementById('comment-send-' + CSS.escape(title));
+  if (sendBtn) sendBtn.addEventListener('click', () => postCommentClient(title));
+
+  // Load comments
+  await renderComments(title);
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) {
+    closeModalBtn();
+  }
+}
+
+function closeModalBtn() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// NAV TABS
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.section').forEach(s => {
+      if (cat === 'all') {
+        s.classList.remove('hidden');
+      } else {
+        s.classList.toggle('hidden', s.dataset.cat !== cat);
+      }
+    });
+    // Re-filter with search
+    filterCards(document.getElementById('search').value);
+  });
+});
+
+// SEARCH
+document.getElementById('search').addEventListener('input', (e) => {
+  filterCards(e.target.value);
+});
+
+function filterCards(query) {
+  const q = query.toLowerCase().trim();
+  let anyVisible = false;
+  document.querySelectorAll('.drama-card').forEach(card => {
+    const sectionHidden = card.closest('.section').classList.contains('hidden');
+    if (sectionHidden) { card.classList.add('hidden'); return; }
+    const match = !q || card.dataset.title.includes(q) || card.dataset.genre.includes(q);
+    card.classList.toggle('hidden', !match);
+    if (match) anyVisible = true;
+  });
+}
+
+function updateCounts() {
+  for (const [key, cat] of Object.entries(DRAMAS)) {
+    const el = document.getElementById(`cnt-${key}`);
+    if (el) el.textContent = cat.items.length;
+  }
+}
+
+// ESC to close modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
+
+// ── VOTE SYSTEM ─────────────────────────────────────────────────────────────
+const CAT_ORDER = ['passable','assez','bien','tresbien','master'];
+const CAT_LABELS = { master:'⭐⭐⭐⭐⭐ MASTER', tresbien:'⭐⭐⭐⭐ TRÈS BIEN', bien:'⭐⭐⭐ BIEN', assez:'⭐⭐ ASSEZ BIEN', passable:'⭐ PASSABLE' };
+const VOTE_THRESHOLD = 10;
+
+const API_BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost') ? 'http://localhost:3000/api' : '/api';
+
+function getUserId() {
+  try {
+    let id = localStorage.getItem('kd_user');
+    if (!id) {
+      id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('u-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+      localStorage.setItem('kd_user', id);
+    }
+    return id;
+  } catch(e) { return 'u-anon'; }
+}
+
+async function getVotesAPI(title) {
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${API_BASE}/votes/${encodeURIComponent(title)}?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return { up:0, down:0, perfect:0, net:0, voted: null }; }
+}
+
+async function castVoteAPI(title, vote) {
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${API_BASE}/votes/${encodeURIComponent(title)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, vote })
+    });
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+function buildVoteHTMLFromData(title, catCls, v) {
+  const total = v.up + v.down + v.perfect;
+  const catIdx = CAT_ORDER.indexOf(catCls);
+  const canUp = catIdx < CAT_ORDER.length - 1;
+  const canDown = catIdx > 0;
+  const netScore = (v.up||0) - (v.down||0);
+  const t = title.replace(/'/g, "\\'");
+  const hasVoted = v.voted !== null && v.voted !== undefined;
+
+  let statusMsg = '';
+  if (v.voted === 'perfect') {
+    statusMsg = `<span class="vote-promoted">✨ Tu penses que c'est la place idéale !</span>`;
+  } else if (netScore >= VOTE_THRESHOLD && canUp) {
+    statusMsg = `<span class="vote-promoted">🚀 Ce drama mérite d'être promu ! (${netScore}/${VOTE_THRESHOLD})</span>`;
+  } else if (netScore <= -VOTE_THRESHOLD && canDown) {
+    statusMsg = `<span class="vote-demoted">⬇️ Ce drama devrait descendre (${netScore}/${-VOTE_THRESHOLD})</span>`;
+  } else {
+    statusMsg = `<span class="vote-status">Score : ${netScore > 0 ? '+' : ''}${netScore} / seuil ±${VOTE_THRESHOLD} pour changer de classe</span>`;
+  }
+
+  const changeBtn = hasVoted
+    ? `<button class="vote-change" onclick="resetVoteClient('${t}','${catCls}')">↩ Changer mon avis</button>`
+    : '';
+
+  return `
+    <div class="vote-section" id="vote-section-${CSS.escape(title)}">
+      <div class="vote-label">Ce drama mérite-t-il mieux ou moins ?</div>
+      <div class="vote-desc">Au bout de ${VOTE_THRESHOLD} votes d'écart, il change de classe automatiquement.</div>
+      <div class="vote-buttons">
+        <button class="vote-btn vote-up ${v.voted==='up'?'active':''}" onclick="castVoteClient('${t}','up','${catCls}')" ${hasVoted && v.voted!=='up' ? 'disabled' : ''}>▲ Mérite mieux <small>(${v.up||0})</small></button>
+        <button class="vote-btn vote-perfect ${v.voted==='perfect'?'active':''}" onclick="castVoteClient('${t}','perfect','${catCls}')" ${hasVoted && v.voted!=='perfect' ? 'disabled' : ''}>✦ Place idéale <small>(${v.perfect||0})</small></button>
+        <button class="vote-btn vote-down ${v.voted==='down'?'active':''}" onclick="castVoteClient('${t}','down','${catCls}')" ${hasVoted && v.voted!=='down' ? 'disabled' : ''}>▼ Mérite moins <small>(${v.down||0})</small></button>
+      </div>
+      <div>${statusMsg}</div>
+      ${changeBtn}
+    </div>`;
+}
+
+window.castVoteClient = async function(title, dir, catCls) {
+  const resp = await castVoteAPI(title, dir);
+  if (!resp) return alert('Erreur réseau, réessayez');
+  // Update modal vote section
+  const container = document.querySelector('.modal-overlay .modal-content');
+  if (container) {
+    const voteContainer = container.querySelector('.vote-section') || container.querySelector('#modal-vote-placeholder');
+    if (voteContainer) {
+      voteContainer.outerHTML = buildVoteHTMLFromData(title, catCls, resp);
+    }
+  }
+
+  // If threshold reached, move locally (client-side)
+  const net = resp.up - resp.down;
+  let currentCat = catCls;
+  for (const [key, cat] of Object.entries(DRAMAS)) {
+    if (cat.items.some(d => d[0] === title)) { currentCat = key; break; }
+  }
+  const catIdx = CAT_ORDER.indexOf(currentCat);
+  if (net >= VOTE_THRESHOLD && catIdx < CAT_ORDER.length - 1) moveDrama(title, currentCat, CAT_ORDER[catIdx + 1]);
+  else if (net <= -VOTE_THRESHOLD && catIdx > 0) moveDrama(title, currentCat, CAT_ORDER[catIdx - 1]);
+};
+
+window.resetVoteClient = async function(title, catCls) {
+  // Toggle off by re-sending the current vote (server toggles when same vote received)
+  const v = await getVotesAPI(title);
+  if (v && v.voted) {
+    await castVoteAPI(title, v.voted);
+  }
+  const fresh = await getVotesAPI(title);
+  const container = document.querySelector('.modal-overlay .modal-content');
+  if (container) {
+    const voteContainer = container.querySelector('.vote-section') || container.querySelector('#modal-vote-placeholder');
+    if (voteContainer) voteContainer.outerHTML = buildVoteHTMLFromData(title, catCls, fresh);
+  }
+};
+
+function rebuildGrid(catKey) {
+  const grid = document.getElementById(`grid-${catKey}`);
+  if (!grid) return;
+  grid.innerHTML = '';
+  const cat = DRAMAS[catKey];
+  cat.items.forEach((drama) => {
+    const [title, synopsis, avis, genre, eps, year] = drama;
+    const card = document.createElement('div');
+    card.className = 'drama-card';
+    card.dataset.title = title.toLowerCase();
+    card.dataset.genre = genre.toLowerCase();
+    card.dataset.cat = catKey;
+    const genrePrimary = genre.split('/')[0].trim();
+    card.innerHTML = `
+      <div class="poster-wrap">
+        <img src="" alt="${title}" loading="lazy"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none">🎬</div>
+        <div class="genre-badge">${genrePrimary}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${title}</div>
+        <div class="card-synopsis">${synopsis}</div>
+        <div class="card-avis">${avis}</div>
+      </div>`;
+    card.addEventListener('click', () => openModal(title, synopsis, avis, genre, eps, year, cat.label, cat.cls, card.querySelector('img').src));
+    grid.appendChild(card);
+    loadPoster(card.querySelector('img'), title);
+  });
+}
+
+// Find drama metadata by title across DRAMAS
+function findDramaByTitle(title) {
+  for (const [catKey, cat] of Object.entries(DRAMAS)) {
+    for (const drama of cat.items) {
+      if (drama[0] === title) return { drama, catKey };
+    }
+  }
+  return null;
+}
+
+// Fetch sorted list of dramas from server and render a global ranking section
+async function fetchSortedDramas() {
+  try {
+    const titles = [];
+    for (const cat of Object.values(DRAMAS)) cat.items.forEach(d => titles.push(d[0]));
+    const res = await fetch(`${API_BASE}/dramas/sort`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titles })
+    });
+    if (!res.ok) return;
+    const sorted = await res.json();
+    buildGlobalRankingSection(sorted);
+  } catch(e) { /* ignore */ }
+}
+
+function buildGlobalRankingSection(sorted) {
+  const container = document.getElementById('sections-container');
+  // remove existing
+  const existing = document.getElementById('global-ranking-section');
+  if (existing) existing.remove();
+
+  const section = document.createElement('section');
+  section.className = 'section';
+  section.id = 'global-ranking-section';
+  section.innerHTML = `
+    <div class="section-header">
+      <div class="section-stars">Top</div>
+      <div class="section-title">Classement global</div>
+      <div class="section-count">${sorted.length} dramas</div>
+    </div>
+    <div class="drama-grid" id="grid-global"></div>
+  `;
+  // insert at top
+  container.insertBefore(section, container.firstChild);
+
+  const grid = document.getElementById('grid-global');
+  const max = Math.min(sorted.length, 24);
+  for (let i = 0; i < max; i++) {
+    const item = sorted[i];
+    const info = findDramaByTitle(item.title);
+    if (!info) continue;
+    const [title, synopsis, avis, genre, eps, year] = info.drama;
+    const card = document.createElement('div');
+    card.className = 'drama-card';
+    card.dataset.title = title.toLowerCase();
+    card.dataset.genre = genre.toLowerCase();
+    card.dataset.cat = info.catKey;
+    const genrePrimary = genre.split('/')[0].trim();
+    card.innerHTML = `
+      <div class="poster-wrap">
+        <img src="" alt="${title}" loading="lazy">
+        <div class="poster-placeholder" style="display:none">🎬</div>
+        <div class="genre-badge">${genrePrimary}</div>
+        ${eps ? `<div class="eps-badge">${eps}</div>` : ''}
+        ${year ? `<div class="year-badge">${year}</div>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-title">${title} <span style="float:right; font-size:12px; color:var(--muted);">${item.aggregates.net || 0}</span></div>
+        <div class="card-synopsis">${synopsis}</div>
+        <div class="card-avis">${avis}</div>
+      </div>`;
+    card.addEventListener('click', () => openModal(title, synopsis, avis, genre, eps, year, '', info.catKey, card.querySelector('img').src));
+    grid.appendChild(card);
+    loadPoster(card.querySelector('img'), title);
+  }
+}
+
+// refreshVoteSection is now server-driven via render in modal
+function refreshVoteSection(title, catCls) {
+  // no-op kept for compatibility
+}
+
+// ── COMMENTS (server-backed) ────────────────────────────────────────────────
+async function getCommentsAPI(title) {
+  try {
+    const res = await fetch(`${API_BASE}/comments/${encodeURIComponent(title)}`);
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return []; }
+}
+
+async function postCommentAPI(title, user, text) {
+  try {
+    const res = await fetch(`${API_BASE}/comments/${encodeURIComponent(title)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, text })
+    });
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function renderComments(title) {
+  const comments = await getCommentsAPI(title);
+  const listEl = document.getElementById('comment-list-' + CSS.escape(title));
+  if (!listEl) return;
+  const listHTML = comments.length === 0
+    ? `<div class="no-comments">Aucun commentaire — sois le premier !</div>`
+    : comments.map(c => `
+        <div class="comment-item">
+          <div class="comment-meta">${new Date(c.created_at).toLocaleString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}</div>
+          ${c.text}
+        </div>`).join('');
+  listEl.innerHTML = listHTML;
+  const label = document.getElementById('comments-label-' + CSS.escape(title));
+  if (label) label.textContent = `💬 Commentaires (${comments.length})`;
+}
+
+async function postCommentClient(title) {
+  const inputId = 'comment-input-' + CSS.escape(title);
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  // optional: use stored user name or null
+  const user = 'Visiteur';
+  const resp = await postCommentAPI(title, user, text);
+  if (!resp) return alert('Erreur lors de l\'envoi du commentaire');
+  input.value = '';
+  await renderComments(title);
+}
+
+buildSections();
+// Fetch server-side ranking and show global classement
+fetchSortedDramas();
+// Refresh every 20s
+setInterval(fetchSortedDramas, 20000);
+</script>
+</body>
+</html>
