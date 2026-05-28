@@ -1425,7 +1425,8 @@ const CAT_ORDER = ['passable','assez','bien','tresbien','master'];
 const CAT_LABELS = { master:'⭐⭐⭐⭐⭐ MASTER', tresbien:'⭐⭐⭐⭐ TRÈS BIEN', bien:'⭐⭐⭐ BIEN', assez:'⭐⭐ ASSEZ BIEN', passable:'⭐ PASSABLE' };
 const VOTE_THRESHOLD = 10;
 
-const API_BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost') ? 'http://localhost:3000/api' : '/api';
+const API_BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost') ? 'http://localhost:3000/api' : 'https://egpa-kdrama.onrender.com/api';
+
 
 function getUserId() {
   try {
