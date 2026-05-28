@@ -12,13 +12,26 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve frontend static files from parent folder (project root)
-app.use(express.static(path.join(__dirname, '..')));
+// Detect frontend HTML location: same dir (Render/GitHub root) or parent dir (local dev with server/ subfolder)
+const fs = require('fs');
+const htmlInSameDir = path.join(__dirname, 'classement_kdramas-1.html');
+const htmlInParentDir = path.join(__dirname, '..', 'classement_kdramas-1.html');
+const htmlFile = fs.existsSync(htmlInSameDir) ? htmlInSameDir
+               : fs.existsSync(htmlInParentDir) ? htmlInParentDir
+               : null;
+const frontendPath = htmlFile ? path.dirname(htmlFile) : null;
 
-// Convenience root route -> classement_kdramas-1.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'classement_kdramas-1.html'));
-});
+if (frontendPath) {
+  app.use(express.static(frontendPath));
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'classement_kdramas-1.html'));
+  });
+} else {
+  // Fallback: frontend is hosted separately (Netlify)
+  app.get('/', (req, res) => {
+    res.json({ name: 'Kdrama API', status: 'ok', endpoints: ['/api/health', '/api/votes/:title', '/api/comments/:title', '/api/aggregates', '/api/dramas/sort'] });
+  });
+}
 
 // Postgres connection via DATABASE_URL (e.g. Supabase)
 const DATABASE_URL = process.env.DATABASE_URL || process.env.SUPABASE_URL || null;
