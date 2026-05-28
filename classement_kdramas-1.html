@@ -1015,7 +1015,7 @@ function buildClassVoteHTML(title) {
   } else if (total > 0 && winner) {
     status = 'En tête : <strong style="color:' + CLASS_COLORS[winner] + '">' + winner + '</strong> (' + maxV + '/' + CLASS_THRESHOLD + ' votes)';
   } else {
-    status = CLASS_THRESHOLD + ' votes pour intégrer une catégorie';
+    status = 'Imposer votre choix aux autres';
   }
 
   const changeBtn = v.voted ? '<button class="vote-change" onclick="resetClassVote(\'' + t + '\')">↩ Changer mon avis</button>' : '';
