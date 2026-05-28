@@ -628,6 +628,37 @@
   }
   .comment-send:hover { background: rgba(179,157,219,.35); }
   .no-comments { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+  /* ── RESPONSIVE MOBILE ─────────────────────────── */
+  @media (max-width: 600px) {
+
+    /* Hero */
+    .hero { padding: 36px 16px 28px; }
+
+    /* Tabs */
+    .tabs { padding: 14px 12px 0; gap: 6px; }
+    .tab-btn { padding: 6px 13px; font-size: 12px; }
+
+    /* Grille : 2 colonnes fixes sur mobile */
+    .drama-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+    /* Section padding */
+    .section { padding: 28px 12px 16px; }
+    .section-title { font-size: 24px; }
+
+    /* Modale : empile poster + contenu verticalement */
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal { max-height: 92vh; border-radius: 16px 16px 0 0; }
+    .modal-inner { flex-direction: column; }
+    .modal-poster { width: 100%; height: 200px; }
+    .modal-poster img { border-radius: 16px 16px 0 0; object-fit: cover; }
+    .modal-poster-ph { min-height: 140px; border-radius: 16px 16px 0 0; }
+    .modal-content { padding: 18px 16px 24px; }
+    .modal-title { font-size: 18px; }
+
+    /* Stats bar */
+    .stats-bar { gap: 14px; padding: 16px 12px; }
+    .stat-num { font-size: 22px; }
+  }
 </style>
 </head>
 <body>
