@@ -1,9 +1,14 @@
 services:
   - type: web
-    name: kdrama-api
-    runtime: node
-    buildCommand: npm install
-    startCommand: node index.js
-    envVars:
-      - key: DATABASE_URL
-        sync: false
+    name: kdrama-front
+    env: static
+    buildCommand: ""
+    staticPublishPath: .
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /classement_kdramas-1.html
