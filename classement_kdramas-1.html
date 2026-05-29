@@ -2654,9 +2654,15 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
     </div>
   `;
 
-  document.getElementById('modal-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  renderModalDynamic(title, catCls);
+document.getElementById('modal-overlay').classList.add('open');
+document.body.style.overflow = 'hidden';
+renderModalDynamic(title, catCls);
+
+// Charge le poster si image vide
+const modalImg = document.querySelector('.modal-poster img');
+if (modalImg && (!modalImg.src || modalImg.src === window.location.href)) {
+  loadPoster(modalImg, title);
+}
 }
 
 async function renderModalDynamic(title, catCls) {
