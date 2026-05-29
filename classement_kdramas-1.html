@@ -3236,6 +3236,12 @@ function openRandomDrama() {
   const pick = allDramas[Math.floor(Math.random() * allDramas.length)];
   const [title, synopsis, avis, genre, eps, year] = pick.drama;
   openModal(title, synopsis, avis, genre, eps, year, pick.cat.label, pick.cat.cls, '');
+
+  // Charge le poster après ouverture du modal
+  setTimeout(() => {
+    const modalImg = document.querySelector('.modal-poster img');
+    if (modalImg) loadPoster(modalImg, title);
+  }, 50);
 }
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
