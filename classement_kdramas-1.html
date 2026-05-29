@@ -1858,7 +1858,6 @@ function buildUnseenSection() {
   if (old) old.remove();
   if (UNSEEN_DRAMAS.length === 0) { updateCounts(); return; }
 
-  // Sort UNSEEN_DRAMAS by year descending
   UNSEEN_DRAMAS.sort((a, b) => {
     const yearA = parseInt(a.year) || 0;
     const yearB = parseInt(b.year) || 0;
@@ -1878,9 +1877,10 @@ function buildUnseenSection() {
   container.appendChild(section);
 
   const grid = section.querySelector('#grid-unseen');
-  UNSEEN_DRAMAS.forEach(d => {
+
+  UNSEEN_DRAMAS.forEach((d, idx) => {
     const card = document.createElement('div');
-    card.className = 'drama-card';
+    card.className = 'drama-card' + (idx >= INITIAL_SHOW ? ' collapsed' : '');
     card.dataset.title = d.title.toLowerCase();
     card.dataset.cat = 'unseen';
     const genrePrimary = (d.genre || 'Drama').split('/')[0].trim();
@@ -1899,28 +1899,22 @@ function buildUnseenSection() {
         '<div class="card-synopsis">' + d.synopsis + '</div>' +
       '</div>';
     card.addEventListener('click', () => openUnseenModal(d));
-    // Dans buildUnseenSection, remplacer le bloc forEach + appendChild par :
-UNSEEN_DRAMAS.forEach((d, idx) => {
-  // ... (tout le code de création de card identique) ...
-  card.className = 'drama-card' + (idx >= INITIAL_SHOW ? ' collapsed' : '');
-  // ...
-  grid.appendChild(card);
-  lazyLoadPoster(card.querySelector('img'), d.title, true);
-});
-
-if (UNSEEN_DRAMAS.length > INITIAL_SHOW) {
-  const wrap = document.createElement('div');
-  wrap.className = 'show-more-wrap';
-  const remaining = UNSEEN_DRAMAS.length - INITIAL_SHOW;
-  wrap.innerHTML = `<button class="show-more-btn" data-cat="unseen">Voir les ${remaining} autres ▾</button>`;
-  grid.appendChild(wrap);
-  wrap.querySelector('.show-more-btn').addEventListener('click', function () {
-    grid.querySelectorAll('.drama-card.collapsed').forEach(c => c.classList.remove('collapsed'));
-    wrap.remove();
-  });
-}
+    grid.appendChild(card);
     lazyLoadPoster(card.querySelector('img'), d.title, true);
   });
+
+  if (UNSEEN_DRAMAS.length > INITIAL_SHOW) {
+    const wrap = document.createElement('div');
+    wrap.className = 'show-more-wrap';
+    const remaining = UNSEEN_DRAMAS.length - INITIAL_SHOW;
+    wrap.innerHTML = '<button class="show-more-btn">Voir les ' + remaining + ' autres ▾</button>';
+    grid.appendChild(wrap);
+    wrap.querySelector('.show-more-btn').addEventListener('click', function () {
+      grid.querySelectorAll('.drama-card.collapsed').forEach(c => c.classList.remove('collapsed'));
+      wrap.remove();
+    });
+  }
+
   updateCounts();
 }
 
