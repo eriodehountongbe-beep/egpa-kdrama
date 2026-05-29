@@ -383,6 +383,7 @@
   .pb-voirdrama { background: #9c27b0; color: #fff; }
   .pb-frstream { background:  #e65100; color: #fff; }
   .pb-telegram { background: #0088cc; color: #fff; }
+  .pb-disney   { background: #0a1931; color: #fff; }
   .pb-tving    { background: #ff5c00; color: #fff; }
   .pb-wavve     { background: #0095ff; color: #fff; }
   .pb-kocowa    { background: #00b894; color: #fff; }
@@ -1076,6 +1077,12 @@ const UNSEEN_DRAMAS = [
     eps: "12 ép.",
     platforms: [["Disney+","https://www.disneyplus.com","pb-disney"]]
   },
+  { title: "My Royal Nemesis", synopsis: "Une célèbre meurtrière de l'époque Joseon se réveille dans le Séoul moderne et croise la route d'un puissant héritier de chaebol — son seul espoir de réécrire son destin.", year: 2026, genre: "Romance / Fantasy / Comédie", eps: "14 ép.", platforms: [["Netflix","https://www.netflix.com/title/81736584","pb-netflix"],["French Stream","https://fs17.lol/15127050--saison-1-2026.html","pb-frstream"]] },
+  { title: "We Are All Trying Here", synopsis: "Un aspirant réalisateur qui n'a jamais réussi à percer en 20 ans jalouse tous ses amis devenus des cinéastes accomplis, jusqu'à ce qu'une productrice entrevoit son potentiel.", year: 2026, genre: "Comédie noire / Slice of life", eps: "12 ép.", platforms: [["Netflix","https://www.netflix.com","pb-netflix"],["French Stream","https://fs17.lol/15126732-de-notre-mieux-saison-1-2026.html","pb-frstream"]] },
+  { title: "Filing for Love", synopsis: "Une directrice d'audit froide et secrète se retrouve à travailler nuit et jour avec un employé déclassé et trop efficace, dans un bureau où rien ne reste caché longtemps.", year: 2026, genre: "Romance / Comédie / Bureau", eps: "12 ép.", platforms: [["Netflix","https://www.netflix.com","pb-netflix"],["French Stream","https://fs17.lol/15126895--saison-1-2026.html","pb-frstream"]] },
+  { title: "Sold Out on You", synopsis: "Une animatrice de téléachat insomniaque débarque dans un village reculé pour signer un contrat avec un fermier grognon et mystérieux. Leurs vies se percutent à toute heure du jour et de la nuit.", year: 2026, genre: "Romance / Comédie", eps: "12 ép.", platforms: [["Netflix","https://www.netflix.com/title/81736584","pb-netflix"],["French Stream","https://fs17.lol/15126877-le-cur-aux-affaires-saison-1-2026.html","pb-frstream"]] },
+  { title: "The Legend of Kitchen Soldier", synopsis: "Un jeune soldat s'enrôle pour fuir sa vie et se retrouve cuisinier de l'armée. Un mystérieux système de quêtes apparaît alors devant lui et le transforme en légendaire chef des cuisines militaires.", year: 2026, genre: "Comédie / Action / Fantasy", eps: "16 ép.", platforms: [["Viki","https://www.viki.com","pb-viki"],["French Stream","https://fs17.lol/15127049--saison-1-2026.html","pb-frstream"]] },
+  { title: "Gold Land", synopsis: "Une agente de sécurité aéroportuaire se retrouve accidentellement en possession de lingots d'or appartenant à une organisation de contrebande et devient l'enjeu d'une course poursuite impitoyable.", year: 2026, genre: "Thriller / Action / Crime", eps: "12 ép.", platforms: [["Disney+","https://www.disneyplus.com","pb-disney"],["French Stream","https://fs17.lol/15126767--saison-1-2026.html","pb-frstream"]] },
   { title: "No Tail to Tell", synopsis: "Eun Ho est une gumiho qui refuse de devenir humaine pour profiter éternellement de la vie. Tout bascule quand elle croise la route de Kang Si Yeol, star du football narcissique.", year: 2026, genre: "Romance / Fantasy / Comédie", eps: "12 ép.", platforms: [["Netflix","https://www.netflix.com/title/81707028","pb-netflix"]] },
   { title: "Undercover Miss Hong", synopsis: "Dans les années 90, Hong Geum Bo, élite de la supervision financière, s'infiltre en tant que jeune employée dans une société de courtage où circulent des fonds suspects.", year: 2026, genre: "Comédie / Policier", eps: "16 ép.", platforms: [["Netflix","https://www.netflix.com/title/81736584","pb-netflix"],["Telegram", "https://t.me/korea_Dramas_tv", "pb-telegram"]] },
   { title: "The Judge Returns", synopsis: "Après avoir été corrompu puis assassiné pour avoir voulu faire justice, le juge Lee Han Yeong est propulsé 10 ans dans le passé avec une seconde chance de tout réparer.", year: 2026, genre: "Juridique / Fantasy", eps: "14 ép.", platforms: [["Viki","https://www.viki.com/tv/41332c-the-judge-returns","pb-viki"]] },
@@ -1950,15 +1957,20 @@ const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virt
 "Abyss": 89747,"Destined With You": 215001,
 "Weak Hero Class 1": 200709,
 "Melting Me Softly": 92911, "Extraordinary You": 88586,
-"Eve": 131210,"Encounter": 80180,"Oh My Venus": 63462,
+"Eve": 131210,"Encounter": 83941,"Oh My Venus": 63462,
 "Kill Me Heal Me": 60992,
 "Moon Lovers : Scarlet Heart Ryeo": 66022,
 "Another Miss Oh": 66392,
 "Uncontrollably Fond": 65821,
 "Legend of the Blue Sea": 67876,
 "Cheese in the Trap": 66171,
-"A Korean Odyssey": 71657,"Suspicious Partner": 68060,
-"Descendants of the Sun": 63639};
+"A Korean Odyssey": 71657,"Suspicious Partner": 71349,
+"Descendants of the Sun": 63639,"My Royal Nemesis": 296622,
+"We Are All Trying Here": 290724,
+"Filing for Love": 293540,
+"Sold Out on You": 291382,
+"The Legend of Kitchen Soldier": 289204,
+"Gold Land": 278113};
 const KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
 async function loadPoster(img, title) {
