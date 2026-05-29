@@ -2183,13 +2183,37 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
       <div class="modal-label">Avis</div>
       <div class="modal-avis">${avis}</div>
       ${buildPlatformHTML(title)}
-      ${buildVoteHTML(title, catCls)}
-      ${buildCommentsHTML(title)}
+      <div id="modal-vote-placeholder"></div>
+      <div id="modal-comments-placeholder"></div>
     </div>
   `;
 
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  renderModalDynamic(title, catCls);
+}
+
+async function renderModalDynamic(title, catCls) {
+  const voteData = await getVotesAPI(title);
+  const votePlaceholder = document.getElementById('modal-vote-placeholder');
+  if (votePlaceholder) votePlaceholder.outerHTML = buildVoteHTMLFromData(title, catCls, voteData);
+
+  const commentsHtml = `
+    <div class="comments-section">
+      <div class="comments-label" id="comments-label-${CSS.escape(title)}">💬 Commentaires</div>
+      <div class="comment-list" id="comment-list-${CSS.escape(title)}"><div class="no-comments">Chargement...</div></div>
+      <div class="comment-input-wrap">
+        <input class="comment-input" id="comment-input-${CSS.escape(title)}" placeholder="Ton avis sur ce drama..." maxlength="300">
+        <button class="comment-send" id="comment-send-${CSS.escape(title)}">Envoyer</button>
+      </div>
+    </div>`;
+  const commentsPlaceholder = document.getElementById('modal-comments-placeholder');
+  if (commentsPlaceholder) commentsPlaceholder.outerHTML = commentsHtml;
+
+  const sendBtn = document.getElementById('comment-send-' + CSS.escape(title));
+  if (sendBtn) sendBtn.addEventListener('click', () => postCommentClient(title));
+
+  await renderComments(title);
 }
 
 function closeModal(e) {
@@ -2255,24 +2279,47 @@ const CAT_ORDER = ['passable','assez','bien','tresbien','master'];
 const CAT_LABELS = { master:'⭐⭐⭐⭐⭐ MASTER', tresbien:'⭐⭐⭐⭐ TRÈS BIEN', bien:'⭐⭐⭐ BIEN', assez:'⭐⭐ ASSEZ BIEN', passable:'⭐ PASSABLE' };
 const VOTE_THRESHOLD = 10;
 
-function getVotes(title) {
-  try { const d = JSON.parse(localStorage.getItem('votes_' + title)) || {}; return { up: d.up||0, down: d.down||0, perfect: d.perfect||0, voted: d.voted||null }; }
-  catch { return { up: 0, down: 0, perfect: 0, voted: null }; }
-}
-function saveVotes(title, data) {
-  try { localStorage.setItem('votes_' + title, JSON.stringify(data)); } catch {}
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : 'https://egpa-kdrama.onrender.com/api';
+
+function getUserId() {
+  try {
+    let id = localStorage.getItem('kd_user');
+    if (!id) {
+      id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('u-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+      localStorage.setItem('kd_user', id);
+    }
+    return id;
+  } catch(e) { return 'u-anon'; }
 }
 
-function buildVoteHTML(title, catCls) {
-  const v = getVotes(title);
-  const total = v.up + v.down + v.perfect;
-  const upPct = total ? Math.round(v.up / total * 100) : 33;
+async function getVotesAPI(title) {
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${API_BASE}/votes/${encodeURIComponent(title)}?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return { up:0, down:0, perfect:0, net:0, voted: null }; }
+}
+
+async function castVoteAPI(title, vote) {
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${API_BASE}/votes/${encodeURIComponent(title)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, vote })
+    });
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+function buildVoteHTMLFromData(title, catCls, v) {
   const catIdx = CAT_ORDER.indexOf(catCls);
   const canUp = catIdx < CAT_ORDER.length - 1;
   const canDown = catIdx > 0;
-  const netScore = v.up - v.down;
+  const netScore = (v.up||0) - (v.down||0);
   const t = title.replace(/'/g, "\\'");
-  const hasVoted = v.voted !== null;
+  const hasVoted = v.voted !== null && v.voted !== undefined;
 
   let statusMsg = '';
   if (v.voted === 'perfect') {
@@ -2286,69 +2333,51 @@ function buildVoteHTML(title, catCls) {
   }
 
   const changeBtn = hasVoted
-    ? `<button class="vote-change" onclick="resetVote('${t}', '${catCls}')">↩ Changer mon avis</button>`
+    ? `<button class="vote-change" onclick="resetVoteClient('${t}','${catCls}')">↩ Changer mon avis</button>`
     : '';
 
   return `
-    <div class="vote-section">
+    <div class="vote-section" id="vote-section-${CSS.escape(title)}">
       <div class="vote-label">Ce drama mérite-t-il mieux ou moins ?</div>
       <div class="vote-desc">Au bout de ${VOTE_THRESHOLD} votes d'écart, il change de classe automatiquement.</div>
       <div class="vote-buttons">
-        <button class="vote-btn vote-up ${v.voted==='up'?'active':''}" onclick="castVote('${t}','up','${catCls}')" ${hasVoted && v.voted!=='up' ? 'disabled' : ''}>▲ Mérite mieux <small>(${v.up})</small></button>
-        <button class="vote-btn vote-perfect ${v.voted==='perfect'?'active':''}" onclick="castVote('${t}','perfect','${catCls}')" ${hasVoted && v.voted!=='perfect' ? 'disabled' : ''}>✦ Place idéale <small>(${v.perfect})</small></button>
-        <button class="vote-btn vote-down ${v.voted==='down'?'active':''}" onclick="castVote('${t}','down','${catCls}')" ${hasVoted && v.voted!=='down' ? 'disabled' : ''}>▼ Mérite moins <small>(${v.down})</small></button>
+        <button class="vote-btn vote-up ${v.voted==='up'?'active':''}" onclick="castVoteClient('${t}','up','${catCls}')" ${hasVoted && v.voted!=='up' ? 'disabled' : ''}>▲ Mérite mieux <small>(${v.up||0})</small></button>
+        <button class="vote-btn vote-perfect ${v.voted==='perfect'?'active':''}" onclick="castVoteClient('${t}','perfect','${catCls}')" ${hasVoted && v.voted!=='perfect' ? 'disabled' : ''}>✦ Place idéale <small>(${v.perfect||0})</small></button>
+        <button class="vote-btn vote-down ${v.voted==='down'?'active':''}" onclick="castVoteClient('${t}','down','${catCls}')" ${hasVoted && v.voted!=='down' ? 'disabled' : ''}>▼ Mérite moins <small>(${v.down||0})</small></button>
       </div>
       <div>${statusMsg}</div>
       ${changeBtn}
     </div>`;
 }
 
-function castVote(title, dir, catCls) {
-  const v = getVotes(title);
-  // Toggle off if clicking same button again
-  if (v.voted === dir) {
-    v[dir]--;
-    v.voted = null;
-    saveVotes(title, v);
-    refreshVoteSection(title, catCls);
-    return;
+window.castVoteClient = async function(title, dir, catCls) {
+  const resp = await castVoteAPI(title, dir);
+  if (!resp) return alert('Erreur réseau, réessayez');
+  const container = document.querySelector('.modal-overlay .modal-content');
+  if (container) {
+    const voteContainer = container.querySelector('.vote-section') || container.querySelector('#modal-vote-placeholder');
+    if (voteContainer) voteContainer.outerHTML = buildVoteHTMLFromData(title, catCls, resp);
   }
-  if (v.voted !== null) return; // already voted differently, must reset first
-  if (dir === 'up') v.up++;
-  else if (dir === 'down') v.down++;
-  else v.perfect++;
-  v.voted = dir;
-  saveVotes(title, v);
-
-  if (dir === 'perfect') { refreshVoteSection(title, catCls); return; }
-
-  const netScore = v.up - v.down;
+  const net = resp.up - resp.down;
   let currentCat = catCls;
   for (const [key, cat] of Object.entries(DRAMAS)) {
     if (cat.items.some(d => d[0] === title)) { currentCat = key; break; }
   }
-
   const catIdx = CAT_ORDER.indexOf(currentCat);
-  if (netScore >= VOTE_THRESHOLD && catIdx < CAT_ORDER.length - 1) {
-    moveDrama(title, currentCat, CAT_ORDER[catIdx + 1]);
-  } else if (netScore <= -VOTE_THRESHOLD && catIdx > 0) {
-    moveDrama(title, currentCat, CAT_ORDER[catIdx - 1]);
-  } else {
-    refreshVoteSection(title, currentCat);
-  }
-}
+  if (net >= VOTE_THRESHOLD && catIdx < CAT_ORDER.length - 1) moveDrama(title, currentCat, CAT_ORDER[catIdx + 1]);
+  else if (net <= -VOTE_THRESHOLD && catIdx > 0) moveDrama(title, currentCat, CAT_ORDER[catIdx - 1]);
+};
 
-function resetVote(title, catCls) {
-  const v = getVotes(title);
-  if (!v.voted) return;
-  // Undo the previous vote
-  if (v.voted === 'up') v.up = Math.max(0, v.up - 1);
-  else if (v.voted === 'down') v.down = Math.max(0, v.down - 1);
-  else v.perfect = Math.max(0, v.perfect - 1);
-  v.voted = null;
-  saveVotes(title, v);
-  refreshVoteSection(title, catCls);
-}
+window.resetVoteClient = async function(title, catCls) {
+  const v = await getVotesAPI(title);
+  if (v && v.voted) await castVoteAPI(title, v.voted);
+  const fresh = await getVotesAPI(title);
+  const container = document.querySelector('.modal-overlay .modal-content');
+  if (container) {
+    const voteContainer = container.querySelector('.vote-section') || container.querySelector('#modal-vote-placeholder');
+    if (voteContainer) voteContainer.outerHTML = buildVoteHTMLFromData(title, catCls, fresh);
+  }
+};
 
 function moveDrama(title, fromCat, toCat) {
   const fromItems = DRAMAS[fromCat].items;
@@ -2356,20 +2385,11 @@ function moveDrama(title, fromCat, toCat) {
   if (idx === -1) return;
   const drama = fromItems.splice(idx, 1)[0];
   DRAMAS[toCat].items.unshift(drama);
-
-  // Reset votes after promotion
-  saveVotes(title, { up: 0, down: 0, voted: null });
-
-  // Rebuild both grids
   rebuildGrid(fromCat);
   rebuildGrid(toCat);
   updateCounts();
-
-  // Close modal and reopen with new cat
   closeModalBtn();
-  setTimeout(() => {
-    alert(`"${title}" a été déplacé vers ${CAT_LABELS[toCat]} ! 🎉`);
-  }, 200);
+  setTimeout(() => { alert(`"${title}" a été déplacé vers ${CAT_LABELS[toCat]} ! 🎉`); }, 200);
 }
 
 function rebuildGrid(catKey) {
@@ -2404,8 +2424,7 @@ function rebuildGrid(catKey) {
 }
 
 function refreshVoteSection(title, catCls) {
-  const voteEl = document.querySelector('.vote-section');
-  if (voteEl) voteEl.outerHTML = buildVoteHTML(title, catCls);
+  // no-op, votes are refreshed via renderModalDynamic
 }
 
 // ── COMMENTS ────────────────────────────────────────────────────────────────
@@ -2461,8 +2480,130 @@ function postComment(title) {
   }
 }
 
+// ── COMMENTS (server-backed) ─────────────────────────────────────────────────
+async function getCommentsAPI(title) {
+  try {
+    const res = await fetch(`${API_BASE}/comments/${encodeURIComponent(title)}`);
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return []; }
+}
+
+async function postCommentAPI(title, user, text) {
+  try {
+    const res = await fetch(`${API_BASE}/comments/${encodeURIComponent(title)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, text })
+    });
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function renderComments(title) {
+  const comments = await getCommentsAPI(title);
+  const listEl = document.getElementById('comment-list-' + CSS.escape(title));
+  if (!listEl) return;
+  const listHTML = comments.length === 0
+    ? `<div class="no-comments">Aucun commentaire — sois le premier !</div>`
+    : comments.map(c => `
+        <div class="comment-item">
+          <div class="comment-meta">${new Date(c.created_at).toLocaleString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}</div>
+          ${c.text}
+        </div>`).join('');
+  listEl.innerHTML = listHTML;
+  const label = document.getElementById('comments-label-' + CSS.escape(title));
+  if (label) label.textContent = `💬 Commentaires (${comments.length})`;
+}
+
+async function postCommentClient(title) {
+  const inputId = 'comment-input-' + CSS.escape(title);
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const resp = await postCommentAPI(title, 'Visiteur', text);
+  if (!resp) return alert('Erreur lors de l\'envoi du commentaire');
+  input.value = '';
+  await renderComments(title);
+}
+
+// ── CLASSEMENT GLOBAL ─────────────────────────────────────────────────────────
+function findDramaByTitle(title) {
+  for (const [catKey, cat] of Object.entries(DRAMAS)) {
+    for (const drama of cat.items) {
+      if (drama[0] === title) return { drama, catKey };
+    }
+  }
+  return null;
+}
+
+async function fetchSortedDramas() {
+  try {
+    const titles = [];
+    for (const cat of Object.values(DRAMAS)) cat.items.forEach(d => titles.push(d[0]));
+    const res = await fetch(`${API_BASE}/dramas/sort`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titles })
+    });
+    if (!res.ok) return;
+    const sorted = await res.json();
+    buildGlobalRankingSection(sorted);
+  } catch(e) { /* ignore */ }
+}
+
+function buildGlobalRankingSection(sorted) {
+  const container = document.getElementById('sections-container');
+  const existing = document.getElementById('global-ranking-section');
+  if (existing) existing.remove();
+  const section = document.createElement('section');
+  section.className = 'section';
+  section.id = 'global-ranking-section';
+  section.innerHTML = `
+    <div class="section-header">
+      <div class="section-stars">Top</div>
+      <div class="section-title">Classement global</div>
+      <div class="section-count">${sorted.length} dramas</div>
+    </div>
+    <div class="drama-grid" id="grid-global"></div>
+  `;
+  container.insertBefore(section, container.firstChild);
+  const grid = document.getElementById('grid-global');
+  const max = Math.min(sorted.length, 24);
+  for (let i = 0; i < max; i++) {
+    const item = sorted[i];
+    const info = findDramaByTitle(item.title);
+    if (!info) continue;
+    const [title, synopsis, avis, genre, eps, year] = info.drama;
+    const card = document.createElement('div');
+    card.className = 'drama-card';
+    card.dataset.title = title.toLowerCase();
+    card.dataset.genre = genre.toLowerCase();
+    card.dataset.cat = info.catKey;
+    const genrePrimary = genre.split('/')[0].trim();
+    card.innerHTML = `
+      <div class="poster-wrap">
+        <img src="" alt="${title}" loading="lazy">
+        <div class="poster-placeholder" style="display:none">🎬</div>
+        <div class="genre-badge">${genrePrimary}</div>
+        ${eps ? `<div class="eps-badge">${eps}</div>` : ''}
+        ${year ? `<div class="year-badge">${year}</div>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-title">${title} <span style="float:right;font-size:12px;color:var(--muted)">${item.aggregates ? item.aggregates.net || 0 : 0}</span></div>
+        <div class="card-synopsis">${synopsis}</div>
+        <div class="card-avis">${avis}</div>
+      </div>`;
+    card.addEventListener('click', () => openModal(title, synopsis, avis, genre, eps, year, '', info.catKey, card.querySelector('img').src));
+    grid.appendChild(card);
+    loadPoster(card.querySelector('img'), title);
+  }
+}
+
 buildSections();
 buildUnseenSection();
+fetchSortedDramas();
+setInterval(fetchSortedDramas, 20000);
 </script>
 </body>
 </html>
