@@ -148,7 +148,28 @@ app.post('/api/comments/:title', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
   finally { client.release(); }
 });
+// ── VISITEURS EN LIGNE ─────────────────────────────────────────────
+const activeVisitors = new Map(); // sessionId -> timestamp
 
+app.post('/api/ping', (req, res) => {
+  const { sessionId } = req.body || {};
+  if (!sessionId) return res.status(400).json({ error: 'sessionId required' });
+  activeVisitors.set(sessionId, Date.now());
+  res.json({ ok: true });
+});
+
+app.get('/api/visitors', (req, res) => {
+  const adminKey = req.query.key;
+  if (adminKey !== (process.env.ADMIN_KEY || 'kdrama-admin-2026')) {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  const now = Date.now();
+  // Nettoyer les sessions inactives depuis plus de 90 secondes
+  for (const [id, ts] of activeVisitors.entries()) {
+    if (now - ts > 90000) activeVisitors.delete(id);
+  }
+  res.json({ count: activeVisitors.size });
+});
 const PORT = process.env.PORT || 3000;
 
 async function start() {
