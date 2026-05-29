@@ -2613,7 +2613,6 @@ function buildPlatformHTML(title) {
 function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, imgSrc) {
   const catColors = { master: '#b39ddb', tresbien: '#64b5f6', bien: '#69f0ae', assez: '#ffd54f', passable: '#ef9a9a' };
   const color = catColors[catCls] || '#fff';
-
   const awards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] ? DRAMA_AWARDS[title] : [];
   let awardsHTML = '';
   if (awards.length > 0) {
@@ -2628,15 +2627,11 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
       </div>
     `;
   }
-
   const inner = document.getElementById('modal-inner');
   inner.innerHTML = `
-    <div class="modal-poster" ${imgSrc && !imgSrc.includes('undefined') ? `style="--bg-url: url('${imgSrc}')"` : ''}>
-      ${imgSrc && !imgSrc.includes('undefined') ? 
-        `<img src="${imgSrc}" alt="${title}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-         <div class="modal-poster-ph" style="display:none">🎬</div>` :
-        `<div class="modal-poster-ph">🎬</div>`
-      }
+    <div class="modal-poster" id="modal-poster-wrap">
+      <img src="" alt="${title}" id="modal-poster-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="modal-poster-ph" style="display:none">🎬</div>
     </div>
     <div class="modal-content">
       <div class="modal-cat-badge" style="color:${color}">${catLabel}</div>
@@ -2654,17 +2649,19 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
     </div>
   `;
 
-document.getElementById('modal-overlay').classList.add('open');
-document.body.style.overflow = 'hidden';
-renderModalDynamic(title, catCls);
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 
-// Charge le poster si image vide
-const modalImg = document.querySelector('.modal-poster img');
-if (modalImg && (!modalImg.src || modalImg.src === window.location.href)) {
-  loadPoster(modalImg, title);
-}
-}
+  const modalImg = document.getElementById('modal-poster-img');
+  if (imgSrc && imgSrc !== '' && !imgSrc.includes('undefined')) {
+    modalImg.src = imgSrc;
+    modalImg.closest('.modal-poster').style.setProperty('--bg-url', `url('${imgSrc}')`);
+  } else {
+    loadPoster(modalImg, title);
+  }
 
+  renderModalDynamic(title, catCls);
+}
 async function renderModalDynamic(title, catCls) {
   const voteData = await getVotesAPI(title);
   const votePlaceholder = document.getElementById('modal-vote-placeholder');
