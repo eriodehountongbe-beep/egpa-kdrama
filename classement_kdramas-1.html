@@ -440,6 +440,105 @@
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: rgba(179,157,219,.3); border-radius: 3px; }
 
+  /* ── RESPONSIVITÉ ──────────────────────────────────────────────────── */
+
+  /* Large desktop (1400px+) */
+  @media (min-width: 1400px) {
+    .drama-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+    .section { padding: 0 48px 48px; }
+  }
+
+  /* Desktop standard (1024–1399px) */
+  @media (min-width: 1024px) and (max-width: 1399px) {
+    .drama-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+    .section { padding: 0 32px 40px; }
+  }
+
+  /* Tablet (768–1023px) */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .hero { padding: 44px 20px 30px; }
+    .drama-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+    .section { padding: 0 20px 36px; }
+    .section-header { padding: 24px 0 14px; }
+    .nav-tabs { gap: 6px; padding: 12px 20px; }
+    .tab-btn { font-size: 12px; padding: 7px 14px; }
+    .stats-bar { gap: 16px; padding: 18px 20px; }
+    /* Modal tablet */
+    .modal { max-width: 90vw; }
+    .modal-poster { width: 180px; }
+    .modal-content { padding: 22px 22px 22px 18px; }
+  }
+
+  /* Mobile (< 768px) */
+  @media (max-width: 767px) {
+    .hero { padding: 36px 16px 24px; }
+    .hero-title { font-size: clamp(38px, 12vw, 64px); }
+    .hero-sub { font-size: 13px; }
+    .hero-search { margin: 16px auto 0; max-width: 100%; }
+
+    .stats-bar { gap: 10px; padding: 14px 12px; flex-wrap: wrap; justify-content: center; }
+    .stat-num { font-size: 22px; }
+    .stat-lbl { font-size: 9px; }
+
+    .nav-tabs { gap: 6px; padding: 10px 12px; overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; scrollbar-width: none; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { font-size: 11px; padding: 6px 12px; white-space: nowrap; flex-shrink: 0; }
+
+    .section { padding: 0 12px 28px; }
+    .section-header { padding: 20px 0 12px; }
+    .section-title { font-size: 18px; }
+
+    .drama-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .card-body { padding: 8px 10px 10px; }
+    .card-title { font-size: 12px; }
+    .card-synopsis, .card-avis { font-size: 11px; -webkit-line-clamp: 2; }
+
+    /* Modal mobile : empilé verticalement */
+    .modal {
+      max-width: 100%;
+      max-height: 95vh;
+      border-radius: 16px 16px 0 0;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      margin: 0;
+    }
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .modal-inner { flex-direction: column; }
+    .modal-poster {
+      width: 100%;
+      height: 220px;
+      flex-shrink: 0;
+    }
+    .modal-poster img {
+      border-radius: 16px 16px 0 0;
+      object-position: top;
+    }
+    .modal-poster-ph {
+      min-height: 220px;
+      border-radius: 16px 16px 0 0;
+    }
+    .modal-content { padding: 18px 18px 24px; }
+    .modal-title { font-size: 18px; }
+    .modal-synopsis, .modal-avis { font-size: 13px; }
+
+    /* Vote + comments mobile */
+    .vote-buttons { flex-wrap: wrap; gap: 8px; }
+    .vote-bar-wrap { display: none; }
+    .vote-btn { font-size: 12px; padding: 6px 12px; }
+
+    /* Add drama button */
+    .add-drama-btn { bottom: 16px; right: 16px; padding: 11px 18px; font-size: 13px; }
+  }
+
+  /* Très petit mobile (< 380px) */
+  @media (max-width: 380px) {
+    .drama-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .hero-title { font-size: 36px; }
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(179,157,219,.3); border-radius: 3px; }
+
   /* PLATFORM DISCLAIMER */
   .platform-disclaimer {
     font-size: 10.5px;
@@ -696,7 +795,7 @@
   <div class="stat bien"><div class="stat-num" id="cnt-bien">68</div><div class="stat-lbl">⭐⭐⭐ Bien</div></div>
   <div class="stat assez"><div class="stat-num" id="cnt-assez">12</div><div class="stat-lbl">⭐⭐ Assez bien</div></div>
   <div class="stat passable"><div class="stat-num" id="cnt-passable">2</div><div class="stat-lbl">⭐ Passable</div></div>
-  <div class="stat unseen"><div class="stat-num" id="cnt-unseen">2</div><div class="stat-lbl">🎬 Sans classement</div></div>
+  <div class="stat unseen"><div class="stat-num" id="cnt-unseen">48</div><div class="stat-lbl">🎬 Sans classement</div></div>
 </div>
 
 <div class="nav-tabs">
@@ -977,6 +1076,366 @@ const UNSEEN_DRAMAS = [
     genre: "Romance / Psychologique",
     eps: "20 ép.",
     platforms: [["Netflix","https://www.netflix.com/title/81027106","pb-netflix"]]
+  },
+  {
+    title: "Prison Playbook",
+    synopsis: "Un joueur de baseball professionnel se retrouve en prison à la veille de son départ pour les États-Unis, après avoir blessé l'agresseur de sa sœur. Il y retrouve son ami d'enfance, désormais gardien.",
+    year: 2017,
+    genre: "Comédie / Drame",
+    eps: "16 ép.",
+    platforms: [["Netflix","https://www.netflix.com/title/81002186","pb-netflix"],["Viki","https://www.viki.com/tv/34260c","pb-viki"]]
+  },
+  {
+    title: "Love with Flaws",
+    synopsis: "Une enseignante qui déteste les beaux garçons se retrouve entourée de trois frères tous très séduisants, dont l'aîné est persuadé qu'elle est amoureuse de lui.",
+    year: 2019,
+    genre: "Romance / Comédie",
+    eps: "32 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/35924c","pb-viki"]]
+  },
+  {
+    title: "The Slave Hunters",
+    synopsis: "Sous la dynastie Joseon, un chasseur d'esclaves impitoyable et une jeune femme cherchant son frère disparu s'allient dans une quête qui les entraîne dans les sombres rouages du pouvoir.",
+    year: 2010,
+    genre: "Historique / Action",
+    eps: "24 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/1102c","pb-viki"]]
+  },
+  {
+    title: "Moonshine",
+    synopsis: "Sous Joseon, une femme fabriquant illégalement de l'alcool croise un inspecteur royal chargé de l'arrêter — mais leurs destins s'entremêlent dans une romance clandestine.",
+    year: 2021,
+    genre: "Historique / Romance",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/38415c","pb-viki"]]
+  },
+  {
+    title: "Love Take Two",
+    synopsis: "Deux ex-amants qui se sont séparés des années plus tôt se retrouvent contraints de cohabiter, ravivant des sentiments enfouis et des non-dits du passé.",
+    year: 2024,
+    genre: "Romance / Comédie",
+    eps: "12 ép.",
+    platforms: [["Netflix","https://www.netflix.com","pb-netflix"]]
+  },
+  {
+    title: "Six Flying Dragons",
+    synopsis: "Épopée historique retraçant la fondation de la dynastie Joseon à travers le regard de six personnages aux idéaux et ambitions opposés, dont le futur roi Taejong.",
+    year: 2015,
+    genre: "Historique / Action",
+    eps: "50 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/26914c","pb-viki"]]
+  },
+  {
+    title: "Sell Your Haunted House",
+    synopsis: "Une exorciste spécialisée dans la vente de maisons hantées s'associe à un arnaqueur pour purifier des propriétés infestées d'esprits.",
+    year: 2021,
+    genre: "Fantasy / Comédie",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/37629c","pb-viki"]]
+  },
+  {
+    title: "Luca: The Beginning",
+    synopsis: "Un homme aux origines mystérieuses possède des capacités surhumaines et est traqué par une agence gouvernementale, tandis qu'une policière tente de percer son secret.",
+    year: 2021,
+    genre: "Action / Sci-fi",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/37544c","pb-viki"]]
+  },
+  {
+    title: "Tell Me What You Saw",
+    synopsis: "Un ancien profileur au génie hors norme sort de sa retraite après un drame personnel pour traquer un tueur en série, accompagné d'une jeune policière à la mémoire photographique.",
+    year: 2020,
+    genre: "Thriller / Crime",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/36504c","pb-viki"]]
+  },
+  {
+    title: "Sketch",
+    synopsis: "Une détective capable de dessiner l'avenir s'allie à un inspecteur pour empêcher des meurtres imminents qu'elle voit dans ses visions.",
+    year: 2018,
+    genre: "Thriller / Fantastique",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/34148c","pb-viki"]]
+  },
+  {
+    title: "Secret Royal Inspector",
+    synopsis: "Sous Joseon, un noble nommé inspecteur secret royal malgré lui parcourt le pays pour enquêter sur la corruption, accompagné d'une femme déguisée en homme.",
+    year: 2021,
+    genre: "Historique / Comédie",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/37769c","pb-viki"]]
+  },
+  {
+    title: "Our Blooming Youth",
+    synopsis: "Une noble condamnée à mort pour un crime qu'elle n'a pas commis se réfugie en se faisant passer pour l'eunuque personnel d'un prince maudit.",
+    year: 2023,
+    genre: "Historique / Romance",
+    eps: "20 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/39651c","pb-viki"]]
+  },
+  {
+    title: "The Unbreakable Bond",
+    synopsis: "Deux frères séparés par les circonstances se retrouvent adultes des deux côtés de la loi, naviguant entre loyauté familiale et sens du devoir.",
+    year: 2024,
+    genre: "Action / Drame",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/41180c","pb-viki"]]
+  },
+  {
+    title: "My Lovely Liar",
+    synopsis: "Une femme capable d'entendre les mensonges rencontre un compositeur suspecté du meurtre de son ex-petite amie — le seul dont elle ne perçoit pas les mensonges.",
+    year: 2023,
+    genre: "Romance / Fantastique",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/40346c","pb-viki"]]
+  },
+  {
+    title: "Daily Dose of Sunshine",
+    synopsis: "Une infirmière transfère dans un service de psychiatrie et découvre, à travers ses patients, une nouvelle façon de voir la vie et la santé mentale.",
+    year: 2023,
+    genre: "Drame / Médical",
+    eps: "12 ép.",
+    platforms: [["Netflix","https://www.netflix.com/title/81694548","pb-netflix"]]
+  },
+  {
+    title: "My Happy Ending",
+    synopsis: "Une femme découvre que son mari parfait lui cache un lourd secret, la plongeant dans une spirale de doutes et de révélations bouleversantes.",
+    year: 2023,
+    genre: "Thriller / Drame",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/40496c","pb-viki"]]
+  },
+  {
+    title: "Bon Appetit, Your Majesty",
+    synopsis: "Une cuisinière moderne se retrouve transportée à l'ère Joseon et doit cuisiner pour le roi, tout en naviguant les intrigues de la cour.",
+    year: 2021,
+    genre: "Historique / Comédie",
+    eps: "8 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/37981c","pb-viki"]]
+  },
+  {
+    title: "Genie Make a Wish",
+    synopsis: "Un génie enfermé dans une bouteille depuis des siècles se lie à une jeune femme dont il exauce les vœux, tandis qu'une romance inattendue se développe entre eux.",
+    year: 2024,
+    genre: "Fantasy / Romance",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/41075c","pb-viki"]]
+  },
+  {
+    title: "Good Boy",
+    synopsis: "Un ancien champion de MMA et une détective aux méthodes peu orthodoxes s'associent pour résoudre des crimes, cachant chacun un secret bien gardé.",
+    year: 2024,
+    genre: "Action / Comédie",
+    eps: "12 ép.",
+    platforms: [["Disney+","https://www.disneyplus.com","pb-disney"]]
+  },
+  {
+    title: "Spirit Fingers",
+    synopsis: "Une lycéenne timide rejoint un club de dessin et découvre sa passion pour l'art, s'épanouissant au contact de personnages hauts en couleur.",
+    year: 2021,
+    genre: "Romance / Jeunesse",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/37726c","pb-viki"]]
+  },
+  {
+    title: "The Secret Romantic Guesthouse",
+    synopsis: "Sous Joseon, une jeune femme gérant une pension secrète se retrouve à héberger trois hommes mystérieux liés au prince en fuite — et tombe amoureuse.",
+    year: 2023,
+    genre: "Historique / Romance",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/39788c","pb-viki"]]
+  },
+  {
+    title: "Just Between Lovers",
+    synopsis: "Deux survivants d'un effondrement d'immeuble se retrouvent des années plus tard, portant chacun des cicatrices invisibles, et apprennent ensemble à guérir.",
+    year: 2017,
+    genre: "Romance / Drame",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/33509c","pb-viki"]]
+  },
+  {
+    title: "Oasis",
+    synopsis: "Trois amis d'université voient leurs destins s'entrecroiser sur fond de bouleversements politiques et sociaux de la Corée des années 80.",
+    year: 2023,
+    genre: "Drame / Historique",
+    eps: "18 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/40227c","pb-viki"]]
+  },
+  {
+    title: "The Forbidden Marriage",
+    synopsis: "Un roi refusant de se remarier après le deuil de sa première épouse promulgue une loi interdisant le mariage — jusqu'à ce qu'une escroc se faisant passer pour la fiancée perdue entre dans sa vie.",
+    year: 2022,
+    genre: "Historique / Romance",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/39464c","pb-viki"]]
+  },
+  {
+    title: "Arthdal Chronicles 2 : The Sword of Aramun",
+    synopsis: "Suite de l'épopée fantastique : Eunseom tente de libérer son peuple tandis que Tanya consolide son pouvoir à Arthdal, dans un monde de plus en plus instable.",
+    year: 2023,
+    genre: "Fantasy / Épopée",
+    eps: "12 ép.",
+    platforms: [["VoirDrama","https://voirdrama.to/drama/arthdal-chronicles-the-sword-of-aramun/","pb-voirdrama"]]
+  },
+  {
+    title: "Catch the Ghost",
+    synopsis: "Une recrue de la police du métro déterminée à retrouver sa sœur disparue s'associe à un inspecteur misanthrope pour traquer un tueur en série sévissant dans les tunnels.",
+    year: 2019,
+    genre: "Thriller / Romance",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/35579c","pb-viki"]]
+  },
+  {
+    title: "My Country: The New Age",
+    synopsis: "Deux amis d'enfance se retrouvent ennemis lors des conflits qui marquent la fin de la période Goryeo et la naissance de la dynastie Joseon.",
+    year: 2019,
+    genre: "Historique / Action",
+    eps: "16 ép.",
+    platforms: [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/35577c","pb-viki"]]
+  },
+  {
+    title: "Haechi",
+    synopsis: "Le prince Yeoning, fils illégitime, affronte les intrigues de la cour pour devenir roi et instaurer une justice impartiale dans la Corée de Joseon.",
+    year: 2019,
+    genre: "Historique / Drame",
+    eps: "48 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/35236c","pb-viki"]]
+  },
+  {
+    title: "Cheat on Me If You Can",
+    synopsis: "Un avocat spécialisé dans les affaires de meurtre et son écrivaine de femme vivent un mariage singulier : si l'un trompe l'autre, il finit mort. Un thriller conjugal noir et comique.",
+    year: 2020,
+    genre: "Thriller / Comédie",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/36884c","pb-viki"]]
+  },
+  {
+    title: "Zombie Detective",
+    synopsis: "Un zombie amnésique tente de retrouver son identité en se faisant passer pour un détective humain, aidé d'une scénariste en quête d'inspiration.",
+    year: 2020,
+    genre: "Comédie / Fantasy",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/36955c","pb-viki"]]
+  },
+  {
+    title: "Stranger",
+    synopsis: "Un procureur incapable de ressentir des émotions suite à une opération cérébrale s'allie à une policière pour démanteler un réseau de corruption au sein même de la justice.",
+    year: 2017,
+    genre: "Thriller / Crime",
+    eps: "S1: 16 ép. / S2: 16 ép.",
+    platforms: [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/32366c","pb-viki"]]
+  },
+  {
+    title: "Witch's Court",
+    synopsis: "Une procureure froide et calculatrice spécialisée dans les affaires d'agression sexuelle s'associe à un procureur idéaliste pour démanteler un réseau criminel.",
+    year: 2017,
+    genre: "Juridique / Thriller",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/33261c","pb-viki"]]
+  },
+  {
+    title: "May It Please the Court",
+    synopsis: "Une ex-avocate déchue devenue vendeuse de rue reprend du service pour défendre une affaire impossible, faisant face à ses vieux démons et à un système judiciaire corrompu.",
+    year: 2023,
+    genre: "Juridique / Drame",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/40096c","pb-viki"]]
+  },
+  {
+    title: "Good Job",
+    synopsis: "Un PDG aux super-pouvoirs visuels et une détective secrète s'allient pour résoudre des crimes, cachant chacun leur double vie à l'autre.",
+    year: 2022,
+    genre: "Action / Romance",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/39227c","pb-viki"]]
+  },
+  {
+    title: "Jinxed at First",
+    synopsis: "Un poissonnier pauvre dont la chance tourne à l'envers croise une héritière de clan de bonne aventure qui voit en lui son destin.",
+    year: 2022,
+    genre: "Fantasy / Romance",
+    eps: "16 ép.",
+    platforms: [["Netflix","https://www.netflix.com","pb-netflix"]]
+  },
+  {
+    title: "The Interest of Love",
+    synopsis: "Quatre employés d'une banque naviguent des romances croisées et non réciproques, révélant les contradictions entre ce qu'on désire et ce qu'on choisit vraiment.",
+    year: 2022,
+    genre: "Romance / Drame",
+    eps: "16 ép.",
+    platforms: [["Netflix","https://www.netflix.com","pb-netflix"]]
+  },
+  {
+    title: "Agency",
+    synopsis: "La première femme à viser le poste de PDG d'une grande agence publicitaire se bat dans un monde d'hommes, jonglant entre ambition, trahison et survie.",
+    year: 2023,
+    genre: "Drame / Contemporain",
+    eps: "16 ép.",
+    platforms: [["Disney+","https://www.disneyplus.com","pb-disney"]]
+  },
+  {
+    title: "Dreaming of a Freaking Fairy Tale",
+    synopsis: "Une femme ordinaire obsédée par les contes de fées et le prince charmant croise un milliardaire misanthrope — les deux remettent en question leurs illusions sur l'amour.",
+    year: 2024,
+    genre: "Romance / Comédie",
+    eps: "12 ép.",
+    platforms: [["Disney+","https://www.disneyplus.com","pb-disney"]]
+  },
+  {
+    title: "Romance in the House",
+    synopsis: "Un homme renfermé et une femme pétillante se retrouvent colocataires par accident et développent une relation aussi inattendue que touchante.",
+    year: 2023,
+    genre: "Romance / Comédie",
+    eps: "8 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/40404c","pb-viki"]]
+  },
+  {
+    title: "Dear Hyeri",
+    synopsis: "Une femme reçoit des lettres mystérieuses de son futur moi et tente de changer le cours de sa vie avant qu'il ne soit trop tard.",
+    year: 2024,
+    genre: "Romance / Fantastique",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/41130c","pb-viki"]]
+  },
+  {
+    title: "The Tale of Lady Ok",
+    synopsis: "Sous Joseon, une femme de caractère mariée contre son gré à un noble érudit se retrouve mêlée aux intrigues politiques de la cour dans une romance tumultueuse.",
+    year: 2024,
+    genre: "Historique / Romance",
+    eps: "20 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/41060c","pb-viki"]]
+  },
+  {
+    title: "Namib",
+    synopsis: "Un agent des forces spéciales revient au pays après une mission traumatisante et tente de se reconstruire, plongé dans une affaire qui le dépasse.",
+    year: 2024,
+    genre: "Action / Drame",
+    eps: "12 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/41270c","pb-viki"]]
+  },
+  {
+    title: "The Art of Negotiation",
+    synopsis: "Une négociatrice d'élite spécialisée dans les prises d'otages fait équipe avec un policier têtu pour résoudre des crises à haut risque.",
+    year: 2024,
+    genre: "Action / Thriller",
+    eps: "12 ép.",
+    platforms: [["Netflix","https://www.netflix.com","pb-netflix"]]
+  },
+  {
+    title: "Delightfully Deceitful",
+    synopsis: "Une femme sans empathie ni remords s'associe à un avocat idéaliste blessé par la vie pour mener leurs propres vengeances avec une logique froide et implacable.",
+    year: 2023,
+    genre: "Thriller / Drame",
+    eps: "16 ép.",
+    platforms: [["Viki","https://www.viki.com/tv/40153c","pb-viki"]]
+  },
+  {
+    title: "Was It Love",
+    synopsis: "Une mère célibataire se retrouve simultanément entourée de quatre hommes du passé qui ressurgissent dans sa vie, chacun ayant joué un rôle différent dans son histoire.",
+    year: 2020,
+    genre: "Romance / Comédie",
+    eps: "16 ép.",
+    platforms: [["Netflix","https://www.netflix.com","pb-netflix"],["Viki","https://www.viki.com/tv/36719c","pb-viki"]]
   }
 ];
 
@@ -1234,6 +1693,7 @@ const PLATFORMS = {
   "Squid Game (1)":              [["Netflix","https://www.netflix.com/title/81040344","pb-netflix"]],
   "Itaewon Class":               [["Netflix","https://www.netflix.com/title/81094215","pb-netflix"],["Viki","https://www.viki.com/tv/36174c","pb-viki"]],
   "Arthdal Chronicles":          [["Netflix","https://www.netflix.com/title/81010991","pb-netflix"]],
+  "Arthdal Chronicles 2 : The Sword of Aramun": [["VoirDrama","https://voirdrama.to/drama/arthdal-chronicles-the-sword-of-aramun/","pb-voirdrama"]],
   "Dr. Romantic (1,2,3)":        [["Viki","https://www.viki.com/tv/32524c","pb-viki"],["Viu","https://www.viu.com","pb-viu"],["VoirDrama","https://voirdrama.org","pb-voirdrama"]],
   "Alchemy of Souls (1,2)":      [["Netflix","https://www.netflix.com/title/81497215","pb-netflix"]],
   "Queen of Tears":              [["Netflix","https://www.netflix.com/title/81707766","pb-netflix"]],
@@ -1451,7 +1911,7 @@ function buildSections() {
   updateCounts();
 }
 
-const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virtuous Business": 255086, "D-Day": 63910,"Extraordinary Attorney Woo": 197067, "Under the Queen's Umbrella": 156406, "Lovely Runner": 230923 };
+const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virtuous Business": 255086, "D-Day": 63910,"Extraordinary Attorney Woo": 197067, "Under the Queen's Umbrella": 156406, "Lovely Runner": 230923, "Sketch": 74265, "Arthdal Chronicles 2 : The Sword of Aramun": 86241 };
 const KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
 async function loadPoster(img, title) {
