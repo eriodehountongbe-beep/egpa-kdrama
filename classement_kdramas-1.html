@@ -2934,7 +2934,19 @@ function buildAwardsSection() {
   const grid = section.querySelector('#grid-awards');
 
   // Populate from DRAMA_AWARDS
-  for (const [title, awards] of Object.entries(DRAMA_AWARDS)) {
+  // Trier les dramas du palmarès par année décroissante
+const sortedAwardEntries = Object.entries(DRAMA_AWARDS).sort(([titleA], [titleB]) => {
+  const getYear = (t) => {
+    for (const cat of Object.values(DRAMAS)) {
+      const d = cat.items.find(i => i[0] === t);
+      if (d) return parseInt(d[5]) || 0;
+    }
+    const u = UNSEEN_DRAMAS.find(d => d.title === t);
+    return u ? parseInt(u.year) || 0 : 0;
+  };
+  return getYear(titleB) - getYear(titleA);
+});
+  for (const [title, awards] of sortedAwardEntries) {
     // Find the drama info from DRAMAS to get poster, synopsis, etc.
     let dramaInfo = null;
     let catCls = '';
