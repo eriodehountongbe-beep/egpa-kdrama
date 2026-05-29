@@ -821,6 +821,30 @@
   .class-vote-bars { display: flex; gap: 3px; margin-bottom: 8px; }
   .class-bar { height: 4px; border-radius: 4px; transition: width .4s; min-width: 2px; }
   .class-vote-status { font-size: 11px; color: var(--muted); }
+  /* VOIR PLUS */
+.show-more-wrap {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 16px 0 8px;
+}
+.show-more-btn {
+  padding: 10px 28px;
+  border-radius: 50px;
+  border: 1px solid rgba(179,157,219,.3);
+  background: rgba(179,157,219,.08);
+  color: var(--accent);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .5px;
+}
+.show-more-btn:hover {
+  background: rgba(179,157,219,.2);
+  border-color: var(--accent);
+}
+.drama-card.collapsed { display: none; }
 </style>
 </head>
 <body>
@@ -1875,7 +1899,26 @@ function buildUnseenSection() {
         '<div class="card-synopsis">' + d.synopsis + '</div>' +
       '</div>';
     card.addEventListener('click', () => openUnseenModal(d));
-    grid.appendChild(card);
+    // Dans buildUnseenSection, remplacer le bloc forEach + appendChild par :
+UNSEEN_DRAMAS.forEach((d, idx) => {
+  // ... (tout le code de création de card identique) ...
+  card.className = 'drama-card' + (idx >= INITIAL_SHOW ? ' collapsed' : '');
+  // ...
+  grid.appendChild(card);
+  lazyLoadPoster(card.querySelector('img'), d.title, true);
+});
+
+if (UNSEEN_DRAMAS.length > INITIAL_SHOW) {
+  const wrap = document.createElement('div');
+  wrap.className = 'show-more-wrap';
+  const remaining = UNSEEN_DRAMAS.length - INITIAL_SHOW;
+  wrap.innerHTML = `<button class="show-more-btn" data-cat="unseen">Voir les ${remaining} autres ▾</button>`;
+  grid.appendChild(wrap);
+  wrap.querySelector('.show-more-btn').addEventListener('click', function () {
+    grid.querySelectorAll('.drama-card.collapsed').forEach(c => c.classList.remove('collapsed'));
+    wrap.remove();
+  });
+}
     lazyLoadPoster(card.querySelector('img'), d.title, true);
   });
   updateCounts();
@@ -2174,33 +2217,26 @@ const PLATFORMS = {
   "Love Alarm 2":                [["Netflix","https://www.netflix.com/title/80235323","pb-netflix"]],
 };
 
+const INITIAL_SHOW = 8;
+
 function buildSections() {
   const container = document.getElementById('sections-container');
-  
+
   for (const [catKey, cat] of Object.entries(DRAMAS)) {
-    // Sort items by year descending
-    cat.items.sort((a, b) => {
-      const yearA = parseInt(a[5]) || 0;
-      const yearB = parseInt(b[5]) || 0;
-      return yearB - yearA;
-    });
+    cat.items.sort((a, b) => (parseInt(b[5]) || 0) - (parseInt(a[5]) || 0));
 
     const section = document.createElement('section');
     section.className = `section ${cat.cls}`;
     section.dataset.cat = catKey;
 
-    // Count
-    const count = cat.items.length;
-
     section.innerHTML = `
       <div class="section-header">
         <div class="section-stars">${cat.label.split(' ')[0]}</div>
         <div class="section-title">${cat.label.replace(/^[⭐]+ /, '')}</div>
-        <div class="section-count">${count} dramas</div>
+        <div class="section-count">${cat.items.length} dramas</div>
       </div>
       <div class="drama-grid" id="grid-${catKey}"></div>
     `;
-
     container.appendChild(section);
 
     const grid = section.querySelector(`#grid-${catKey}`);
@@ -2208,7 +2244,7 @@ function buildSections() {
     cat.items.forEach((drama, idx) => {
       const [title, synopsis, avis, genre, eps, year] = drama;
       const card = document.createElement('div');
-      card.className = 'drama-card';
+      card.className = 'drama-card' + (idx >= INITIAL_SHOW ? ' collapsed' : '');
       card.dataset.title = title.toLowerCase();
       card.dataset.genre = genre.toLowerCase();
       card.dataset.cat = catKey;
@@ -2228,13 +2264,25 @@ function buildSections() {
           <div class="card-avis">${avis}</div>
         </div>
       `;
-
       card.addEventListener('click', () => openModal(title, synopsis, avis, genre, eps, year, cat.label, cat.cls, card.querySelector('img').src));
       grid.appendChild(card);
-
-      // Load poster
       lazyLoadPoster(card.querySelector('img'), title);
     });
+
+    // Bouton "voir plus" si besoin
+    if (cat.items.length > INITIAL_SHOW) {
+      const wrap = document.createElement('div');
+      wrap.className = 'show-more-wrap';
+      const remaining = cat.items.length - INITIAL_SHOW;
+      wrap.innerHTML = `<button class="show-more-btn" data-cat="${catKey}" data-shown="${INITIAL_SHOW}">Voir les ${remaining} autres ▾</button>`;
+      grid.appendChild(wrap);
+
+      wrap.querySelector('.show-more-btn').addEventListener('click', function () {
+        const allCollapsed = grid.querySelectorAll('.drama-card.collapsed');
+        allCollapsed.forEach(c => c.classList.remove('collapsed'));
+        wrap.remove();
+      });
+    }
   }
 
   updateCounts();
