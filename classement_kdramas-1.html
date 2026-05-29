@@ -108,6 +108,56 @@
   .tab-btn[data-cat="assez"].active       { color: #ffd54f; border-color: #ffd54f; background: rgba(255,213,79,.1); }
   .tab-btn[data-cat="passable"].active    { color: #ef9a9a; border-color: #ef9a9a; background: rgba(239,154,154,.1); }
 
+  /* GENRE FILTERS */
+.genre-filters {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 10px 20px 0;
+}
+.genre-btn {
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.genre-btn:hover, .genre-btn.active {
+  color: #fff;
+  border-color: var(--accent);
+  background: rgba(179,157,219,.12);
+}/* GENRE FILTERS */
+.genre-filters {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 10px 20px 0;
+}
+.genre-btn {
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.genre-btn:hover, .genre-btn.active {
+  color: #fff;
+  border-color: var(--accent);
+  background: rgba(179,157,219,.12);
+}
+
   /* SECTION */
   .section { padding: 40px 20px 20px; max-width: 1400px; margin: 0 auto; }
   .section.hidden { display: none; }
@@ -845,6 +895,29 @@
   border-color: var(--accent);
 }
 .drama-card.collapsed { display: none; }
+/* RANDOM BUTTON */
+.random-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  padding: 12px 20px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #7c4dff, #b39ddb);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(124,77,255,.4);
+  z-index: 500;
+  transition: transform .2s, box-shadow .2s;
+  letter-spacing: .5px;
+}
+.random-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(124,77,255,.55);
+}
 </style>
 </head>
 <body>
@@ -879,6 +952,20 @@
   <button class="tab-btn" data-cat="unseen">🎬 Sans classement</button>
 </div>
 
+<div class="genre-filters" id="genre-filters">
+  <button class="genre-btn active" data-genre="all">Tous les genres</button>
+  <button class="genre-btn" data-genre="romance">Romance</button>
+  <button class="genre-btn" data-genre="thriller">Thriller</button>
+  <button class="genre-btn" data-genre="historique">Historique</button>
+  <button class="genre-btn" data-genre="fantasy">Fantasy</button>
+  <button class="genre-btn" data-genre="comédie">Comédie</button>
+  <button class="genre-btn" data-genre="action">Action</button>
+  <button class="genre-btn" data-genre="médical">Médical</button>
+  <button class="genre-btn" data-genre="crime">Crime</button>
+  <button class="genre-btn" data-genre="famille">Famille</button>
+  <button class="genre-btn" data-genre="horreur">Horreur</button>
+</div>
+  
 <div id="sections-container"></div>
 
 <!-- MODAL -->
@@ -2629,17 +2716,28 @@ document.getElementById('search').addEventListener('input', (e) => {
   filterCards(e.target.value);
 });
 
+let activeGenre = 'all';
+let activeTab = 'all';
+
 function filterCards(query) {
   const q = query.toLowerCase().trim();
-  let anyVisible = false;
   document.querySelectorAll('.drama-card').forEach(card => {
     const sectionHidden = card.closest('.section').classList.contains('hidden');
     if (sectionHidden) { card.classList.add('hidden'); return; }
-    const match = !q || card.dataset.title.includes(q) || card.dataset.genre.includes(q);
-    card.classList.toggle('hidden', !match);
-    if (match) anyVisible = true;
+    const matchSearch = !q || card.dataset.title.includes(q) || (card.dataset.genre && card.dataset.genre.includes(q));
+    const matchGenre = activeGenre === 'all' || (card.dataset.genre && card.dataset.genre.includes(activeGenre));
+    card.classList.toggle('hidden', !matchSearch || !matchGenre);
   });
 }
+
+document.querySelectorAll('.genre-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeGenre = btn.dataset.genre;
+    filterCards(document.getElementById('search').value);
+  });
+});
 
 function updateCounts() {
   for (const [key, cat] of Object.entries(DRAMAS)) {
@@ -3127,6 +3225,19 @@ if (ADMIN_KEY) {
   fetchVisitors();
   setInterval(fetchVisitors, 15000);
 }
+function openRandomDrama() {
+  const allDramas = [];
+  for (const [catKey, cat] of Object.entries(DRAMAS)) {
+    cat.items.forEach(drama => {
+      allDramas.push({ drama, catKey, cat });
+    });
+  }
+  if (allDramas.length === 0) return;
+  const pick = allDramas[Math.floor(Math.random() * allDramas.length)];
+  const [title, synopsis, avis, genre, eps, year] = pick.drama;
+  openModal(title, synopsis, avis, genre, eps, year, pick.cat.label, pick.cat.cls, '');
+}
 </script>
+<button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 </body>
 </html>
