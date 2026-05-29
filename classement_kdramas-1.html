@@ -3032,6 +3032,47 @@ buildUnseenSection();
 buildAwardsSection();
 fetchSortedDramas();
 setInterval(fetchSortedDramas, 20000);
+// ── VISITEURS EN LIGNE (admin) ─────────────────────────────────────
+const ADMIN_KEY = new URLSearchParams(window.location.search).get('admin');
+
+function genSessionId() {
+  try {
+    let s = sessionStorage.getItem('kd_session');
+    if (!s) { s = 'sess-' + Date.now() + '-' + Math.random().toString(36).slice(2); sessionStorage.setItem('kd_session', s); }
+    return s;
+  } catch(e) { return 'sess-anon'; }
+}
+
+// Ping toutes les 30 secondes
+const sessionId = genSessionId();
+async function pingServer() {
+  try { await fetch(`${API_BASE}/ping`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId }) }); } catch(e) {}
+}
+pingServer();
+setInterval(pingServer, 30000);
+
+// Panneau admin
+if (ADMIN_KEY) {
+  const badge = document.createElement('div');
+  badge.id = 'admin-badge';
+  badge.style.cssText = 'position:fixed;bottom:20px;left:20px;background:#1a1a2a;border:1px solid rgba(179,157,219,.4);color:#b39ddb;font-family:"DM Sans",sans-serif;font-size:13px;padding:10px 16px;border-radius:12px;z-index:9999;backdrop-filter:blur(8px);cursor:default;';
+  badge.innerHTML = '👁 <span id="visitor-count">...</span> en ligne';
+  document.body.appendChild(badge);
+
+  async function fetchVisitors() {
+    try {
+      const res = await fetch(`${API_BASE}/visitors?key=${encodeURIComponent(ADMIN_KEY)}`);
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('visitor-count').textContent = data.count;
+      } else {
+        document.getElementById('visitor-count').textContent = '🔒';
+      }
+    } catch(e) { document.getElementById('visitor-count').textContent = '—'; }
+  }
+  fetchVisitors();
+  setInterval(fetchVisitors, 15000);
+}
 </script>
 </body>
 </html>
