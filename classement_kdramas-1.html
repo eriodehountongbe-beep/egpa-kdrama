@@ -1656,7 +1656,7 @@ async function loadUnseenPoster(img, title) {
       posterPath = data.poster_path || null;
     } else {
       const searchTitle = title.replace(/\(.*?\)/g,'').trim();
-      const res = await fetch('https://api.themoviedb.org/3/search/tv?api_key=' + KEY + '&query=' + encodeURIComponent(searchTitle) + '&language=fr-FR');
+      const res = await fetch('https://api.themoviedb.org/3/search/tv?api_key=' + KEY + '&query=' + encodeURIComponent(searchTitle) + '&language=-US');
       const data = await res.json();
       if (data.results && data.results.length > 0) {
         const item = data.results.find(r => r.origin_country && r.origin_country.includes('KR')) || data.results[0];
@@ -2445,7 +2445,7 @@ function postComment(title) {
   if (!text) return;
   const comments = getComments(title);
   const now = new Date();
-  const date = now.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const date = now.toLocaleDateString('-US', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
   comments.push({ text, date });
   saveComments(title, comments);
   input.value = '';
