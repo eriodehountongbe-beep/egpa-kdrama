@@ -868,6 +868,171 @@
 </div>
 
 <script>
+const DRAMA_AWARDS = {
+  "Crash Landing on You": [
+    "🏆 Baeksang Arts Awards 2020 : Actrice la plus populaire (Son Ye-jin)",
+    "🏆 Baeksang Arts Awards 2020 : Meilleure actrice dans un second rôle (Kim Sun-young)",
+    "🏆 Seoul International Drama Awards 2020 : Meilleur drama Hallyu (Grand Prix)",
+    "🏆 APAN Star Awards 2020 : Grand Prix (Daesang) (Hyun Bin)"
+  ],
+  "Goblin": [
+    "🏆 Baeksang Arts Awards 2017 : Grand Prix (Daesang) (Kim Eun-sook)",
+    "🏆 Baeksang Arts Awards 2017 : Meilleur acteur (Gong Yoo)",
+    "🏆 Seoul International Drama Awards 2017 : Meilleur drama Hallyu (Grand Prix)",
+    "🏆 Korea Drama Awards 2017 : Meilleur drama"
+  ],
+  "Reply 1988": [
+    "🏆 Baeksang Arts Awards 2016 : Meilleur réalisateur (Shin Won-ho)",
+    "🏆 Baeksang Arts Awards 2016 : Meilleur nouvel acteur (Ryu Jun-yeol)",
+    "🏆 tvN10 Awards 2016 : Grand Prix (Daesang) (Drama)",
+    "🏆 APAN Star Awards 2016 : Meilleur réalisateur"
+  ],
+  "The Glory": [
+    "🏆 Baeksang Arts Awards 2023 : Meilleur Drama (Best Drama)",
+    "🏆 Baeksang Arts Awards 2023 : Meilleure actrice (Song Hye-kyo)",
+    "🏆 Baeksang Arts Awards 2023 : Meilleure actrice dans un second rôle (Lim Ji-yeon)",
+    "🏆 Blue Dragon Series Awards 2023 : Grand Prix (Daesang) (Song Hye-kyo)"
+  ],
+  "Hospital Playlist (1,2)": [
+    "🏆 Brand of the Year Awards 2020 : Drama de l'année",
+    "🏆 Brand of the Year Awards 2021 : Drama de l'année",
+    "🏆 Mnet Asian Music Awards 2020 : Meilleure OST (Aloha)"
+  ],
+  "Moving": [
+    "🏆 Baeksang Arts Awards 2024 : Grand Prix (Daesang) (Moving)",
+    "🏆 Baeksang Arts Awards 2024 : Meilleur scénario (Kang Full)",
+    "🏆 Baeksang Arts Awards 2024 : Meilleur nouvel acteur (Lee Jung-ha)",
+    "🏆 Blue Dragon Series Awards 2023 : Grand Prix (Daesang) (Moving)",
+    "🏆 Asia Contents Awards & Global OTT Awards 2023 : Best Creative, Best Writer"
+  ],
+  "Vincenzo": [
+    "🏆 Seoul International Drama Awards 2021 : Excellent Korean Drama",
+    "🏆 APAN Star Awards 2022 : Grand Prix (Daesang) (Song Joong-ki)"
+  ],
+  "Squid Game (1)": [
+    "🏆 Primetime Emmy Awards 2022 : Meilleur acteur dans une série dramatique (Lee Jung-jae)",
+    "🏆 Primetime Emmy Awards 2022 : Meilleure réalisation pour une série dramatique",
+    "🏆 Golden Globe Awards 2022 : Meilleur acteur dans un second rôle (O Yeong-su)",
+    "🏆 Baeksang Arts Awards 2022 : Grand Prix (Daesang)"
+  ],
+  "Queen of Tears": [
+    "🏆 Baeksang Arts Awards 2024 : Acteur le plus populaire (Kim Soo-hyun)",
+    "🏆 Grand Bell Awards 2024 : Meilleure actrice (Kim Ji-won)"
+  ],
+  "It's Okay Not to Be Okay": [
+    "🏆 Baeksang Arts Awards 2021 : Acteur le plus populaire (Kim Soo-hyun)",
+    "🏆 Baeksang Arts Awards 2021 : Actrice la plus populaire (Seo Ye-ji)",
+    "🏆 Baeksang Arts Awards 2021 : Meilleur acteur dans un second rôle (Oh Jung-se)"
+  ],
+  "Twenty-Five Twenty-One": [
+    "🏆 Baeksang Arts Awards 2022 : Meilleure actrice (Kim Tae-ri)",
+    "🏆 Baeksang Arts Awards 2022 : Actrice la plus populaire (Kim Tae-ri)"
+  ],
+  "My Dearest": [
+    "🏆 Baeksang Arts Awards 2024 : Meilleur Drama (Best Drama)",
+    "🏆 Baeksang Arts Awards 2024 : Meilleur acteur (Namkoong Min)",
+    "🏆 MBC Drama Awards 2023 : Grand Prix (Daesang) (Namkoong Min)"
+  ],
+  "Mr. Queen": [
+    "🏆 Nominations multiples aux Baeksang Arts Awards 2021 (Shin Hye-sun, Cha Chung-hwa)"
+  ],
+  "Taxi Driver (1,2,3)": [
+    "🏆 SBS Drama Awards 2023 : Grand Prix (Daesang) (Lee Je-hoon)",
+    "🏆 SBS Drama Awards 2021 : Prix de la haute excellence (Lee Je-hoon)"
+  ],
+  "One Dollar Lawyer": [
+    "🏆 SBS Drama Awards 2022 : Grand Prix (Daesang) (Namkoong Min)"
+  ],
+  "Descendants of the Sun": [
+    "🏆 Baeksang Arts Awards 2016 : Grand Prix (Daesang)",
+    "🏆 Baeksang Arts Awards 2016 : Acteur le plus populaire (Song Joong-ki)",
+    "🏆 Baeksang Arts Awards 2016 : Actrice la plus populaire (Song Hye-kyo)"
+  ],
+  "Dr. Romantic (1,2,3)": [
+    "🏆 SBS Drama Awards 2016 : Grand Prix (Daesang) (Han Suk-kyu)",
+    "🏆 SBS Drama Awards 2020 : Prix de la haute excellence (Ahn Hyo-seop)",
+    "🏆 SBS Drama Awards 2023 : Prix de la haute excellence (Ahn Hyo-seop)"
+  ],
+  "While You Were Sleeping": [
+    "🏆 SBS Drama Awards 2017 : Prix de la haute excellence (Lee Jong-suk & Bae Suzy)"
+  ],
+  "Moon Lovers : Scarlet Heart Ryeo": [
+    "🏆 SBS Drama Awards 2016 : Hallyu Star Award (Lee Joon-gi)"
+  ],
+  "Flower of Evil": [
+    "🏆 Baeksang Arts Awards 2021 : Meilleur réalisateur (Kim Cheol-kyu)"
+  ],
+  "Beyond Evil": [
+    "🏆 Baeksang Arts Awards 2021 : Meilleur Drama (Best Drama)",
+    "🏆 Baeksang Arts Awards 2021 : Meilleur acteur (Shin Ha-kyun)",
+    "🏆 Baeksang Arts Awards 2021 : Meilleur scénario"
+  ],
+  "Our Blues": [
+    "🏆 APAN Star Awards 2022 : Meilleur drama",
+    "🏆 Baeksang Arts Awards 2023 : Nomination pour le Grand Prix"
+  ],
+  "My Mister": [
+    "🏆 Baeksang Arts Awards 2019 : Meilleur Drama (Best Drama)",
+    "🏆 Baeksang Arts Awards 2019 : Meilleur scénario (Park Hae-young)",
+    "🏆 The Seoul Awards 2018 : Grand Prix (Daesang)"
+  ],
+  "Signal": [
+    "🏆 Baeksang Arts Awards 2016 : Meilleur Drama (Best Drama)",
+    "🏆 Baeksang Arts Awards 2016 : Meilleure actrice (Kim Hye-soo)",
+    "🏆 Baeksang Arts Awards 2016 : Meilleur scénario"
+  ],
+  "Stranger (Secret Forest)": [
+    "🏆 Baeksang Arts Awards 2018 : Grand Prix (Daesang)",
+    "🏆 Baeksang Arts Awards 2018 : Meilleur acteur (Cho Seung-woo)",
+    "🏆 Baeksang Arts Awards 2018 : Meilleur scénario"
+  ],
+  "A Business Proposal": [
+    "🏆 SBS Drama Awards 2022 : Prix du meilleur couple (Ahn Hyo-seop & Kim Se-jeong)",
+    "🏆 SBS Drama Awards 2022 : Prix de la haute excellence (Ahn Hyo-seop)"
+  ],
+  "Healer": [
+    "🏆 KBS Drama Awards 2014 : Prix du meilleur couple (Ji Chang-wook & Park Min-young)"
+  ],
+  "Kill Me Heal Me": [
+    "🏆 MBC Drama Awards 2015 : Grand Prix (Daesang) (Ji Sung)",
+    "🏆 MBC Drama Awards 2015 : Drama de l'année",
+    "🏆 Baeksang Arts Awards 2015 : Nominations multiples"
+  ],
+  "Sky Castle": [
+    "🏆 Baeksang Arts Awards 2019 : Meilleur réalisateur (Jo Hyun-tak)",
+    "🏆 Baeksang Arts Awards 2019 : Meilleure actrice (Yum Jung-ah)",
+    "🏆 Korea Drama Awards 2019 : Meilleur drama"
+  ],
+  "Kingdom (1,2)": [
+    "🏆 Baeksang Arts Awards 2020 : Nomination pour le meilleur drama",
+    "🏆 Asia Contents Awards 2020 : Meilleur scénariste (Kim Eun-hee)"
+  ],
+  "Weightlifting Fairy Kim Bok-joo": [
+    "🏆 MBC Drama Awards 2016 : Prix de l'excellence (Lee Sung-kyung)"
+  ],
+  "Strong Woman Do Bong-soon": [
+    "🏆 The Seoul Awards 2017 : Meilleure actrice (Park Bo-young)"
+  ],
+  "W: Two Worlds": [
+    "🏆 MBC Drama Awards 2016 : Grand Prix (Daesang) (Han Hyo-joo)",
+    "🏆 MBC Drama Awards 2016 : Drama de l'année"
+  ],
+  "Pinocchio": [
+    "🏆 SBS Drama Awards 2014 : Special Award (Lee Jong-suk)",
+    "🏆 Baeksang Arts Awards 2015 : Acteur le plus populaire (Lee Jong-suk)"
+  ],
+  "Six Flying Dragons": [
+    "🏆 Baeksang Arts Awards 2016 : Meilleur acteur (Yoo Ah-in)",
+    "🏆 SBS Drama Awards 2015 : Prix de la haute excellence (Yoo Ah-in)"
+  ],
+  "What's Wrong with Secretary Kim": [
+    "🏆 APAN Star Awards 2018 : Prix de la haute excellence (Park Seo-joon)"
+  ],
+  "Hotel Del Luna": [
+    "🏆 Nominations multiples aux Baeksang Arts Awards 2020 (IU - Meilleure actrice)"
+  ]
+};
+
 const DRAMAS = {
   "master": {
     label: "⭐⭐⭐⭐⭐ MASTER",
@@ -2029,6 +2194,7 @@ function buildSections() {
       card.dataset.cat = catKey;
 
       const genrePrimary = genre.split('/')[0].trim();
+      const hasAwards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] && DRAMA_AWARDS[title].length > 0;
 
       card.innerHTML = `
         <div class="poster-wrap">
@@ -2037,6 +2203,7 @@ function buildSections() {
           <div class="genre-badge">${genrePrimary}</div>
           ${eps ? `<div class="eps-badge">${eps}</div>` : ''}
           ${year ? `<div class="year-badge">${year}</div>` : ''}
+          ${hasAwards ? `<div class="awards-badge" style="position: absolute; top: 10px; left: 10px; background: linear-gradient(135deg, #ffd700, #ffb300); color: #121212; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 8px rgba(0,0,0,0.4); z-index: 3;">🏆 PRIX</div>` : ''}
         </div>
         <div class="card-body">
           <div class="card-title">${title}</div>
@@ -2289,6 +2456,21 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
   const catColors = { master: '#b39ddb', tresbien: '#64b5f6', bien: '#69f0ae', assez: '#ffd54f', passable: '#ef9a9a' };
   const color = catColors[catCls] || '#fff';
 
+  const awards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] ? DRAMA_AWARDS[title] : [];
+  let awardsHTML = '';
+  if (awards.length > 0) {
+    awardsHTML = `
+      <div class="modal-label" style="margin-top:16px; display:flex; align-items:center; gap:6px;">🏆 Prix & Distinctions</div>
+      <div class="modal-awards-list" style="background: rgba(255, 193, 7, 0.08); border: 1px solid rgba(255, 193, 7, 0.2); border-radius: 12px; padding: 14px 18px; margin-top: 8px;">
+        <ul style="margin: 0; padding: 0; list-style: none;">
+          ${awards.map(award => `<li style="margin-bottom: 8px; font-size: 13.5px; color: #ffe082; display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;">
+            <span style="color: #ffd700;">★</span> <span>${award.replace(/^🏆\s*/, '')}</span>
+          </li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
   const inner = document.getElementById('modal-inner');
   inner.innerHTML = `
     <div class="modal-poster" ${imgSrc && !imgSrc.includes('undefined') ? `style="--bg-url: url('${imgSrc}')"` : ''}>
@@ -2307,6 +2489,7 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
       <div class="modal-synopsis">${synopsis}</div>
       <div class="modal-label">Avis</div>
       <div class="modal-avis">${avis}</div>
+      ${awardsHTML}
       ${buildPlatformHTML(title)}
       <div id="modal-vote-placeholder"></div>
       <div id="modal-comments-placeholder"></div>
@@ -2538,12 +2721,14 @@ function rebuildGrid(catKey) {
     card.dataset.genre = genre.toLowerCase();
     card.dataset.cat = catKey;
     const genrePrimary = genre.split('/')[0].trim();
+    const hasAwards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] && DRAMA_AWARDS[title].length > 0;
     card.innerHTML = `
       <div class="poster-wrap">
         <img src="" alt="${title}" loading="lazy"
           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
         <div class="poster-placeholder" style="display:none">🎬</div>
         <div class="genre-badge">${genrePrimary}</div>
+        ${hasAwards ? `<div class="awards-badge" style="position: absolute; top: 10px; left: 10px; background: linear-gradient(135deg, #ffd700, #ffb300); color: #121212; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 8px rgba(0,0,0,0.4); z-index: 3;">🏆 PRIX</div>` : ''}
       </div>
       <div class="card-body">
         <div class="card-title">${title}</div>
