@@ -498,30 +498,75 @@
     /* Modal mobile : empilé verticalement */
     .modal {
       max-width: 100%;
-      max-height: 95vh;
-      border-radius: 16px 16px 0 0;
+      max-height: 90vh;
+      border-radius: 20px 20px 0 0;
       position: fixed;
       bottom: 0; left: 0; right: 0;
       margin: 0;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
     }
     .modal-overlay { align-items: flex-end; padding: 0; }
     .modal-inner { flex-direction: column; }
     .modal-poster {
+      position: relative;
       width: 100%;
-      height: 220px;
+      height: 240px;
+      overflow: hidden;
+      background: #121222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
+      border-radius: 20px 20px 0 0;
+    }
+    .modal-poster::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--bg-url);
+      background-size: cover;
+      background-position: center;
+      filter: blur(12px) brightness(0.4);
+      transform: scale(1.15);
     }
     .modal-poster img {
-      border-radius: 16px 16px 0 0;
-      object-position: top;
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 0;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
     }
     .modal-poster-ph {
-      min-height: 220px;
-      border-radius: 16px 16px 0 0;
+      min-height: 240px;
+      border-radius: 20px 20px 0 0;
     }
-    .modal-content { padding: 18px 18px 24px; }
-    .modal-title { font-size: 18px; }
-    .modal-synopsis, .modal-avis { font-size: 13px; }
+    .modal-content { padding: 20px 20px 32px; }
+    .modal-title { font-size: 20px; }
+    .modal-synopsis, .modal-avis { font-size: 13.5px; }
+
+    /* Fixed accessible close button on mobile */
+    .modal-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 2000;
+      background: rgba(18, 18, 34, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      font-size: 20px;
+      border-radius: 50%;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
 
     /* Vote + comments mobile */
     .vote-buttons { flex-wrap: wrap; gap: 8px; }
@@ -1646,7 +1691,7 @@ function buildUnseenSection() {
       '</div>';
     card.addEventListener('click', () => openUnseenModal(d));
     grid.appendChild(card);
-    loadUnseenPoster(card.querySelector('img'), d.title);
+    lazyLoadPoster(card.querySelector('img'), d.title, true);
   });
   updateCounts();
 }
@@ -1655,6 +1700,17 @@ function rebuildUnseenSection() { buildUnseenSection(); }
 
 async function loadUnseenPoster(img, title) {
   const showFallback = () => { img.style.display='none'; img.nextElementSibling.style.display='flex'; };
+  if (posterCache[title]) {
+    if (posterCache[title] === 'fallback') {
+      showFallback();
+    } else {
+      img.onerror = showFallback;
+      const src = `https://image.tmdb.org/t/p/w342${posterCache[title]}`;
+      img.src = src;
+      img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
+    }
+    return;
+  }
   try {
     let posterPath = null;
     if (FORCED_IDS_UNSEEN[title]) {
@@ -1672,8 +1728,14 @@ async function loadUnseenPoster(img, title) {
     }
     if (posterPath) {
       img.onerror = showFallback;
-      img.src = 'https://image.tmdb.org/t/p/w342' + posterPath;
-    } else { showFallback(); }
+      const src = 'https://image.tmdb.org/t/p/w342' + posterPath;
+      img.src = src;
+      img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
+      savePosterToCache(title, posterPath);
+    } else {
+      showFallback();
+      savePosterToCache(title, 'fallback');
+    }
   } catch(e) { showFallback(); }
 }
 
@@ -1988,7 +2050,7 @@ function buildSections() {
       grid.appendChild(card);
 
       // Load poster
-      loadPoster(card.querySelector('img'), title);
+      lazyLoadPoster(card.querySelector('img'), title);
     });
   }
 
@@ -2055,8 +2117,55 @@ const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virt
 "Revenge of Others": 208336};
 const KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
+// ── POSTER CACHING & LAZY LOADING ─────────────────────────────────────────────
+const POSTER_CACHE_KEY = 'kdrama_poster_cache_v2';
+let posterCache = {};
+try {
+  posterCache = JSON.parse(localStorage.getItem(POSTER_CACHE_KEY)) || {};
+} catch(e) {}
+
+function savePosterToCache(title, path) {
+  posterCache[title] = path;
+  try {
+    localStorage.setItem(POSTER_CACHE_KEY, JSON.stringify(posterCache));
+  } catch(e) {}
+}
+
+const posterObserver = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const img = entry.target;
+      const title = img.dataset.titleToLoad;
+      const isUnseen = img.dataset.isUnseen === 'true';
+      if (isUnseen) {
+        loadUnseenPoster(img, title);
+      } else {
+        loadPoster(img, title);
+      }
+      observer.unobserve(img);
+    }
+  });
+}, { rootMargin: '120px' });
+
+function lazyLoadPoster(img, title, isUnseen = false) {
+  img.dataset.titleToLoad = title;
+  img.dataset.isUnseen = isUnseen;
+  posterObserver.observe(img);
+}
+
 async function loadPoster(img, title) {
   const showFallback = () => { img.style.display='none'; img.nextElementSibling.style.display='flex'; };
+  if (posterCache[title]) {
+    if (posterCache[title] === 'fallback') {
+      showFallback();
+    } else {
+      img.onerror = showFallback;
+      const src = `https://image.tmdb.org/t/p/w342${posterCache[title]}`;
+      img.src = src;
+      img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
+    }
+    return;
+  }
   try {
     let posterPath = null;
     if (FORCED_IDS[title]) {
@@ -2074,9 +2183,13 @@ async function loadPoster(img, title) {
     }
     if (posterPath) {
       img.onerror = showFallback;
-      img.src = `https://image.tmdb.org/t/p/w342${posterPath}`;
+      const src = `https://image.tmdb.org/t/p/w342${posterPath}`;
+      img.src = src;
+      img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
+      savePosterToCache(title, posterPath);
     } else {
       showFallback();
+      savePosterToCache(title, 'fallback');
     }
   } catch(e) {
     showFallback();
@@ -2179,7 +2292,7 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
 
   const inner = document.getElementById('modal-inner');
   inner.innerHTML = `
-    <div class="modal-poster">
+    <div class="modal-poster" ${imgSrc && !imgSrc.includes('undefined') ? `style="--bg-url: url('${imgSrc}')"` : ''}>
       ${imgSrc && !imgSrc.includes('undefined') ? 
         `<img src="${imgSrc}" alt="${title}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">
          <div class="modal-poster-ph" style="display:none">🎬</div>` :
@@ -2440,7 +2553,7 @@ function rebuildGrid(catKey) {
       </div>`;
     card.addEventListener('click', () => openModal(title, synopsis, avis, genre, eps, year, cat.label, cat.cls, card.querySelector('img').src));
     grid.appendChild(card);
-    loadPoster(card.querySelector('img'), title);
+    lazyLoadPoster(card.querySelector('img'), title);
   });
 }
 
