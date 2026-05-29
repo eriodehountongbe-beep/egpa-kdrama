@@ -2052,7 +2052,7 @@ async function loadPoster(img, title) {
       posterPath = data.poster_path || null;
     } else {
       const searchTitle = title.replace(/\(.*?\)/g, '').replace(/[12,3]+$/, '').trim();
-      const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`);
+      const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${KEY}&query=${encodeURIComponent(searchTitle)}&language=-US`);
       const data = await res.json();
       if (data.results && data.results.length > 0) {
         const item = data.results.find(r => r.origin_country && r.origin_country.includes('KR')) || data.results[0];
