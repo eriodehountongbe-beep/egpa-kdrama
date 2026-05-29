@@ -2194,8 +2194,6 @@ function buildSections() {
       card.dataset.cat = catKey;
 
       const genrePrimary = genre.split('/')[0].trim();
-      const hasAwards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] && DRAMA_AWARDS[title].length > 0;
-
       card.innerHTML = `
         <div class="poster-wrap">
           <img src="" alt="${title}" data-title="${encodeURIComponent(title)}">
@@ -2203,7 +2201,6 @@ function buildSections() {
           <div class="genre-badge">${genrePrimary}</div>
           ${eps ? `<div class="eps-badge">${eps}</div>` : ''}
           ${year ? `<div class="year-badge">${year}</div>` : ''}
-          ${hasAwards ? `<div class="awards-badge" style="position: absolute; top: 10px; left: 10px; background: linear-gradient(135deg, #ffd700, #ffb300); color: #121212; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 8px rgba(0,0,0,0.4); z-index: 3;">🏆 PRIX</div>` : ''}
         </div>
         <div class="card-body">
           <div class="card-title">${title}</div>
@@ -2721,14 +2718,12 @@ function rebuildGrid(catKey) {
     card.dataset.genre = genre.toLowerCase();
     card.dataset.cat = catKey;
     const genrePrimary = genre.split('/')[0].trim();
-    const hasAwards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] && DRAMA_AWARDS[title].length > 0;
     card.innerHTML = `
       <div class="poster-wrap">
         <img src="" alt="${title}" loading="lazy"
           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
         <div class="poster-placeholder" style="display:none">🎬</div>
         <div class="genre-badge">${genrePrimary}</div>
-        ${hasAwards ? `<div class="awards-badge" style="position: absolute; top: 10px; left: 10px; background: linear-gradient(135deg, #ffd700, #ffb300); color: #121212; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 8px rgba(0,0,0,0.4); z-index: 3;">🏆 PRIX</div>` : ''}
       </div>
       <div class="card-body">
         <div class="card-title">${title}</div>
@@ -2918,8 +2913,91 @@ function buildGlobalRankingSection(sorted) {
   }
 }
 
+function buildAwardsSection() {
+  const container = document.getElementById('sections-container');
+  if (!container) return;
+
+  // Create section element
+  const section = document.createElement('section');
+  section.className = 'section awards-section';
+  section.dataset.cat = 'awards';
+  section.innerHTML = `
+    <div class="section-header">
+      <div class="section-stars">🏆</div>
+      <div class="section-title">PALMARÈS & DISTINCTIONS ANNUELLES</div>
+    </div>
+    <div class="drama-grid" id="grid-awards"></div>
+  `;
+
+  container.parentNode.insertBefore(section, container.nextSibling);
+
+  const grid = section.querySelector('#grid-awards');
+
+  // Populate from DRAMA_AWARDS
+  for (const [title, awards] of Object.entries(DRAMA_AWARDS)) {
+    // Find the drama info from DRAMAS to get poster, synopsis, etc.
+    let dramaInfo = null;
+    let catCls = '';
+    let catLabel = '';
+
+    for (const [key, cat] of Object.entries(DRAMAS)) {
+      const match = cat.items.find(d => d[0] === title);
+      if (match) {
+        dramaInfo = match;
+        catCls = cat.cls;
+        catLabel = cat.label;
+        break;
+      }
+    }
+
+    if (!dramaInfo) {
+      const match = UNSEEN_DRAMAS.find(d => d.title === title);
+      if (match) {
+        dramaInfo = [match.title, match.synopsis, 'Classé par la communauté.', match.genre, match.eps, match.year];
+        catCls = 'unseen';
+        catLabel = 'Sans classement';
+      }
+    }
+
+    if (!dramaInfo) continue;
+
+    const [t, syn, avi, gen, eps, yr] = dramaInfo;
+    const card = document.createElement('div');
+    card.className = 'drama-card';
+    card.dataset.title = title.toLowerCase();
+    card.dataset.genre = gen.toLowerCase();
+    card.dataset.cat = 'awards';
+
+    const genrePrimary = gen.split('/')[0].trim();
+
+    card.innerHTML = `
+      <div class="poster-wrap">
+        <img src="" alt="${title}">
+        <div class="poster-placeholder" style="display:none">🎬</div>
+        <div class="genre-badge">${genrePrimary}</div>
+        ${eps ? `<div class="eps-badge">${eps}</div>` : ''}
+        ${yr ? `<div class="year-badge">${yr}</div>` : ''}
+      </div>
+      <div class="card-body" style="display:flex; flex-direction:column; gap:4px; text-align:left;">
+        <div class="card-title" style="font-weight:700;">${title}</div>
+        <div class="awards-inline-list" style="margin-top:4px;">
+          ${awards.slice(0, 2).map(a => `<div style="font-size: 11px; color: #ffd54f; display: flex; align-items: flex-start; gap: 4px; line-height: 1.3; margin-bottom: 2px;">
+            <span>🎖️</span><span>${a.replace(/^🏆\s*/, '')}</span>
+          </div>`).join('')}
+          ${awards.length > 2 ? `<div style="font-size: 10px; opacity: 0.5; margin-top: 2px;">+ ${awards.length - 2} autres distinctions</div>` : ''}
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => openModal(t, syn, avi, gen, eps, yr, catLabel, catCls, card.querySelector('img').src));
+    grid.appendChild(card);
+    lazyLoadPoster(card.querySelector('img'), title);
+  }
+}
+
 buildSections();
 buildUnseenSection();
+buildAwardsSection();
 fetchSortedDramas();
 setInterval(fetchSortedDramas, 20000);
 </script>
