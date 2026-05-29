@@ -382,7 +382,8 @@
   .pb-viu       { background: #ffcc00; color: #111; }
   .pb-voirdrama { background: #9c27b0; color: #fff; }
   .pb-frstream { background:  #e65100; color: #fff; }
-  .pb-tving     { background: #ff5c00; color: #fff; }
+  .pb-telegram { background: #0088cc; color: #fff; }
+  .pb-tving    { background: #ff5c00; color: #fff; }
   .pb-wavve     { background: #0095ff; color: #fff; }
   .pb-kocowa    { background: #00b894; color: #fff; }
   .pb-youtube   { background: #ff0000; color: #fff; }
@@ -862,6 +863,9 @@ const DRAMAS = {
       ["Taxi Driver (1,2,3)","Un chauffeur de taxi travaille secrètement pour une agence qui offre des vengeances aux victimes abandonnées.","Cocktail irrésistible d'action, humour et justice populaire. Lee Je-hoon parfait en justicier.","Action / Revenge","S1: 16 ép. / S2: 16 ép. / S3: 16 ép.",2021],
       ["One Dollar Lawyer","Un avocat qui ne facture qu'un dollar défend les victimes laissées pour compte.","Namgoong Min convaincant dans ce rôle excentrique. Feel-good juridique avec un beau message.","Juridique / Comédie","12 ép.",2022],
       ["The Midnight Studio","Un photographe qui capture les esprits des morts rencontre une femme vivante qui ne se souvient pas de son passé.","Atmosphère soignée, romantisme fantastique. Manque un peu de rythme vers le milieu.","Fantasy / Romance","12 ép.",2024],
+      ["Melting Me Softly", "Un homme et une femme se réveillent après 20 ans de cryogénisation et doivent survivre dans un monde qui a changé — tout en gérant une attirance incontrôlable.", "Ji Chang Wook au charme fou, comédie légère et décalée. Pas parfait mais très attachant.", "Romance / Comédie / Science-fiction", "16 ép.", 2019],
+      ["Destined With You", "Une femme ordinaire se retrouve liée par un sort ancestral à un avocat froid et distant.", "Une romance fantastique originale, bien rythmée avec une alchimie surprenante entre les leads.", "Romance / Fantasy", "16 ép.", 2023],
+      ["Weak Hero Class 1", "Un lycéen surdoué mais frêle fait face aux brutes de son école avec une intelligence redoutable plutôt que la force brute.", "Intense et bien écrit, Park Ji Hoon impressionne. Court mais percutant.", "Action / Drame scolaire", "8 ép.", 2022],
       ["Our Unwritten Seoul","Deux personnes blessées se retrouvent liées par une ville et des hasards répétés.","Romance contemplative qui célèbre Séoul. Belles images, récit parfois sans direction claire.","Romance / Slice of life","12 ép.",2024],
       ["Doctor John","Un médecin emprisonné pour euthanasie est libéré pour travailler dans un centre de gestion de la douleur.","Ji Sung exceptionnel dans ce rôle complexe. Réflexions profondes sur la douleur et l'éthique médicale.","Médical / Drama","32 ép.",2019],
       ["Would You Marry Me","Le fiancé de Meri la trompe et elle perd son logement suite à une arnaque. Sans le sou ni toit, elle rencontre un inconnu qui porte le même nom que son ex. Quand elle remporte un concours offrant une maison de luxe aux jeunes mariés, elle demande à Kim Woo-joo de jouer son mari pour décrocher le prix.","Choi Woo-sik et Jung So-min — alchimie évidente et comédie légère. Un des rom-coms les plus charmants de 2025.","Romance / Comédie","12 ép.",2025],
@@ -1069,6 +1073,17 @@ const UNSEEN_DRAMAS = [
     eps: "12 ép.",
     platforms: [["Disney+","https://www.disneyplus.com","pb-disney"]]
   },
+  { title: "No Tail to Tell", synopsis: "Eun Ho est une gumiho qui refuse de devenir humaine pour profiter éternellement de la vie. Tout bascule quand elle croise la route de Kang Si Yeol, star du football narcissique.", year: 2026, genre: "Romance / Fantasy / Comédie", eps: "12 ép.", platforms: [["Netflix","https://www.netflix.com/title/81707028","pb-netflix"]] },
+  { title: "Undercover Miss Hong", synopsis: "Dans les années 90, Hong Geum Bo, élite de la supervision financière, s'infiltre en tant que jeune employée dans une société de courtage où circulent des fonds suspects.", year: 2026, genre: "Comédie / Policier", eps: "16 ép.", platforms: [["Netflix","https://www.netflix.com/title/81736584","pb-netflix"],["Telegram", "https://t.me/korea_Dramas_tv", "pb-telegram"]] },
+  { title: "The Judge Returns", synopsis: "Après avoir été corrompu puis assassiné pour avoir voulu faire justice, le juge Lee Han Yeong est propulsé 10 ans dans le passé avec une seconde chance de tout réparer.", year: 2026, genre: "Juridique / Fantasy", eps: "14 ép.", platforms: [["Viki","https://www.viki.com/tv/41332c-the-judge-returns","pb-viki"]] },
+  { title: "Dear X", synopsis: "Baek Ah Jin, actrice au sourire parfait, cache une nature sociopathe forgée par une enfance violente. Sa façade commence à craquer quand un journaliste enquête sur son passé.", year: 2025, genre: "Thriller / Mélodrame", eps: "12 ép.", platforms: [["Viki","https://www.viki.com/tv/41033c-dear-x","pb-viki"]] },
+  { title: "The Trunk", synopsis: "Une mystérieuse malle découverte dans un lac menace de révéler les secrets d'une agence de mariages temporaires et de l'un de ses couples.", year: 2024, genre: "Mystère / Mélodrame", eps: "8 ép.", platforms: [["Netflix","https://www.netflix.com/title/81582447","pb-netflix"]] },
+  { title: "A Time Called You", synopsis: "Toujours en deuil de son petit ami décédé, Han Jun Hee voyage accidentellement en 1998 et y rencontre un inconnu qui lui ressemble trait pour trait.", year: 2023, genre: "Romance / Fantasy / Voyage dans le temps", eps: "12 ép.", platforms: [["Netflix","https://www.netflix.com/title/81513988","pb-netflix"]] },
+  { title: "Now We Are Breaking Up", synopsis: "Une directrice artistique froide et ambitieuse voit sa vie bouleversée par une liaison inattendue avec un photographe de mode français.", year: 2021, genre: "Romance / Drame", eps: "16 ép.", platforms: [["Netflix","https://www.netflix.com/title/81544635","pb-netflix"]] },
+  { title: "My Name", synopsis: "Après le meurtre de son père, une jeune femme infiltre la police sous une fausse identité pour retrouver le tueur — et découvre une vérité qui change tout.", year: 2021, genre: "Action / Thriller", eps: "8 ép.", platforms: [["Netflix","https://www.netflix.com/title/81303031","pb-netflix"]] },
+  { title: "Nevertheless", synopsis: "Deux étudiants en art se retrouvent piégés dans une relation ambiguë : elle sait qu'il ne veut pas s'engager, mais ne peut pas s'empêcher de l'aimer.", year: 2021, genre: "Romance / Drame", eps: "10 ép.", platforms: [["Netflix","https://www.netflix.com/title/81435207","pb-netflix"]] },
+  { title: "True Beauty", synopsis: "Une lycéenne complexée par son apparence apprend le maquillage et devient la fille la plus populaire de l'école, tout en cachant son vrai visage.", year: 2020, genre: "Romance / Comédie", eps: "16 ép.", platforms: [["Viki","https://www.viki.com/tv/37519c-true-beauty","pb-viki"]] },
+  { title: "Abyss", synopsis: "Deux personnes mortes se réincarnent dans des corps différents grâce à une mystérieuse bille, et doivent résoudre les crimes liés à leur propre mort.", year: 2019, genre: "Romance / Fantasy / Thriller", eps: "16 ép.", platforms: [["Viki","https://www.viki.com/tv/35666c-abyss","pb-viki"]] },
   {
     title: "Hyde, Jekyll, Me",
     synopsis: "Gu Seo-jin, héritier d'un parc d'attractions, souffre d'une double personnalité depuis un traumatisme d'enfance. Il se retrouve à affronter la directrice d'un cirque qu'il veut expulser — avant de tomber amoureux de ses deux personnalités.",
@@ -1911,7 +1926,16 @@ function buildSections() {
   updateCounts();
 }
 
-const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virtuous Business": 255086, "D-Day": 63910,"Extraordinary Attorney Woo": 197067, "Under the Queen's Umbrella": 156406, "Lovely Runner": 230923, "Sketch": 74265, "Arthdal Chronicles 2 : The Sword of Aramun": 86241 };
+const FORCED_IDS = { "The K2": 67391, "Search": 99492, "Moving": 126485, "A Virtuous Business": 255086, "D-Day": 63910,"Extraordinary Attorney Woo": 197067, "Under the Queen's Umbrella": 156406, "Lovely Runner": 230923, "Sketch": 74265, "Arthdal Chronicles 2 : The Sword of Aramun": 86241,"The Judge Returns": 281726,
+"Dear X": 246316,
+"The Trunk": 230777,
+"A Time Called You": 213516,"No Tail to Tell": 249837,
+"Undercover Miss Hong": 293608, "Destined With You": 228087,
+"Weak Hero Class 1": 213684, "Now We Are Breaking Up": 130752,
+"My Name": 197067,
+"Nevertheless": 128563,
+"True Beauty": 109477,
+"Abyss": 89747,"Melting Me Softly": 91582 };
 const KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
 async function loadPoster(img, title) {
