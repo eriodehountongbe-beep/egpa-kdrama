@@ -3514,53 +3514,73 @@ function setView(mode) {
   document.getElementById('btn-list').classList.toggle('active', mode === 'list');
 }
 // ── MARQUE-PAGES ─────────────────────────────────────────────────────────────
-function getBookmarks() {
-  try { return JSON.parse(localStorage.getItem('kdrama_bookmarks')) || []; }
-  catch { return []; }
+let _bookmarksCache = [];
+
+async function loadBookmarks() {
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${API_BASE}/bookmarks/${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error('network');
+    _bookmarksCache = await res.json();
+    updateBookmarksCount();
+    refreshAllBookmarkButtons();
+  } catch(e) { console.error('loadBookmarks error', e); }
 }
-function saveBookmarks(list) {
-  try { localStorage.setItem('kdrama_bookmarks', JSON.stringify(list)); } catch {}
-}
+
 function isBookmarked(title) {
-  return getBookmarks().some(b => b.title === title);
+  return _bookmarksCache.some(b => b.title === title);
 }
-function toggleBookmark(title, genre, year) {
-  let list = getBookmarks();
-  if (isBookmarked(title)) {
-    list = list.filter(b => b.title !== title);
-  } else {
-    list.push({ title, genre, year });
-  }
-  saveBookmarks(list);
-  updateBookmarkUI(title);
-  updateBookmarksCount();
-  renderBookmarksList();
+
+async function toggleBookmark(title, genre, year) {
+  const userId = getUserId();
+  try {
+    if (isBookmarked(title)) {
+      const res = await fetch(`${API_BASE}/bookmarks`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, title })
+      });
+      _bookmarksCache = await res.json();
+    } else {
+      const res = await fetch(`${API_BASE}/bookmarks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, title, genre, year })
+      });
+      _bookmarksCache = await res.json();
+    }
+    updateBookmarksCount();
+    refreshAllBookmarkButtons();
+    renderBookmarksList();
+  } catch(e) { console.error('toggleBookmark error', e); }
 }
-function updateBookmarkUI(title) {
-  document.querySelectorAll(`.bookmark-btn[data-title="${CSS.escape(title)}"]`).forEach(btn => {
+
+function refreshAllBookmarkButtons() {
+  document.querySelectorAll('.bookmark-btn').forEach(btn => {
+    const title = btn.dataset.title;
     btn.classList.toggle('saved', isBookmarked(title));
-    btn.textContent = isBookmarked(title) ? '🔖' : '🔖';
   });
 }
+
 function updateBookmarksCount() {
-  const count = getBookmarks().length;
   const el = document.getElementById('bookmarks-count');
-  if (el) el.textContent = count;
+  if (el) el.textContent = _bookmarksCache.length;
 }
+
 function toggleBookmarksPanel() {
   const panel = document.getElementById('bookmarks-panel');
   panel.classList.toggle('open');
   if (panel.classList.contains('open')) renderBookmarksList();
 }
+
 function renderBookmarksList() {
-  const list = getBookmarks();
   const container = document.getElementById('bookmarks-list');
   if (!container) return;
-  if (list.length === 0) {
+  if (_bookmarksCache.length === 0) {
     container.innerHTML = '<div class="bookmarks-empty">Aucun favori pour l\'instant.<br>Clique sur 🔖 sur une carte<br>pour sauvegarder un drama.</div>';
     return;
   }
-  container.innerHTML = list.map(b => `
+  container.innerHTML = _bookmarksCache.map(b => `
     <div class="bookmark-item" onclick="openBookmarkedDrama('${b.title.replace(/'/g,"\\'")}')">
       <img class="bookmark-item-poster" src="" alt="${b.title}" id="bm-img-${CSS.escape(b.title)}" onerror="this.style.background='#2a2a3e'">
       <div class="bookmark-item-info">
@@ -3570,11 +3590,12 @@ function renderBookmarksList() {
       <button class="bookmark-item-remove" onclick="event.stopPropagation(); toggleBookmark('${b.title.replace(/'/g,"\\'")}', '${(b.genre||'').replace(/'/g,"\\'")}', '${b.year||''}')">✕</button>
     </div>
   `).join('');
-  list.forEach(b => {
+  _bookmarksCache.forEach(b => {
     const img = document.getElementById('bm-img-' + CSS.escape(b.title));
     if (img) loadPoster(img, b.title);
   });
 }
+
 function openBookmarkedDrama(title) {
   for (const [catKey, cat] of Object.entries(DRAMAS)) {
     const drama = cat.items.find(d => d[0] === title);
@@ -3587,14 +3608,15 @@ function openBookmarkedDrama(title) {
   }
 }
 
-// Ajoute le bouton bookmark sur chaque carte
 function addBookmarkButtons() {
   document.querySelectorAll('.drama-card').forEach(card => {
     if (card.querySelector('.bookmark-btn')) return;
-    const title = card.querySelector('.card-title') ? card.querySelector('.card-title').textContent : '';
+    const titleEl = card.querySelector('.card-title');
+    if (!titleEl) return;
+    const title = titleEl.textContent.trim();
     const genre = card.dataset.genre || '';
-    const year = card.querySelector('.year-badge') ? card.querySelector('.year-badge').textContent : '';
-    if (!title) return;
+    const yearEl = card.querySelector('.year-badge');
+    const year = yearEl ? yearEl.textContent : '';
     const btn = document.createElement('button');
     btn.className = 'bookmark-btn' + (isBookmarked(title) ? ' saved' : '');
     btn.dataset.title = title;
@@ -3608,8 +3630,8 @@ function addBookmarkButtons() {
   });
 }
 
-updateBookmarksCount();
-setTimeout(addBookmarkButtons, 500);
+loadBookmarks();
+setTimeout(addBookmarkButtons, 800);
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 <!-- BOUTON MARQUE-PAGES -->
