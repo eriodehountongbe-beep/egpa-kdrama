@@ -1224,21 +1224,47 @@
 .welcome-overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0d0d1a 100%);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  overflow: hidden;
 }
 .welcome-overlay.hidden { display: none; }
 
+.welcome-bg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  opacity: .18;
+  transform: scale(1.05);
+  filter: blur(1px);
+  z-index: 0;
+}
+.welcome-bg-poster {
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  width: 100%;
+  background: #1e1e2e;
+}
+.welcome-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 20%, #0a0a0f 80%);
+}
 .welcome-card {
+  position: relative;
+  z-index: 1;
   text-align: center;
   max-width: 480px;
   width: 100%;
   animation: welcomeIn .6s ease;
 }
+
 @keyframes welcomeIn {
   from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -1433,6 +1459,7 @@
 <body>
 <!-- PAGE D'ACCUEIL -->
 <div id="welcome-overlay" class="welcome-overlay">
+  <div class="welcome-bg" id="welcome-bg"></div>
   <div class="welcome-card">
     <div class="welcome-logo">🎬</div>
     <div class="welcome-title">EGAP-Kdramas</div>
@@ -4127,9 +4154,7 @@ function showTutorial() {
 function renderTutoStep() {
   const step = TUTO_STEPS[tutoCurrentStep];
   const total = TUTO_STEPS.length;
-
   document.getElementById('tuto-progress').style.width = ((tutoCurrentStep + 1) / total * 100) + '%';
-
   document.getElementById('tutorial-steps').innerHTML = `
     <div class="tuto-step">
       <div class="tuto-step-icon">${step.icon}</div>
@@ -4137,13 +4162,9 @@ function renderTutoStep() {
       <div class="tuto-step-desc">${step.desc}</div>
     </div>
   `;
-
-  // Dots
   document.getElementById('tuto-dots').innerHTML = TUTO_STEPS.map((_, i) =>
     `<div class="tuto-dot ${i === tutoCurrentStep ? 'active' : ''}"></div>`
   ).join('');
-
-  // Boutons
   const prev = document.getElementById('tuto-prev');
   const next = document.getElementById('tuto-next');
   prev.disabled = tutoCurrentStep === 0;
@@ -4169,12 +4190,63 @@ function closeWelcome() {
   try { localStorage.setItem('egap_welcomed', '1'); } catch {}
 }
 
-// N'affiche la page d'accueil que si l'utilisateur ne l'a pas déjà vue
+// Collage de posters en arrière-plan
+const WELCOME_POSTERS = [
+  "Crash Landing on You", "Goblin", "The Glory", "Vincenzo", "Squid Game (1)",
+  "Queen of Tears", "Moving", "Alchemy of Souls (1,2)", "It's Okay Not to Be Okay",
+  "Twenty-Five Twenty-One", "Hotel Del Luna", "Flower of Evil", "Signal",
+  "My Dearest", "Lovely Runner", "When Life Gives You Tangerine", "Mr. Queen",
+  "Hospital Playlist (1,2)", "Itaewon Class", "Start-Up",
+  "Healer", "Strong Woman Do Bong Soon", "Weightlifting Fairy Kim Bok Joo",
+  "Reply 1988", "Descendants of the Sun", "My Love from the Star", "W: Two Worlds Apart",
+  "Sky Castle", "Penthouse (1,2)", "Reborn Rich", "Little Women",
+  "All of Us Are Dead", "Hellbound (1,2)", "Sweet Home (1)", "Gyeongseong Creature (1,2)"
+];
+
+async function buildWelcomeBg() {
+  const bg = document.getElementById('welcome-bg');
+  if (!bg) return;
+  const titles = [...WELCOME_POSTERS].sort(() => Math.random() - .5).slice(0, 28);
+  for (const title of titles) {
+    const img = document.createElement('img');
+    img.className = 'welcome-bg-poster';
+    img.alt = title;
+    bg.appendChild(img);
+    try {
+      if (posterCache[title] && posterCache[title] !== 'fallback') {
+        img.src = 'https://image.tmdb.org/t/p/w185' + posterCache[title];
+      } else if (FORCED_IDS[title]) {
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${FORCED_IDS[title]}?api_key=${KEY}`);
+        const data = await res.json();
+        if (data.poster_path) {
+          img.src = 'https://image.tmdb.org/t/p/w185' + data.poster_path;
+          savePosterToCache(title, data.poster_path);
+        }
+      } else {
+        const searchTitle = title.replace(/\(.*?\)/g, '').trim();
+        const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          const item = data.results.find(r => r.origin_country && r.origin_country.includes('KR')) || data.results[0];
+          if (item && item.poster_path) {
+            img.src = 'https://image.tmdb.org/t/p/w185' + item.poster_path;
+            savePosterToCache(title, item.poster_path);
+          }
+        }
+      }
+    } catch(e) {}
+  }
+}
+
 try {
   if (localStorage.getItem('egap_welcomed')) {
     document.getElementById('welcome-overlay').classList.add('hidden');
+  } else {
+    buildWelcomeBg();
   }
-} catch {}
+} catch {
+  buildWelcomeBg();
+}
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 <!-- BOUTON MARQUE-PAGES -->
