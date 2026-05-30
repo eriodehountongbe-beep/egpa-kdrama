@@ -1224,6 +1224,7 @@
 .welcome-overlay {
   position: fixed;
   inset: 0;
+  background: #0a0a0f;
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -1239,9 +1240,9 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
-  opacity: .18;
+  opacity: .15;
   transform: scale(1.05);
-  filter: blur(1px);
+  filter: blur(2px);
   z-index: 0;
 }
 .welcome-bg-poster {
@@ -1254,7 +1255,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 20%, #0a0a0f 80%);
+  background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(10,10,15,.4) 0%, #0a0a0f 70%);
+  z-index: 1;
 }
 .welcome-card {
   position: relative;
