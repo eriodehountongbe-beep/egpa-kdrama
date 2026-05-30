@@ -69,6 +69,15 @@ async function ensureSchema() {
   UNIQUE(user_id, title)
 )`);
 await client.query('CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id)');
+await client.query(`CREATE TABLE IF NOT EXISTS statuses (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(user_id, title)
+)`);
+await client.query('CREATE INDEX IF NOT EXISTS idx_statuses_user ON statuses(user_id)');
   } finally {
     client.release();
   }
@@ -194,6 +203,38 @@ app.delete('/api/bookmarks', async (req, res) => {
   try {
     await client.query('DELETE FROM bookmarks WHERE user_id = $1 AND title = $2', [userId, title]);
     const r = await client.query('SELECT title, genre, year FROM bookmarks WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    res.json(r.rows);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+// ── STATUTS ─────────────────────────────────────────────────────────────
+app.get('/api/statuses/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const client = await pool.connect();
+  try {
+    const r = await client.query(
+      'SELECT title, status FROM statuses WHERE user_id = $1',
+      [userId]
+    );
+    res.json(r.rows);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+
+app.post('/api/statuses', async (req, res) => {
+  const { userId, title, status } = req.body || {};
+  if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
+  const client = await pool.connect();
+  try {
+    if (!status) {
+      await client.query('DELETE FROM statuses WHERE user_id = $1 AND title = $2', [userId, title]);
+    } else {
+      await client.query(
+        'INSERT INTO statuses (user_id, title, status) VALUES ($1, $2, $3) ON CONFLICT (user_id, title) DO UPDATE SET status = $3',
+        [userId, title, status]
+      );
+    }
+    const r = await client.query('SELECT title, status FROM statuses WHERE user_id = $1', [userId]);
     res.json(r.rows);
   } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
   finally { client.release(); }
