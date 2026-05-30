@@ -59,6 +59,16 @@ async function ensureSchema() {
     )`);
     await client.query('CREATE INDEX IF NOT EXISTS idx_votes_title ON votes(title)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_comments_title ON comments(title)');
+    await client.query(`CREATE TABLE IF NOT EXISTS bookmarks (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  genre TEXT,
+  year TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(user_id, title)
+)`);
+await client.query('CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id)');
   } finally {
     client.release();
   }
@@ -145,6 +155,46 @@ app.post('/api/comments/:title', async (req, res) => {
     // return full list
     const rows = await client.query('SELECT id, "user", text, created_at FROM comments WHERE title = $1 ORDER BY created_at ASC', [title]);
     res.json(rows.rows.map(row => ({ id: row.id, user: row.user, text: row.text, created_at: row.created_at })));
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+// ── BOOKMARKS ─────────────────────────────────────────────────────────────
+app.get('/api/bookmarks/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const client = await pool.connect();
+  try {
+    const r = await client.query(
+      'SELECT title, genre, year FROM bookmarks WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    );
+    res.json(r.rows);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+
+app.post('/api/bookmarks', async (req, res) => {
+  const { userId, title, genre, year } = req.body || {};
+  if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
+  const client = await pool.connect();
+  try {
+    await client.query(
+      'INSERT INTO bookmarks (user_id, title, genre, year) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, title) DO NOTHING',
+      [userId, title, genre || '', year || '']
+    );
+    const r = await client.query('SELECT title, genre, year FROM bookmarks WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    res.json(r.rows);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
+  finally { client.release(); }
+});
+
+app.delete('/api/bookmarks', async (req, res) => {
+  const { userId, title } = req.body || {};
+  if (!userId || !title) return res.status(400).json({ error: 'userId and title required' });
+  const client = await pool.connect();
+  try {
+    await client.query('DELETE FROM bookmarks WHERE user_id = $1 AND title = $2', [userId, title]);
+    const r = await client.query('SELECT title, genre, year FROM bookmarks WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    res.json(r.rows);
   } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
   finally { client.release(); }
 });
