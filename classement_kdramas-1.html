@@ -3696,18 +3696,46 @@ const STATUS_CLS = {
   'termine': 'status-termine'
 };
 
-function getStatuses() {
-  try { return JSON.parse(localStorage.getItem('kdrama_statuses')) || {}; }
-  catch { return {}; }
+let _statusesCache = {};
+
+async function loadStatuses() {
+  try {
+    const userId = getUserId();
+    const res = await fetch(`${API_BASE}/statuses/${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error('network');
+    const rows = await res.json();
+    _statusesCache = {};
+    rows.forEach(r => { _statusesCache[r.title] = r.status; });
+    refreshAllStatusBadges();
+  } catch(e) { console.error('loadStatuses error', e); }
 }
-function saveStatus(title, status) {
-  const all = getStatuses();
-  if (status) all[title] = status;
-  else delete all[title];
-  try { localStorage.setItem('kdrama_statuses', JSON.stringify(all)); } catch {}
-}
+
 function getStatus(title) {
-  return getStatuses()[title] || null;
+  return _statusesCache[title] || null;
+}
+
+async function saveStatus(title, status) {
+  const userId = getUserId();
+  try {
+    const res = await fetch(`${API_BASE}/statuses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, title, status })
+    });
+    const rows = await res.json();
+    _statusesCache = {};
+    rows.forEach(r => { _statusesCache[r.title] = r.status; });
+  } catch(e) { console.error('saveStatus error', e); }
+}
+
+function refreshAllStatusBadges() {
+  document.querySelectorAll('.drama-card').forEach(card => {
+    const titleEl = card.querySelector('.card-title');
+    if (!titleEl) return;
+    const title = titleEl.textContent.trim();
+    const status = getStatus(title);
+    renderStatusBadge(card, title, status);
+  });
 }
 
 function addStatusButtons() {
@@ -3738,9 +3766,7 @@ function renderStatusBadge(card, title, status) {
 }
 
 function openStatusPicker(card, title) {
-  // Ferme tous les pickers ouverts
   document.querySelectorAll('.status-picker').forEach(p => p.remove());
-
   const picker = document.createElement('div');
   picker.className = 'status-picker';
   picker.innerHTML = `
@@ -3750,8 +3776,6 @@ function openStatusPicker(card, title) {
     <button class="status-picker-btn spb-retirer" onclick="setStatus(event,'${title.replace(/'/g,"\\'")}',null)">✕ Retirer</button>
   `;
   card.querySelector('.poster-wrap').appendChild(picker);
-
-  // Ferme au clic extérieur
   setTimeout(() => {
     document.addEventListener('click', function closePicker(e) {
       if (!picker.contains(e.target)) {
@@ -3762,11 +3786,10 @@ function openStatusPicker(card, title) {
   }, 10);
 }
 
-function setStatus(e, title, status) {
+async function setStatus(e, title, status) {
   e.stopPropagation();
-  saveStatus(title, status);
+  await saveStatus(title, status);
   document.querySelectorAll('.status-picker').forEach(p => p.remove());
-  // Met à jour toutes les cartes avec ce titre
   document.querySelectorAll('.drama-card').forEach(card => {
     const titleEl = card.querySelector('.card-title');
     if (titleEl && titleEl.textContent.trim() === title) {
@@ -3775,24 +3798,14 @@ function setStatus(e, title, status) {
   });
 }
 
-// Ouvrir le picker depuis le modal
-function openStatusFromModal(title) {
-  // On cherche la carte correspondante
-  const cards = document.querySelectorAll('.drama-card');
-  for (const card of cards) {
-    const titleEl = card.querySelector('.card-title');
-    if (titleEl && titleEl.textContent.trim() === title) {
-      openStatusPicker(card, title);
-      return;
-    }
-  }
-}
 function buildStatusHTML(title) {
   const status = getStatus(title);
-  const current = status ? `<span class="${STATUS_CLS[status]}" style="padding:3px 10px;border-radius:50px;font-size:11px;font-weight:800;">${STATUS_LABELS[status]}</span>` : '<span style="color:var(--muted);font-size:12px">Non défini</span>';
+  const current = status
+    ? `<span class="${STATUS_CLS[status]}" style="padding:3px 10px;border-radius:50px;font-size:11px;font-weight:800;">${STATUS_LABELS[status]}</span>`
+    : '<span style="color:var(--muted);font-size:12px">Non défini</span>';
   return `
     <div class="modal-label" style="margin-top:16px">Statut de visionnage</div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;">
+    <div id="status-modal-wrap" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;">
       ${current}
       <button class="status-picker-btn spb-voir"    onclick="setStatusFromModal('${title.replace(/'/g,"\\'")}','voir')"    style="padding:5px 12px;">👀 À voir</button>
       <button class="status-picker-btn spb-encours" onclick="setStatusFromModal('${title.replace(/'/g,"\\'")}','encours')" style="padding:5px 12px;">▶ En cours</button>
@@ -3801,25 +3814,25 @@ function buildStatusHTML(title) {
   `;
 }
 
-function setStatusFromModal(title, status) {
-  saveStatus(title, status);
-  // Rafraîchit le modal
-  const statusDiv = document.querySelector('.modal-content .modal-label + div');
-  // Rafraîchit les cartes
+async function setStatusFromModal(title, status) {
+  await saveStatus(title, status);
   document.querySelectorAll('.drama-card').forEach(card => {
     const titleEl = card.querySelector('.card-title');
     if (titleEl && titleEl.textContent.trim() === title) {
       renderStatusBadge(card, title, status);
     }
   });
-  // Recharge le HTML du statut dans le modal
-  const allLabels = document.querySelectorAll('.modal-content .modal-label');
-  allLabels.forEach(label => {
-    if (label.textContent === 'Statut de visionnage') {
-      label.nextElementSibling.outerHTML = buildStatusHTML(title).split('\n').slice(2,-1).join('\n');
-    }
-  });
+  const wrap = document.getElementById('status-modal-wrap');
+  if (wrap) {
+    const status_current = getStatus(title);
+    const current = status_current
+      ? `<span class="${STATUS_CLS[status_current]}" style="padding:3px 10px;border-radius:50px;font-size:11px;font-weight:800;">${STATUS_LABELS[status_current]}</span>`
+      : '<span style="color:var(--muted);font-size:12px">Non défini</span>';
+    wrap.querySelector('span').outerHTML = current;
+  }
 }
+
+loadStatuses();
 setTimeout(addStatusButtons, 900);
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
