@@ -1220,10 +1220,246 @@
 .spb-encours { background: rgba(255,213,79,.2);  color: #ffd54f; }
 .spb-termine { background: rgba(105,240,174,.2); color: #69f0ae; }
 .spb-retirer { background: rgba(255,255,255,.06); color: var(--muted); }
+/* PAGE D'ACCUEIL */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0d0d1a 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.welcome-overlay.hidden { display: none; }
+
+.welcome-card {
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  animation: welcomeIn .6s ease;
+}
+@keyframes welcomeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.welcome-logo {
+  font-size: 72px;
+  margin-bottom: 16px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+.welcome-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 10vw, 80px);
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 60px rgba(179,157,219,.6);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.welcome-sub {
+  font-size: 16px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.welcome-desc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.welcome-tagline {
+  font-size: 20px;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 36px;
+  letter-spacing: .5px;
+}
+.welcome-btns {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.welcome-btn-tuto {
+  padding: 14px 32px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #7c4dff, #b39ddb);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(124,77,255,.4);
+  transition: transform .2s, box-shadow .2s;
+  letter-spacing: .5px;
+}
+.welcome-btn-tuto:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(124,77,255,.55);
+}
+.welcome-btn-skip {
+  padding: 14px 32px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .5px;
+}
+.welcome-btn-skip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* TUTORIEL */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.tutorial-overlay.open { display: flex; }
+
+.tutorial-card {
+  background: #1a1a2a;
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 40px 100px rgba(0,0,0,.6);
+  overflow: hidden;
+  animation: modalIn .25s ease;
+}
+.tutorial-progress {
+  height: 3px;
+  background: rgba(255,255,255,.08);
+}
+.tutorial-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7c4dff, #b39ddb);
+  transition: width .4s ease;
+}
+.tutorial-steps {
+  padding: 36px 32px 24px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tuto-step { animation: fadeIn .3s ease; }
+.tuto-step-icon { font-size: 48px; margin-bottom: 16px; }
+.tuto-step-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.tuto-step-desc {
+  font-size: 14px;
+  color: #b0a8c8;
+  line-height: 1.7;
+}
+.tuto-step-desc strong { color: var(--accent); }
+
+.tutorial-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px 28px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.tuto-btn-prev, .tuto-btn-next {
+  padding: 9px 20px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.tuto-btn-next {
+  background: linear-gradient(135deg, #7c4dff, #b39ddb);
+  border-color: transparent;
+  color: #fff;
+}
+.tuto-btn-prev:hover { border-color: var(--accent); color: var(--accent); }
+.tuto-btn-next:hover { opacity: .9; transform: translateY(-1px); }
+.tuto-btn-prev:disabled { opacity: .3; cursor: not-allowed; }
+
+.tuto-dots {
+  display: flex;
+  gap: 6px;
+}
+.tuto-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  transition: all .2s;
+}
+.tuto-dot.active {
+  background: var(--accent);
+  transform: scale(1.2);
+}
+
+@media (max-width: 767px) {
+  .welcome-btns { flex-direction: column; align-items: center; }
+  .welcome-btn-tuto, .welcome-btn-skip { width: 100%; max-width: 280px; }
+  .tutorial-steps { padding: 24px 20px 16px; min-height: 240px; }
+  .tutorial-nav { padding: 14px 20px 20px; }
+}
 </style>
 </head>
 <body>
+<!-- PAGE D'ACCUEIL -->
+<div id="welcome-overlay" class="welcome-overlay">
+  <div class="welcome-card">
+    <div class="welcome-logo">🎬</div>
+    <div class="welcome-title">EGAP-Kdramas</div>
+    <div class="welcome-sub">Bienvenue sur le classement ultime des K-Dramas</div>
+    <div class="welcome-desc">Plus de 200 séries classées, commentées et votées par la communauté.</div>
+    <div class="welcome-tagline">✨ Êtes-vous prêt à vous amuser ?</div>
+    <div class="welcome-btns">
+      <button class="welcome-btn-tuto" onclick="showTutorial()">📖 Voir le tutoriel</button>
+      <button class="welcome-btn-skip" onclick="closeWelcome()">⏩ Passer</button>
+    </div>
+  </div>
+</div>
 
+<!-- TUTORIEL -->
+<div id="tutorial-overlay" class="tutorial-overlay">
+  <div class="tutorial-card">
+    <div class="tutorial-progress">
+      <div class="tutorial-progress-bar" id="tuto-progress"></div>
+    </div>
+    <div class="tutorial-steps" id="tutorial-steps"></div>
+    <div class="tutorial-nav">
+      <button class="tuto-btn-prev" id="tuto-prev" onclick="tutoNav(-1)">← Précédent</button>
+      <div class="tuto-dots" id="tuto-dots"></div>
+      <button class="tuto-btn-next" id="tuto-next" onclick="tutoNav(1)">Suivant →</button>
+    </div>
+  </div>
+</div>
 <div class="hero">
   <div class="hero-title">K-Drama<br>Classement</div>
   <div class="hero-sub">200+ séries • classées & commentées</div>
@@ -3834,6 +4070,111 @@ async function setStatusFromModal(title, status) {
 
 loadStatuses();
 setTimeout(addStatusButtons, 900);
+// ── PAGE D'ACCUEIL & TUTORIEL ─────────────────────────────────────────────────
+const TUTO_STEPS = [
+  {
+    icon: '⭐',
+    title: 'Les catégories',
+    desc: 'Les dramas sont classés en <strong>5 niveaux</strong> : de ⭐ Passable à ⭐⭐⭐⭐⭐ Master. Utilise les onglets en haut pour filtrer par catégorie.'
+  },
+  {
+    icon: '🔍',
+    title: 'La recherche',
+    desc: 'La barre de recherche en haut te permet de trouver un drama <strong>par titre ou par genre</strong>. Tu peux aussi filtrer par genre avec les boutons colorés.'
+  },
+  {
+    icon: '🗳️',
+    title: 'Les votes',
+    desc: 'Dans chaque fiche drama, tu peux voter <strong>▲ Mérite mieux</strong>, <strong>✦ Place idéale</strong> ou <strong>▼ Mérite moins</strong>. À partir de 10 votes d\'écart, le drama change de catégorie automatiquement !'
+  },
+  {
+    icon: '🔖',
+    title: 'Les favoris',
+    desc: 'Clique sur le 🔖 sur un poster pour ajouter un drama à tes <strong>favoris</strong>. Retrouve-les en cliquant sur le bouton Favoris en haut à gauche.'
+  },
+  {
+    icon: '👀',
+    title: 'Statut de visionnage',
+    desc: 'Dans chaque fiche, tu peux définir ton statut : <strong>À voir</strong>, <strong>En cours</strong> ou <strong>Terminé</strong>. Le badge apparaît directement sur le poster.'
+  },
+  {
+    icon: '💬',
+    title: 'Les commentaires',
+    desc: 'Partage ton avis sur chaque drama dans la section commentaires de sa fiche. <strong>La communauté peut te lire !</strong>'
+  },
+  {
+    icon: '🎲',
+    title: 'Drama aléatoire',
+    desc: 'Tu ne sais pas quoi regarder ? Clique sur le bouton <strong>🎲 Drama aléatoire</strong> en bas à droite pour découvrir un drama au hasard !'
+  },
+  {
+    icon: '🎬',
+    title: 'Sans classement',
+    desc: 'La section <strong>Sans classement</strong> regroupe les dramas pas encore notés. Tu peux voter pour les classer dans une catégorie !'
+  }
+];
+
+let tutoCurrentStep = 0;
+
+function showTutorial() {
+  document.getElementById('welcome-overlay').classList.add('hidden');
+  const overlay = document.getElementById('tutorial-overlay');
+  overlay.classList.add('open');
+  tutoCurrentStep = 0;
+  renderTutoStep();
+}
+
+function renderTutoStep() {
+  const step = TUTO_STEPS[tutoCurrentStep];
+  const total = TUTO_STEPS.length;
+
+  document.getElementById('tuto-progress').style.width = ((tutoCurrentStep + 1) / total * 100) + '%';
+
+  document.getElementById('tutorial-steps').innerHTML = `
+    <div class="tuto-step">
+      <div class="tuto-step-icon">${step.icon}</div>
+      <div class="tuto-step-title">${step.title}</div>
+      <div class="tuto-step-desc">${step.desc}</div>
+    </div>
+  `;
+
+  // Dots
+  document.getElementById('tuto-dots').innerHTML = TUTO_STEPS.map((_, i) =>
+    `<div class="tuto-dot ${i === tutoCurrentStep ? 'active' : ''}"></div>`
+  ).join('');
+
+  // Boutons
+  const prev = document.getElementById('tuto-prev');
+  const next = document.getElementById('tuto-next');
+  prev.disabled = tutoCurrentStep === 0;
+  next.textContent = tutoCurrentStep === total - 1 ? 'Commencer 🚀' : 'Suivant →';
+}
+
+function tutoNav(dir) {
+  if (dir === 1 && tutoCurrentStep === TUTO_STEPS.length - 1) {
+    closeTutorial();
+    return;
+  }
+  tutoCurrentStep = Math.max(0, Math.min(TUTO_STEPS.length - 1, tutoCurrentStep + dir));
+  renderTutoStep();
+}
+
+function closeTutorial() {
+  document.getElementById('tutorial-overlay').classList.remove('open');
+  try { localStorage.setItem('egap_welcomed', '1'); } catch {}
+}
+
+function closeWelcome() {
+  document.getElementById('welcome-overlay').classList.add('hidden');
+  try { localStorage.setItem('egap_welcomed', '1'); } catch {}
+}
+
+// N'affiche la page d'accueil que si l'utilisateur ne l'a pas déjà vue
+try {
+  if (localStorage.getItem('egap_welcomed')) {
+    document.getElementById('welcome-overlay').classList.add('hidden');
+  }
+} catch {}
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 <!-- BOUTON MARQUE-PAGES -->
@@ -3849,5 +4190,6 @@ setTimeout(addStatusButtons, 900);
   </div>
   <div class="bookmarks-list" id="bookmarks-list"></div>
 </div>
+
 </body>
 </html>
