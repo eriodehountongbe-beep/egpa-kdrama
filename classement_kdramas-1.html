@@ -4239,11 +4239,8 @@ async function buildWelcomeBg() {
 }
 
 try {
-  if (localStorage.getItem('egap_welcomed')) {
-    document.getElementById('welcome-overlay').classList.add('hidden');
-  } else {
-    buildWelcomeBg();
-  }
+  localStorage.removeItem('egap_welcomed'); // ← ligne temporaire pour tester
+  buildWelcomeBg();
 } catch {
   buildWelcomeBg();
 }
