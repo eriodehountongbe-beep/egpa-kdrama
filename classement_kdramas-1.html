@@ -1169,6 +1169,57 @@
   min-width: 18px;
   text-align: center;
 }
+/* STATUT DE VISIONNAGE */
+.status-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 50px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  z-index: 10;
+  cursor: pointer;
+}
+.status-voir    { background: rgba(100,181,246,.85); color: #000; }
+.status-encours { background: rgba(255,213,79,.85);  color: #000; }
+.status-termine { background: rgba(105,240,174,.85); color: #000; }
+
+.status-picker {
+  position: absolute;
+  bottom: 36px;
+  left: 8px;
+  background: #1a1a2a;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform: translateY(4px); } }
+.status-picker-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  text-align: left;
+  transition: opacity .2s;
+  white-space: nowrap;
+}
+.status-picker-btn:hover { opacity: .85; }
+.spb-voir    { background: rgba(100,181,246,.2); color: #64b5f6; }
+.spb-encours { background: rgba(255,213,79,.2);  color: #ffd54f; }
+.spb-termine { background: rgba(105,240,174,.2); color: #69f0ae; }
+.spb-retirer { background: rgba(255,255,255,.06); color: var(--muted); }
 </style>
 </head>
 <body>
@@ -3632,6 +3683,143 @@ function addBookmarkButtons() {
 
 loadBookmarks();
 setTimeout(addBookmarkButtons, 800);
+// ── STATUT DE VISIONNAGE ─────────────────────────────────────────────────────
+const STATUS_LABELS = {
+  'voir':    '👀 À voir',
+  'encours': '▶ En cours',
+  'termine': '✅ Terminé'
+};
+const STATUS_CLS = {
+  'voir':    'status-voir',
+  'encours': 'status-encours',
+  'termine': 'status-termine'
+};
+
+function getStatuses() {
+  try { return JSON.parse(localStorage.getItem('kdrama_statuses')) || {}; }
+  catch { return {}; }
+}
+function saveStatus(title, status) {
+  const all = getStatuses();
+  if (status) all[title] = status;
+  else delete all[title];
+  try { localStorage.setItem('kdrama_statuses', JSON.stringify(all)); } catch {}
+}
+function getStatus(title) {
+  return getStatuses()[title] || null;
+}
+
+function addStatusButtons() {
+  document.querySelectorAll('.drama-card').forEach(card => {
+    if (card.querySelector('.status-badge')) return;
+    const titleEl = card.querySelector('.card-title');
+    if (!titleEl) return;
+    const title = titleEl.textContent.trim();
+    const status = getStatus(title);
+    if (!status) return;
+    renderStatusBadge(card, title, status);
+  });
+}
+
+function renderStatusBadge(card, title, status) {
+  const existing = card.querySelector('.status-badge');
+  if (existing) existing.remove();
+  if (!status) return;
+  const badge = document.createElement('div');
+  badge.className = 'status-badge ' + STATUS_CLS[status];
+  badge.textContent = STATUS_LABELS[status];
+  badge.dataset.title = title;
+  badge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openStatusPicker(card, title);
+  });
+  card.querySelector('.poster-wrap').appendChild(badge);
+}
+
+function openStatusPicker(card, title) {
+  // Ferme tous les pickers ouverts
+  document.querySelectorAll('.status-picker').forEach(p => p.remove());
+
+  const picker = document.createElement('div');
+  picker.className = 'status-picker';
+  picker.innerHTML = `
+    <button class="status-picker-btn spb-voir"    onclick="setStatus(event,'${title.replace(/'/g,"\\'")}','voir')">👀 À voir</button>
+    <button class="status-picker-btn spb-encours" onclick="setStatus(event,'${title.replace(/'/g,"\\'")}','encours')">▶ En cours</button>
+    <button class="status-picker-btn spb-termine" onclick="setStatus(event,'${title.replace(/'/g,"\\'")}','termine')">✅ Terminé</button>
+    <button class="status-picker-btn spb-retirer" onclick="setStatus(event,'${title.replace(/'/g,"\\'")}',null)">✕ Retirer</button>
+  `;
+  card.querySelector('.poster-wrap').appendChild(picker);
+
+  // Ferme au clic extérieur
+  setTimeout(() => {
+    document.addEventListener('click', function closePicker(e) {
+      if (!picker.contains(e.target)) {
+        picker.remove();
+        document.removeEventListener('click', closePicker);
+      }
+    });
+  }, 10);
+}
+
+function setStatus(e, title, status) {
+  e.stopPropagation();
+  saveStatus(title, status);
+  document.querySelectorAll('.status-picker').forEach(p => p.remove());
+  // Met à jour toutes les cartes avec ce titre
+  document.querySelectorAll('.drama-card').forEach(card => {
+    const titleEl = card.querySelector('.card-title');
+    if (titleEl && titleEl.textContent.trim() === title) {
+      renderStatusBadge(card, title, status);
+    }
+  });
+}
+
+// Ouvrir le picker depuis le modal
+function openStatusFromModal(title) {
+  // On cherche la carte correspondante
+  const cards = document.querySelectorAll('.drama-card');
+  for (const card of cards) {
+    const titleEl = card.querySelector('.card-title');
+    if (titleEl && titleEl.textContent.trim() === title) {
+      openStatusPicker(card, title);
+      return;
+    }
+  }
+}
+function buildStatusHTML(title) {
+  const status = getStatus(title);
+  const current = status ? `<span class="${STATUS_CLS[status]}" style="padding:3px 10px;border-radius:50px;font-size:11px;font-weight:800;">${STATUS_LABELS[status]}</span>` : '<span style="color:var(--muted);font-size:12px">Non défini</span>';
+  return `
+    <div class="modal-label" style="margin-top:16px">Statut de visionnage</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;">
+      ${current}
+      <button class="status-picker-btn spb-voir"    onclick="setStatusFromModal('${title.replace(/'/g,"\\'")}','voir')"    style="padding:5px 12px;">👀 À voir</button>
+      <button class="status-picker-btn spb-encours" onclick="setStatusFromModal('${title.replace(/'/g,"\\'")}','encours')" style="padding:5px 12px;">▶ En cours</button>
+      <button class="status-picker-btn spb-termine" onclick="setStatusFromModal('${title.replace(/'/g,"\\'")}','termine')" style="padding:5px 12px;">✅ Terminé</button>
+    </div>
+  `;
+}
+
+function setStatusFromModal(title, status) {
+  saveStatus(title, status);
+  // Rafraîchit le modal
+  const statusDiv = document.querySelector('.modal-content .modal-label + div');
+  // Rafraîchit les cartes
+  document.querySelectorAll('.drama-card').forEach(card => {
+    const titleEl = card.querySelector('.card-title');
+    if (titleEl && titleEl.textContent.trim() === title) {
+      renderStatusBadge(card, title, status);
+    }
+  });
+  // Recharge le HTML du statut dans le modal
+  const allLabels = document.querySelectorAll('.modal-content .modal-label');
+  allLabels.forEach(label => {
+    if (label.textContent === 'Statut de visionnage') {
+      label.nextElementSibling.outerHTML = buildStatusHTML(title).split('\n').slice(2,-1).join('\n');
+    }
+  });
+}
+setTimeout(addStatusButtons, 900);
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 <!-- BOUTON MARQUE-PAGES -->
