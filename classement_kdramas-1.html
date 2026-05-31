@@ -1472,7 +1472,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 32px 20px;
+  padding: 28px 32px 20px 72px;
   border-bottom: 1px solid rgba(255,255,255,.08);
   position: sticky;
   top: 0;
@@ -5274,9 +5274,9 @@ function renderNews() {
 }
 
 function newsCardHTML(n) {
-  const imgHTML = n.image
-    ? `<img class="news-card-img" src="${n.image}" alt="${n.title}" onerror="this.outerHTML='<div class=\\'news-card-img-ph\\'>📰</div>'">`
-    : `<div class="news-card-img-ph">📰</div>`;
+const imgHTML = n.image
+  ? `<img class="news-card-img" src="${API_BASE}/proxy-image?url=${encodeURIComponent(n.image)}" alt="${n.title}" onerror="this.outerHTML='<div class=\\'news-card-img-ph\\'>📰</div>'">`
+  : `<div class="news-card-img-ph">📰</div>`;
   return `
     <a class="news-card" href="${n.link}" target="_blank" rel="noopener">
       ${imgHTML}
@@ -5295,9 +5295,9 @@ function newsCardHTML(n) {
 }
 
 function newsListHTML(n) {
-  const imgHTML = n.image
-    ? `<img class="news-list-img" src="${n.image}" alt="${n.title}" onerror="this.outerHTML='<div class=\\'news-list-img-ph\\'>📰</div>'">`
-    : `<div class="news-list-img-ph">📰</div>`;
+const imgHTML = n.image
+  ? `<img class="news-list-img" src="${API_BASE}/proxy-image?url=${encodeURIComponent(n.image)}" alt="${n.title}" onerror="this.outerHTML='<div class=\\'news-list-img-ph\\'>📰</div>'">`
+  : `<div class="news-list-img-ph">📰</div>`;
   return `
     <a class="news-list-item" href="${n.link}" target="_blank" rel="noopener">
       ${imgHTML}
