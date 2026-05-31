@@ -4858,13 +4858,6 @@ async function buildExtrasHTML(title, year) {
       `;
     }
 
-    // ── TRAILER ──
-    const videos = data?.videos?.results || [];
-    // Cherche trailer YouTube officiel
-    let trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube' && v.official)
-                || videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
-                || videos.find(v => v.site === 'YouTube');
-
 // ── TRAILER ──
 const videos = data?.videos?.results || [];
 let trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube' && v.official)
