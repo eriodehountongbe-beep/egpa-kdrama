@@ -5259,7 +5259,7 @@ function formatNewsDate(dateStr) {
   } catch { return ''; }
 }
 
-function renderNews() {
+async function renderNews() {
   const container = document.getElementById('news-container');
   let items = newsData;
   if (newsLang !== 'all') items = items.filter(n => n.lang === newsLang);
@@ -5270,17 +5270,119 @@ function renderNews() {
     return;
   }
 
+  container.innerHTML = '<div class="news-loading">⏳ Chargement des images...</div>';
+
   if (newsView === 'grid') {
-    container.innerHTML = `<div class="news-grid">${limited.map(n => newsCardHTML(n)).join('')}</div>`;
+    const cards = await Promise.all(limited.map(n => newsCardHTML(n)));
+    container.innerHTML = `<div class="news-grid">${cards.join('')}</div>`;
   } else {
-    container.innerHTML = `<div class="news-list">${limited.map(n => newsListHTML(n)).join('')}</div>`;
+    const items2 = await Promise.all(limited.map(n => newsListHTML(n)));
+    container.innerHTML = `<div class="news-list">${items2.join('')}</div>`;
   }
 }
+function findDramaInTitle(title) {
+  const titleLower = title.toLowerCase();
+  // Cherche dans tous les dramas
+  for (const cat of Object.values(DRAMAS)) {
+    for (const drama of cat.items) {
+      const dramaTitle = drama[0].toLowerCase().replace(/\(.*?\)/g, '').trim();
+      if (dramaTitle.length > 3 && titleLower.includes(dramaTitle)) {
+        return drama[0];
+      }
+    }
+  }
+  // Cherche dans unseen
+  for (const drama of UNSEEN_DRAMAS) {
+    const dramaTitle = drama.title.toLowerCase().replace(/\(.*?\)/g, '').trim();
+    if (dramaTitle.length > 3 && titleLower.includes(dramaTitle)) {
+      return drama.title;
+    }
+  }
+  return null;
+}
 
-function newsCardHTML(n) {
-const imgHTML = n.image
-  ? `<img class="news-card-img" src="${API_BASE}/proxy-image?url=${encodeURIComponent(n.image)}" alt="${n.title}" onerror="this.outerHTML='<div class=\\'news-card-img-ph\\'>📰</div>'">`
-  : `<div class="news-card-img-ph">📰</div>`;
+const _newsPosterCache = {};
+
+async function getNewsPosterUrl(articleTitle, source) {
+  // 1. Cherche un drama connu dans le titre
+  const dramaFound = findDramaInTitle(articleTitle);
+  if (dramaFound) {
+    if (_newsPosterCache[dramaFound]) return { type: 'poster', url: _newsPosterCache[dramaFound], drama: dramaFound };
+    try {
+      let posterPath = null;
+      if (FORCED_IDS[dramaFound]) {
+        const res = await fetch(`https://api.themoviedb.org/3/tv/${FORCED_IDS[dramaFound]}?api_key=${KEY}`);
+        const data = await res.json();
+        posterPath = data.poster_path;
+      } else {
+        const searchTitle = dramaFound.replace(/\(.*?\)/g, '').trim();
+        const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${KEY}&query=${encodeURIComponent(searchTitle)}&language=fr-FR`);
+        const data = await res.json();
+        if (data.results?.length > 0) {
+          const item = data.results.find(r => r.origin_country?.includes('KR')) || data.results[0];
+          posterPath = item?.poster_path;
+        }
+      }
+      if (posterPath) {
+        const url = 'https://image.tmdb.org/t/p/w500' + posterPath;
+        _newsPosterCache[dramaFound] = url;
+        return { type: 'poster', url, drama: dramaFound };
+      }
+    } catch(e) {}
+  }
+
+  // 2. Cherche via TMDB directement sur le titre de l'article
+  if (_newsPosterCache['__article__' + articleTitle] !== undefined) {
+    const cached = _newsPosterCache['__article__' + articleTitle];
+    return cached || { type: 'placeholder', source };
+  }
+  try {
+    // Extrait les mots importants du titre (ignore les mots courts)
+    const words = articleTitle
+      .replace(/["""'']/g, '')
+      .split(/\s+/)
+      .filter(w => w.length > 3)
+      .slice(0, 6)
+      .join(' ');
+    const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${KEY}&query=${encodeURIComponent(words)}&language=fr-FR`);
+    const data = await res.json();
+    if (data.results?.length > 0) {
+      const item = data.results.find(r => r.origin_country?.includes('KR')) || null;
+      if (item?.poster_path) {
+        const url = 'https://image.tmdb.org/t/p/w500' + item.poster_path;
+        _newsPosterCache['__article__' + articleTitle] = { type: 'poster', url, drama: item.name };
+        return { type: 'poster', url, drama: item.name };
+      }
+    }
+  } catch(e) {}
+
+  // 3. Placeholder stylé si rien trouvé
+  _newsPosterCache['__article__' + articleTitle] = null;
+  return { type: 'placeholder', source };
+}
+
+async function newsCardHTML(n) {
+  const imgData = await getNewsPosterUrl(n.title, n.source);
+  let imgHTML;
+  if (imgData.type === 'poster') {
+    imgHTML = `
+      <div style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#1e1e2e;">
+        <img src="${imgData.url}" alt="${n.title}" style="width:100%;height:100%;object-fit:cover;filter:brightness(.6);transition:transform .4s;" onerror="this.parentElement.innerHTML='<div class=\\'news-card-img-ph\\' style=\\'aspect-ratio:16/9\\'>📰</div>'">
+        <div style="position:absolute;bottom:8px;left:10px;font-size:10px;font-weight:800;color:#fff;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:50px;backdrop-filter:blur(4px);">🎬 ${imgData.drama}</div>
+      </div>`;
+  } else {
+    const sourceColors = {
+      'Soompi': 'linear-gradient(135deg,#1a1a3e,#2a1a4e)',
+      'Dramabeans': 'linear-gradient(135deg,#1a2a3e,#1a3a4e)',
+      'default': 'linear-gradient(135deg,#1e1e2e,#2a2a3e)'
+    };
+    const bg = sourceColors[imgData.source] || sourceColors.default;
+    imgHTML = `
+      <div style="width:100%;aspect-ratio:16/9;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <div style="font-size:28px;opacity:.4">📰</div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;">${imgData.source}</div>
+      </div>`;
+  }
   return `
     <a class="news-card" href="${n.link}" target="_blank" rel="noopener">
       ${imgHTML}
@@ -5298,10 +5400,24 @@ const imgHTML = n.image
   `;
 }
 
-function newsListHTML(n) {
-const imgHTML = n.image
-  ? `<img class="news-list-img" src="${API_BASE}/proxy-image?url=${encodeURIComponent(n.image)}" alt="${n.title}" onerror="this.outerHTML='<div class=\\'news-list-img-ph\\'>📰</div>'">`
-  : `<div class="news-list-img-ph">📰</div>`;
+async function newsListHTML(n) {
+  const imgData = await getNewsPosterUrl(n.title, n.source);
+  let imgHTML;
+  if (imgData.type === 'poster') {
+    imgHTML = `
+      <div style="position:relative;width:100px;height:64px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+        <img src="${imgData.url}" style="width:100%;height:100%;object-fit:cover;filter:brightness(.7);" onerror="this.parentElement.innerHTML='<div class=\\'news-list-img-ph\\'>📰</div>'">
+      </div>`;
+  } else {
+    const sourceColors = {
+      'Soompi': 'linear-gradient(135deg,#1a1a3e,#2a1a4e)',
+      'Dramabeans': 'linear-gradient(135deg,#1a2a3e,#1a3a4e)',
+      'default': 'linear-gradient(135deg,#1e1e2e,#2a2a3e)'
+    };
+    const bg = sourceColors[imgData.source] || sourceColors.default;
+    imgHTML = `
+      <div style="width:100px;height:64px;border-radius:8px;flex-shrink:0;background:${bg};display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.5;">📰</div>`;
+  }
   return `
     <a class="news-list-item" href="${n.link}" target="_blank" rel="noopener">
       ${imgHTML}
