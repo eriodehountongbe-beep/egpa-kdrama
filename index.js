@@ -243,7 +243,12 @@ app.post('/api/statuses', async (req, res) => {
 const RSSParser = require('rss-parser');
 const rssParser = new RSSParser({
   customFields: {
-    item: ['media:content', 'media:thumbnail', 'enclosure']
+    item: [
+      ['media:content', 'media:content', {keepArray: false}],
+      ['media:thumbnail', 'media:thumbnail', {keepArray: false}],
+      ['content:encoded', 'content:encoded'],
+      'enclosure'
+    ]
   }
 });
 
@@ -274,8 +279,9 @@ async function fetchNews() {
           image: item['media:content']?.$?.url
             || item['media:thumbnail']?.$?.url
             || item.enclosure?.url
-            || extractImageFromContent(item.content || '')
             || extractImageFromContent(item['content:encoded'] || '')
+            || extractImageFromContent(item.content || '')
+            || extractImageFromContent(item.summary || '')
             || null,
           source: parsed.title || feed.url,
           lang: feed.lang
