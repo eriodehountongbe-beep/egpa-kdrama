@@ -310,6 +310,21 @@ app.get('/api/news', async (req, res) => {
 // Prefetch au démarrage
 fetchNews().catch(console.error);
 
+// Proxy images pour éviter le CORS
+app.get('/api/proxy-image', async (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).end();
+  try {
+    const https = require('https');
+    const http = require('http');
+    const client = url.startsWith('https') ? https : http;
+    client.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (imgRes) => {
+      res.setHeader('Content-Type', imgRes.headers['content-type'] || 'image/jpeg');
+      imgRes.pipe(res);
+    }).on('error', () => res.status(404).end());
+  } catch(e) { res.status(500).end(); }
+});
+
 // ── VISITEURS EN LIGNE ─────────────────────────────────────────────
 const activeVisitors = new Map(); // sessionId -> timestamp
 
