@@ -2101,6 +2101,118 @@
   .news-page-actions { gap: 6px; }
   .news-view-btn, .news-lang-btn { font-size: 11px; padding: 5px 10px; }
 }
+/* ── EXTRAS MODAL ──────────────────────────────────────────────── */
+.modal-trailer {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
+  border: none;
+  margin-top: 8px;
+  background: #000;
+}
+.modal-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,193,7,.12);
+  border: 1px solid rgba(255,193,7,.25);
+  border-radius: 50px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffd54f;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+.cast-grid {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  margin-top: 8px;
+}
+.cast-card {
+  flex-shrink: 0;
+  width: 72px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform .2s;
+}
+.cast-card:hover { transform: translateY(-3px); }
+.cast-card img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #2a2a3e;
+  border: 2px solid rgba(179,157,219,.3);
+}
+.cast-card-ph {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#2a2a3e,#3a2a4e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto;
+  border: 2px solid rgba(179,157,219,.2);
+}
+.cast-name {
+  font-size: 10px;
+  color: var(--text);
+  margin-top: 4px;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.cast-char {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.actor-dramas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.actor-drama-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background .2s;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.actor-drama-item:hover { background: rgba(255,255,255,.08); }
+.actor-drama-poster {
+  width: 32px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #2a2a3e;
+  flex-shrink: 0;
+}
+.actor-drama-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+.actor-drama-year {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
 </style>
 </head>
 <body>
@@ -3934,6 +4046,7 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
       <div class="modal-label">Avis</div>
       <div class="modal-avis">${avis}</div>
       ${awardsHTML}
+      <div id="modal-extras-placeholder"></div>
       ${buildPlatformHTML(title)}
       ${buildStatusHTML(title)}
       <div id="modal-vote-placeholder"></div>
@@ -3955,6 +4068,10 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
   renderModalDynamic(title, catCls);
 }
 async function renderModalDynamic(title, catCls) {
+  // Charge les extras (note, trailer, casting) en parallèle
+  const extrasHTML = await buildExtrasHTML(title);
+  const extrasPlaceholder = document.getElementById('modal-extras-placeholder');
+  if (extrasPlaceholder) extrasPlaceholder.innerHTML = extrasHTML;
   const voteData = await getVotesAPI(title);
   const votePlaceholder = document.getElementById('modal-vote-placeholder');
   if (votePlaceholder) votePlaceholder.outerHTML = buildVoteHTMLFromData(title, catCls, voteData);
@@ -4473,7 +4590,156 @@ const sortedAwardEntries = Object.entries(DRAMA_AWARDS).sort(([titleA], [titleB]
     lazyLoadPoster(card.querySelector('img'), title);
   }
 }
+// ── TMDB EXTRAS : Trailer, Cast, Note, Acteur ──────────────────────────────
 
+async function getTmdbId(title) {
+  if (FORCED_IDS[title]) return FORCED_IDS[title];
+  try {
+    const searchTitle = title.replace(/\(.*?\)/g, '').replace(/[12,3]+$/, '').trim();
+    const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${KEY}&query=${encodeURIComponent(searchTitle)}&language=en-US`);
+    const data = await res.json();
+    if (data.results?.length > 0) {
+      const item = data.results.find(r => r.origin_country?.includes('KR')) || data.results[0];
+      return item?.id || null;
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function buildExtrasHTML(title) {
+  const id = await getTmdbId(title);
+  if (!id) return '';
+
+  let html = '';
+
+  try {
+    // 1 appel groupé : détails + vidéos + casting
+    const res = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}?api_key=${KEY}&language=fr-FR&append_to_response=videos,aggregate_credits`
+    );
+    const data = await res.json();
+
+    // ── NOTE TMDB ──
+    if (data.vote_average && data.vote_average > 0) {
+      const stars = '★'.repeat(Math.round(data.vote_average / 2));
+      html += `
+        <div class="modal-label" style="margin-top:16px">Note TMDB</div>
+        <div class="modal-rating">⭐ ${data.vote_average.toFixed(1)} / 10 <span style="opacity:.5;font-size:11px">(${data.vote_count?.toLocaleString()} votes)</span></div>
+      `;
+    }
+
+    // ── TRAILER ──
+    const videos = data.videos?.results || [];
+    const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+                 || videos.find(v => v.site === 'YouTube');
+    if (trailer) {
+      html += `
+        <div class="modal-label" style="margin-top:16px">🎬 Bande-annonce</div>
+        <iframe class="modal-trailer"
+          src="https://www.youtube.com/embed/${trailer.key}?rel=0"
+          allowfullscreen loading="lazy"></iframe>
+      `;
+    }
+
+    // ── CASTING ──
+    const cast = (data.aggregate_credits?.cast || []).slice(0, 10);
+    if (cast.length > 0) {
+      const castCards = cast.map(actor => {
+        const imgUrl = actor.profile_path
+          ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
+          : null;
+        const charName = actor.roles?.[0]?.character || '';
+        return `
+          <div class="cast-card" onclick="openActorDramas(${actor.id}, '${actor.name.replace(/'/g,"\\'")}')">
+            ${imgUrl
+              ? `<img src="${imgUrl}" alt="${actor.name}" onerror="this.outerHTML='<div class=\\'cast-card-ph\\'>🎭</div>'">`
+              : `<div class="cast-card-ph">🎭</div>`}
+            <div class="cast-name">${actor.name}</div>
+            ${charName ? `<div class="cast-char">${charName}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+      html += `
+        <div class="modal-label" style="margin-top:16px">🎭 Casting principal</div>
+        <div class="cast-grid">${castCards}</div>
+      `;
+    }
+
+  } catch(e) { console.error('buildExtrasHTML error', e); }
+
+  return html;
+}
+
+// Ouvre un mini-panel "autres dramas de cet acteur"
+async function openActorDramas(personId, actorName) {
+  const existing = document.getElementById('actor-panel');
+  if (existing) existing.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'actor-panel';
+  panel.style.cssText = `
+    position:fixed; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(8px);
+    z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;
+  `;
+  panel.innerHTML = `
+    <div style="background:#1a1a2a;border-radius:16px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,.1);padding:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent)">🎭 ${actorName}</div>
+        <button onclick="document.getElementById('actor-panel').remove()" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;">✕</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Autres dramas coréens avec cet acteur :</div>
+      <div id="actor-dramas-list"><div style="color:var(--muted);font-size:13px;">⏳ Chargement...</div></div>
+    </div>
+  `;
+  panel.addEventListener('click', e => { if (e.target === panel) panel.remove(); });
+  document.body.appendChild(panel);
+
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/person/${personId}/tv_credits?api_key=${KEY}&language=fr-FR`);
+    const data = await res.json();
+    const krDramas = (data.cast || [])
+      .filter(d => d.origin_country?.includes('KR') || d.original_language === 'ko')
+      .sort((a, b) => (b.first_air_date || '').localeCompare(a.first_air_date || ''))
+      .slice(0, 12);
+
+    const listEl = document.getElementById('actor-dramas-list');
+    if (!listEl) return;
+
+    if (krDramas.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:13px;">Aucun autre drama coréen trouvé.</div>';
+      return;
+    }
+
+    listEl.innerHTML = '<div class="actor-dramas-list">' + krDramas.map(d => {
+      const posterUrl = d.poster_path
+        ? `https://image.tmdb.org/t/p/w92${d.poster_path}`
+        : null;
+      const year = d.first_air_date ? d.first_air_date.slice(0, 4) : '';
+      // Vérifie si le drama est dans notre base
+      const inBase = findDramaByTitle(d.name) || findDramaByTitle(d.original_name);
+      const onclick = inBase
+        ? `openDramaFromMyPage('${(inBase.drama[0]).replace(/'/g,"\\'")}'); document.getElementById('actor-panel').remove();`
+        : `window.open('https://www.themoviedb.org/tv/${d.id}','_blank')`;
+
+      return `
+        <div class="actor-drama-item" onclick="${onclick}">
+          ${posterUrl
+            ? `<img class="actor-drama-poster" src="${posterUrl}" alt="${d.name}" onerror="this.style.background='#2a2a3e'">`
+            : `<div class="actor-drama-poster" style="background:#2a2a3e;display:flex;align-items:center;justify-content:center;font-size:16px;">🎬</div>`}
+          <div>
+            <div class="actor-drama-title">${d.name}</div>
+            ${year ? `<div class="actor-drama-year">${year}</div>` : ''}
+            ${inBase ? `<div style="font-size:9px;color:var(--accent);margin-top:2px;">✓ Dans le classement</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('') + '</div>';
+
+  } catch(e) {
+    const listEl = document.getElementById('actor-dramas-list');
+    if (listEl) listEl.innerHTML = '<div style="color:#ef9a9a;font-size:13px;">Erreur de chargement.</div>';
+  }
+}
 buildSections();
 buildUnseenSection();
 buildAwardsSection();
