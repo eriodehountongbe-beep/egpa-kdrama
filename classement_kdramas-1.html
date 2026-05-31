@@ -1456,6 +1456,183 @@
   .tutorial-steps { padding: 24px 20px 16px; min-height: 240px; }
   .tutorial-nav { padding: 14px 20px 20px; }
 }
+/* ── MES K-DRAMAS PAGE ───────────────────────────────────────────── */
+.my-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 800;
+  overflow-y: auto;
+  animation: fadeIn .3s ease;
+}
+.my-page.open { display: block; }
+
+.my-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.my-page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: #fff;
+}
+.my-page-close {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+}
+.my-page-close:hover { background: rgba(255,255,255,.18); }
+
+.my-page-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+.my-section {
+  margin-bottom: 48px;
+}
+.my-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.my-section-icon { font-size: 22px; }
+.my-section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: #fff;
+}
+.my-section-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(255,255,255,.06);
+  padding: 3px 10px;
+  border-radius: 50px;
+}
+.my-section-empty {
+  color: var(--muted);
+  font-size: 14px;
+  font-style: italic;
+  padding: 20px 0;
+}
+
+.my-drama-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.my-drama-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.06);
+  cursor: pointer;
+  transition: transform .25s, box-shadow .25s;
+  position: relative;
+}
+.my-drama-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+}
+.my-drama-card .poster-wrap {
+  aspect-ratio: 2/3;
+  position: relative;
+  background: #1e1e2e;
+  overflow: hidden;
+}
+.my-drama-card .poster-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .4s;
+}
+.my-drama-card:hover .poster-wrap img { transform: scale(1.04); }
+.my-drama-card .poster-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; color: rgba(255,255,255,.1);
+}
+.my-drama-card-title {
+  padding: 8px 10px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+}
+.my-status-badge {
+  position: absolute;
+  top: 6px; left: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.my-recent-time {
+  position: absolute;
+  bottom: 6px; right: 6px;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(4px);
+  color: rgba(255,255,255,.6);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 50px;
+}
+
+/* Nav icon */
+.nav-my-page {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.nav-my-page:hover, .nav-my-page.active {
+  color: #fff;
+  border-color: var(--accent);
+  background: rgba(179,157,219,.1);
+}
+
+@media (max-width: 767px) {
+  .my-page-header { padding: 20px 16px 14px; }
+  .my-page-content { padding: 20px 12px 40px; }
+  .my-drama-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+  .my-page-title { font-size: 24px; }
+}
 </style>
 </head>
 <body>
@@ -1517,6 +1694,7 @@
   <button class="tab-btn" data-cat="assez">⭐⭐ Assez bien</button>
   <button class="tab-btn" data-cat="passable">⭐ Passable</button>
   <button class="tab-btn" data-cat="unseen">🎬 Sans classement</button>
+  <button class="nav-my-page" onclick="openMyPage()">🎯 Mes K-Dramas</button>
 </div>
 
 <div class="genre-filters" id="genre-filters">
@@ -2632,6 +2810,7 @@ async function loadUnseenPoster(img, title) {
 }
 
 function openUnseenModal(d) {
+  trackRecentDrama(d.title);
   const catColors_local = '#c9a84c';
   const icons = { Netflix:'▶', 'Disney+':'✦', Viki:'▷', VoirDrama:'🎬' };
   const platformBadges = (d.platforms || []).map(([name, url, cls]) =>
@@ -3183,6 +3362,7 @@ function buildPlatformHTML(title) {
 }
 
 function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, imgSrc) {
+  trackRecentDrama(title);
   const catColors = { master: '#b39ddb', tresbien: '#64b5f6', bien: '#69f0ae', assez: '#ffd54f', passable: '#ef9a9a' };
   const color = catColors[catCls] || '#fff';
   const awards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] ? DRAMA_AWARDS[title] : [];
@@ -4246,6 +4426,155 @@ try {
 } catch {
   buildWelcomeBg();
 }
+// ── MES K-DRAMAS PAGE ────────────────────────────────────────────────────────
+const RECENT_KEY = 'kdrama_recent';
+const RECENT_MAX = 10;
+
+function trackRecentDrama(title) {
+  try {
+    let recent = JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+    recent = recent.filter(r => r.title !== title);
+    recent.unshift({ title, time: Date.now() });
+    if (recent.length > RECENT_MAX) recent = recent.slice(0, RECENT_MAX);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+  } catch(e) {}
+}
+
+function getRecentDramas() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
+  catch { return []; }
+}
+
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(diff / 3600000);
+  const d = Math.floor(diff / 86400000);
+  if (m < 1) return 'À l\'instant';
+  if (m < 60) return `Il y a ${m} min`;
+  if (h < 24) return `Il y a ${h}h`;
+  return `Il y a ${d}j`;
+}
+
+function findDramaInfo(title) {
+  for (const [catKey, cat] of Object.entries(DRAMAS)) {
+    const drama = cat.items.find(d => d[0] === title);
+    if (drama) return { drama, catKey, cat };
+  }
+  const unseen = UNSEEN_DRAMAS.find(d => d.title === title);
+  if (unseen) return { unseen: true, drama: unseen };
+  return null;
+}
+
+function buildMyDramaCard(title, statusOverride, timeLabel) {
+  const info = findDramaInfo(title);
+  if (!info) return '';
+
+  const status = statusOverride || getStatus(title);
+  const statusHTML = status
+    ? `<div class="my-status-badge ${STATUS_CLS[status]}">${STATUS_LABELS[status]}</div>`
+    : '';
+  const timeHTML = timeLabel
+    ? `<div class="my-recent-time">${timeLabel}</div>`
+    : '';
+
+  const cardId = 'mycard-' + CSS.escape(title);
+  return `
+    <div class="my-drama-card" id="${cardId}" onclick="openDramaFromMyPage('${title.replace(/'/g,"\\'")}')">
+      <div class="poster-wrap">
+        <img src="" alt="${title}" id="myimg-${CSS.escape(title)}"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none">🎬</div>
+        ${statusHTML}
+        ${timeHTML}
+      </div>
+      <div class="my-drama-card-title">${title}</div>
+    </div>
+  `;
+}
+
+function openMyPage() {
+  const page = document.getElementById('my-page');
+  page.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderMyPage();
+  document.querySelector('.nav-my-page').classList.add('active');
+}
+
+function closeMyPage() {
+  document.getElementById('my-page').classList.remove('open');
+  document.body.style.overflow = '';
+  document.querySelector('.nav-my-page').classList.remove('active');
+}
+
+function renderMyPage() {
+  const container = document.getElementById('my-page-content');
+
+  const encours  = Object.entries(_statusesCache).filter(([,s]) => s === 'encours').map(([t]) => t);
+  const aVoir    = Object.entries(_statusesCache).filter(([,s]) => s === 'voir').map(([t]) => t);
+  const termines = Object.entries(_statusesCache).filter(([,s]) => s === 'termine').map(([t]) => t);
+  const recents  = getRecentDramas();
+
+  const sections = [
+    { icon: '▶', title: 'En cours', color: '#ffd54f', items: encours, status: 'encours' },
+    { icon: '👀', title: 'À voir',   color: '#64b5f6', items: aVoir,   status: 'voir' },
+    { icon: '✅', title: 'Terminés', color: '#69f0ae', items: termines, status: 'termine' },
+  ];
+
+  let html = '';
+
+  sections.forEach(sec => {
+    html += `
+      <div class="my-section">
+        <div class="my-section-header">
+          <div class="my-section-icon">${sec.icon}</div>
+          <div class="my-section-title" style="color:${sec.color}">${sec.title}</div>
+          <div class="my-section-count">${sec.items.length} drama${sec.items.length > 1 ? 's' : ''}</div>
+        </div>
+        ${sec.items.length === 0
+          ? `<div class="my-section-empty">Aucun drama dans cette catégorie.</div>`
+          : `<div class="my-drama-grid">${sec.items.map(t => buildMyDramaCard(t, sec.status, null)).join('')}</div>`
+        }
+      </div>
+    `;
+  });
+
+  // Section récents
+  html += `
+    <div class="my-section">
+      <div class="my-section-header">
+        <div class="my-section-icon">🕐</div>
+        <div class="my-section-title" style="color:var(--accent)">Vus récemment</div>
+        <div class="my-section-count">${recents.length} drama${recents.length > 1 ? 's' : ''}</div>
+      </div>
+      ${recents.length === 0
+        ? `<div class="my-section-empty">Tu n'as pas encore consulté de drama.</div>`
+        : `<div class="my-drama-grid">${recents.map(r => buildMyDramaCard(r.title, null, timeAgo(r.time))).join('')}</div>`
+      }
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+  // Charge les posters
+  const allTitles = [...new Set([...encours, ...aVoir, ...termines, ...recents.map(r => r.title)])];
+  allTitles.forEach(title => {
+    const img = document.getElementById('myimg-' + CSS.escape(title));
+    if (img) loadPoster(img, title);
+  });
+}
+
+function openDramaFromMyPage(title) {
+  const info = findDramaInfo(title);
+  if (!info) return;
+  closeMyPage();
+  if (info.unseen) {
+    openUnseenModal(info.drama);
+  } else {
+    const [t, synopsis, avis, genre, eps, year] = info.drama;
+    openModal(t, synopsis, avis, genre, eps, year, info.cat.label, info.cat.cls, '');
+  }
+}
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 <!-- BOUTON MARQUE-PAGES -->
@@ -4261,6 +4590,13 @@ try {
   </div>
   <div class="bookmarks-list" id="bookmarks-list"></div>
 </div>
-
+<!-- MES K-DRAMAS PAGE -->
+<div class="my-page" id="my-page">
+  <div class="my-page-header">
+    <div class="my-page-title">🎯 MES K-DRAMAS</div>
+    <button class="my-page-close" onclick="closeMyPage()">✕</button>
+  </div>
+  <div class="my-page-content" id="my-page-content"></div>
+</div>
 </body>
 </html>
