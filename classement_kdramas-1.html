@@ -4865,34 +4865,29 @@ async function buildExtrasHTML(title, year) {
                 || videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
                 || videos.find(v => v.site === 'YouTube');
 
-    if (trailer) {
-      html += `
+// ── TRAILER ──
+const videos = data?.videos?.results || [];
+let trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube' && v.official)
+            || videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+            || videos.find(v => v.site === 'YouTube');
+
+const ytQuery = encodeURIComponent(`${title} ${year || ''} trailer`);
+const ytUrl = trailer
+  ? `https://www.youtube.com/watch?v=${trailer.key}`
+  : `https://www.youtube.com/results?search_query=${ytQuery}`;
+
+html += `
   <div class="modal-label" style="margin-top:16px">🎬 Bande-annonce</div>
-  <a href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener"
-    style="display:flex;align-items:center;gap:10px;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.25);border-radius:10px;padding:12px 16px;text-decoration:none;margin-top:8px;">
-    <span style="font-size:24px;">▶</span>
+  <a href="${ytUrl}" target="_blank" rel="noopener"
+    style="display:flex;align-items:center;gap:12px;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.25);border-radius:10px;padding:12px 16px;text-decoration:none;margin-top:8px;transition:background .2s;"
+    onmouseover="this.style.background='rgba(255,0,0,.22)'" onmouseout="this.style.background='rgba(255,0,0,.12)'">
+    <span style="font-size:28px;line-height:1;">▶</span>
     <div>
       <div style="color:#fff;font-size:13px;font-weight:700;">Voir la bande-annonce</div>
-      <div style="color:rgba(255,255,255,.5);font-size:11px;">Ouvre YouTube</div>
+      <div style="color:rgba(255,255,255,.5);font-size:11px;">Ouvre YouTube dans un nouvel onglet</div>
     </div>
   </a>
 `;
-    } else {
-      // Fallback : lien vers recherche YouTube
-      const ytQuery = encodeURIComponent(`${title} ${year || ''} trailer`);
-      html += `
-        <div class="modal-label" style="margin-top:16px">🎬 Bande-annonce</div>
-        <a href="https://www.youtube.com/results?search_query=${ytQuery}" target="_blank" rel="noopener"
-          style="display:flex;align-items:center;gap:10px;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.25);border-radius:10px;padding:12px 16px;text-decoration:none;margin-top:8px;transition:background .2s;"
-          onmouseover="this.style.background='rgba(255,0,0,.2)'" onmouseout="this.style.background='rgba(255,0,0,.12)'">
-          <span style="font-size:24px;">▶</span>
-          <div>
-            <div style="color:#fff;font-size:13px;font-weight:700;">Voir sur YouTube</div>
-            <div style="color:rgba(255,255,255,.5);font-size:11px;">Rechercher "${title} trailer"</div>
-          </div>
-        </a>
-      `;
-    }
 
     // ── CASTING ──
     const cast = (data?.aggregate_credits?.cast || []).slice(0, 10);
