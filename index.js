@@ -254,6 +254,7 @@ const RSS_FEEDS = [
   { url: 'https://www.kdrama-fr.com/feed/', lang: 'fr' },
   { url: 'https://seriesaddict.fr/news/feed/', lang: 'fr' },
   { url: 'https://www.soompi.com/feed/', lang: 'en' },
+  { url: 'https://dramabeans.com/feed/', lang: 'en' },
 ];
 
 async function fetchNews() {
