@@ -1839,7 +1839,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 32px 20px;
+  padding: 28px 32px 20px 72px; /* ← 72px à gauche pour éviter le bouton sidebar */
   border-bottom: 1px solid rgba(255,255,255,.08);
   position: sticky;
   top: 0;
@@ -1954,13 +1954,19 @@
 .news-card-img-ph {
   width: 100%;
   aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
+  background: linear-gradient(135deg, #1a1a2e 0%, #2a1a3e 50%, #1a2a3e 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  color: rgba(255,255,255,.1);
+  font-size: 40px;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.news-card-img-ph::after {
+  content: '📰';
+  font-size: 48px;
+  opacity: .3;
 }
 .news-card-body {
   padding: 16px;
