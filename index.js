@@ -239,6 +239,75 @@ app.post('/api/statuses', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ error: 'db' }); }
   finally { client.release(); }
 });
+// ── NEWS ─────────────────────────────────────────────────────────────────────
+const RSSParser = require('rss-parser');
+const rssParser = new RSSParser({
+  customFields: {
+    item: ['media:content', 'media:thumbnail', 'enclosure']
+  }
+});
+
+let newsCache = { items: [], lastFetch: 0 };
+const NEWS_TTL = 6 * 60 * 60 * 1000; // 6h
+
+const RSS_FEEDS = [
+  { url: 'https://www.kdrama-fr.com/feed/', lang: 'fr' },
+  { url: 'https://seriesaddict.fr/news/feed/', lang: 'fr' },
+  { url: 'https://www.soompi.com/feed/', lang: 'en' },
+];
+
+async function fetchNews() {
+  if (Date.now() - newsCache.lastFetch < NEWS_TTL && newsCache.items.length > 0) {
+    return newsCache.items;
+  }
+  const allItems = [];
+  for (const feed of RSS_FEEDS) {
+    try {
+      const parsed = await rssParser.parseURL(feed.url);
+      parsed.items.forEach(item => {
+        allItems.push({
+          title: item.title || '',
+          link: item.link || '',
+          date: item.pubDate || item.isoDate || '',
+          excerpt: item.contentSnippet || item.summary || '',
+          image: item['media:content']?.$?.url
+            || item['media:thumbnail']?.$?.url
+            || item.enclosure?.url
+            || extractImageFromContent(item.content || '')
+            || null,
+          source: parsed.title || feed.url,
+          lang: feed.lang
+        });
+      });
+    } catch(e) {
+      console.error('RSS fetch error for', feed.url, e.message);
+    }
+  }
+  // Trier par date décroissante et limiter à 30
+  allItems.sort((a, b) => new Date(b.date) - new Date(a.date));
+  newsCache = { items: allItems.slice(0, 30), lastFetch: Date.now() };
+  return newsCache.items;
+}
+
+function extractImageFromContent(content) {
+  if (!content) return null;
+  const match = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return match ? match[1] : null;
+}
+
+app.get('/api/news', async (req, res) => {
+  try {
+    const items = await fetchNews();
+    res.json(items);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'news fetch failed' });
+  }
+});
+
+// Prefetch au démarrage
+fetchNews().catch(console.error);
+
 // ── VISITEURS EN LIGNE ─────────────────────────────────────────────
 const activeVisitors = new Map(); // sessionId -> timestamp
 
