@@ -4603,10 +4603,15 @@ function updateBookmarksCount() {
   if (el) el.textContent = _bookmarksCache.length;
 }
 
+
 function toggleBookmarksPanel() {
   const panel = document.getElementById('bookmarks-panel');
-  panel.classList.toggle('open');
-  if (panel.classList.contains('open')) renderBookmarksList();
+  const isOpen = panel.classList.contains('open');
+  closeAllPages();
+  if (!isOpen) {
+    panel.classList.add('open');
+    renderBookmarksList();
+  }
 }
 
 function renderBookmarksList() {
@@ -5043,11 +5048,10 @@ function buildMyDramaCard(title, statusOverride, timeLabel) {
 }
 
 function openMyPage() {
-  const page = document.getElementById('my-page');
-  page.classList.add('open');
+  closeAllPages();
+  document.getElementById('my-page').classList.add('open');
   document.body.style.overflow = 'hidden';
   renderMyPage();
-  document.querySelector('.nav-my-page').classList.add('active');
 }
 
 function closeMyPage() {
@@ -5216,7 +5220,16 @@ function openNewsPageSidebar() {
   openNewsPage();
 }
 
+function closeAllPages() {
+  document.getElementById('news-page').classList.remove('open');
+  document.getElementById('my-page').classList.remove('open');
+  document.getElementById('bookmarks-page').classList.remove('open');
+  document.getElementById('bookmarks-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 function openNewsPage() {
+  closeAllPages();
   document.getElementById('news-page').classList.add('open');
   document.body.style.overflow = 'hidden';
   if (!newsFetched) fetchNewsClient();
@@ -5439,7 +5452,7 @@ async function newsListHTML(n) {
 }
 // ── FAVORIS PLEINE PAGE ───────────────────────────────────────────────────────
 function openBookmarksPage() {
-  closeSidebar();
+  closeAllPages();
   document.getElementById('bookmarks-page').classList.add('open');
   document.body.style.overflow = 'hidden';
   renderBookmarksPage();
