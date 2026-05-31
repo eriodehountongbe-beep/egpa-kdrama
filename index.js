@@ -274,6 +274,7 @@ async function fetchNews() {
             || item['media:thumbnail']?.$?.url
             || item.enclosure?.url
             || extractImageFromContent(item.content || '')
+            || extractImageFromContent(item['content:encoded'] || '')
             || null,
           source: parsed.title || feed.url,
           lang: feed.lang
