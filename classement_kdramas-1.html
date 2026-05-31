@@ -2124,10 +2124,14 @@
   <div class="sidebar-section">
     <div class="sidebar-section-title">Mon espace</div>
     <button class="sidebar-btn" onclick="openBookmarksSidebar()">
-      <span class="sidebar-btn-icon">🔖</span>
-      Favoris
-      <span class="sidebar-btn-count has" id="sb-bookmarks-count">0</span>
-    </button>
+  <span class="sidebar-btn-icon">🔖</span>
+  Favoris
+  <span class="sidebar-btn-count has" id="sb-bookmarks-count">0</span>
+</button>
+<button class="sidebar-btn" onclick="openBookmarksPage()" style="padding: 6px 12px 6px 36px; font-size: 11px; color: var(--muted);">
+  <span class="sidebar-btn-icon">↗</span>
+  Voir en pleine page
+</button>
     <button class="sidebar-btn" onclick="openMyPageSidebar()">
       <span class="sidebar-btn-icon">🎯</span>
       Mes K-Dramas
@@ -5312,6 +5316,99 @@ const imgHTML = n.image
     </a>
   `;
 }
+// ── FAVORIS PLEINE PAGE ───────────────────────────────────────────────────────
+function openBookmarksPage() {
+  closeSidebar();
+  document.getElementById('bookmarks-page').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderBookmarksPage();
+}
+
+function closeBookmarksPage() {
+  document.getElementById('bookmarks-page').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderBookmarksPage() {
+  const container = document.getElementById('bookmarks-page-content');
+  if (_bookmarksCache.length === 0) {
+    container.innerHTML = '<div class="my-section-empty" style="padding:60px 20px;text-align:center;color:var(--muted);">Aucun favori pour l\'instant.<br>Clique sur 🔖 sur un poster pour sauvegarder un drama.</div>';
+    return;
+  }
+
+  // Grouper par catégorie
+  const grouped = { master: [], tresbien: [], bien: [], assez: [], passable: [], unseen: [] };
+  _bookmarksCache.forEach(b => {
+    for (const [catKey, cat] of Object.entries(DRAMAS)) {
+      if (cat.items.find(d => d[0] === b.title)) {
+        grouped[catKey].push(b);
+        return;
+      }
+    }
+    grouped.unseen.push(b);
+  });
+
+  const catConfig = {
+    master:   { icon: '⭐', label: 'Master',          color: '#b39ddb' },
+    tresbien: { icon: '⭐', label: 'Très bien',        color: '#64b5f6' },
+    bien:     { icon: '⭐', label: 'Bien',             color: '#69f0ae' },
+    assez:    { icon: '⭐', label: 'Assez bien',       color: '#ffd54f' },
+    passable: { icon: '⭐', label: 'Passable',         color: '#ef9a9a' },
+    unseen:   { icon: '🎬', label: 'Sans classement',  color: '#c9a84c' },
+  };
+
+  let html = `
+    <div class="my-section">
+      <div class="my-section-header">
+        <div class="my-section-icon">🔖</div>
+        <div class="my-section-title" style="color:var(--accent)">Tous mes favoris</div>
+        <div class="my-section-count">${_bookmarksCache.length} drama${_bookmarksCache.length > 1 ? 's' : ''}</div>
+      </div>
+      <div class="my-drama-grid">${_bookmarksCache.map(b => buildBookmarkCard(b)).join('')}</div>
+    </div>
+  `;
+
+  // Sections par catégorie
+  for (const [catKey, items] of Object.entries(grouped)) {
+    if (items.length === 0) continue;
+    const cfg = catConfig[catKey];
+    html += `
+      <div class="my-section">
+        <div class="my-section-header">
+          <div class="my-section-icon">${cfg.icon}</div>
+          <div class="my-section-title" style="color:${cfg.color}">${cfg.label}</div>
+          <div class="my-section-count">${items.length}</div>
+        </div>
+        <div class="my-drama-grid">${items.map(b => buildBookmarkCard(b)).join('')}</div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+
+  _bookmarksCache.forEach(b => {
+    const img = document.getElementById('bkpg-img-' + CSS.escape(b.title));
+    if (img) loadPoster(img, b.title);
+  });
+}
+
+function buildBookmarkCard(b) {
+  const status = getStatus(b.title);
+  const statusHTML = status
+    ? `<div class="my-status-badge ${STATUS_CLS[status]}">${STATUS_LABELS[status]}</div>`
+    : '';
+  return `
+    <div class="my-drama-card" onclick="openDramaFromMyPage('${b.title.replace(/'/g,"\\'")}')">
+      <div class="poster-wrap">
+        <img src="" alt="${b.title}" id="bkpg-img-${CSS.escape(b.title)}"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="poster-placeholder" style="display:none">🎬</div>
+        ${statusHTML}
+      </div>
+      <div class="my-drama-card-title">${b.title}</div>
+    </div>
+  `;
+}
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 
@@ -5349,5 +5446,13 @@ const imgHTML = n.image
     <div id="news-container"><div class="news-loading">⏳ Chargement des actualités...</div></div>
   </div>
 </div>
+ <!-- FAVORIS PAGE -->
+<div class="my-page" id="bookmarks-page">
+  <div class="my-page-header" style="padding: 28px 32px 20px 72px;">
+    <div class="my-page-title">🔖 MES FAVORIS</div>
+    <button class="my-page-close" onclick="closeBookmarksPage()">✕</button>
+  </div>
+  <div class="my-page-content" id="bookmarks-page-content"></div>
+</div> 
 </body>
 </html>
