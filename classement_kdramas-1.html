@@ -1961,17 +1961,7 @@
   <div class="stat passable"><div class="stat-num" id="cnt-passable">2</div><div class="stat-lbl">⭐ Passable</div></div>
   <div class="stat unseen"><div class="stat-num" id="cnt-unseen">48</div><div class="stat-lbl">🎬 Sans classement</div></div>
 </div>
-
-<div class="nav-tabs">
-  <button class="tab-btn active" data-cat="all">Tous</button>
-  <button class="tab-btn" data-cat="master">⭐⭐⭐⭐⭐ Master</button>
-  <button class="tab-btn" data-cat="tresbien">⭐⭐⭐⭐ Très bien</button>
-  <button class="tab-btn" data-cat="bien">⭐⭐⭐ Bien</button>
-  <button class="tab-btn" data-cat="assez">⭐⭐ Assez bien</button>
-  <button class="tab-btn" data-cat="passable">⭐ Passable</button>
-  <button class="tab-btn" data-cat="unseen">🎬 Sans classement</button>
-</div>
-
+  
 
 <div class="view-toggle">
   <button class="view-btn active" id="btn-grid" onclick="setView('grid')">⊞ Grille</button>
@@ -4543,26 +4533,31 @@ loadStatuses();
 setTimeout(addStatusButtons, 900);
 // ── PAGE D'ACCUEIL & TUTORIEL ─────────────────────────────────────────────────
 const TUTO_STEPS = [
-  {
-    icon: '⭐',
-    title: 'Les catégories',
-    desc: 'Les dramas sont classés en <strong>5 niveaux</strong> : de ⭐ Passable à ⭐⭐⭐⭐⭐ Master. Utilise les onglets en haut pour filtrer par catégorie.'
-  },
-  {
-    icon: '🔍',
-    title: 'La recherche',
-    desc: 'La barre de recherche en haut te permet de trouver un drama <strong>par titre ou par genre</strong>. Tu peux aussi filtrer par genre avec les boutons colorés.'
-  },
+{
+  icon: '⭐',
+  title: 'Les catégories',
+  desc: 'Les dramas sont classés en <strong>5 niveaux</strong> : de ⭐ Passable à ⭐⭐⭐⭐⭐ Master. Ouvre le <strong>menu ☰ en haut à gauche</strong> pour filtrer par catégorie.'
+},
+{
+  icon: '🎭',
+  title: 'Les genres',
+  desc: 'Dans le <strong>menu ☰</strong>, tu trouveras les filtres par genre : Romance, Thriller, Historique... Clique sur un genre pour afficher uniquement ces dramas.'
+},
+{
+  icon: '🔖',
+  title: 'Mon espace',
+  desc: 'Dans le <strong>menu ☰</strong>, accède à tes <strong>Favoris</strong> et à <strong>Mes K-Dramas</strong> pour retrouver tes statuts de visionnage et tes dramas récents.'
+},
   {
     icon: '🗳️',
     title: 'Les votes',
     desc: 'Dans chaque fiche drama, tu peux voter <strong>▲ Mérite mieux</strong>, <strong>✦ Place idéale</strong> ou <strong>▼ Mérite moins</strong>. À partir de 10 votes d\'écart, le drama change de catégorie automatiquement !'
   },
-  {
-    icon: '🔖',
-    title: 'Les favoris',
-    desc: 'Clique sur le 🔖 sur un poster pour ajouter un drama à tes <strong>favoris</strong>. Retrouve-les en cliquant sur le bouton Favoris en haut à gauche.'
-  },
+{
+  icon: '🔍',
+  title: 'La recherche',
+  desc: 'La barre de recherche en haut te permet de trouver un drama <strong>par titre ou par genre</strong>. Les résultats s\'affichent en temps réel.'
+},
   {
     icon: '👀',
     title: 'Statut de visionnage',
