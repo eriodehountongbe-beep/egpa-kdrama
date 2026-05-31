@@ -558,6 +558,29 @@
     .card-body { padding: 8px 10px 10px; }
     .card-title { font-size: 12px; }
     .card-synopsis, .card-avis { font-size: 11px; -webkit-line-clamp: 2; }
+    .cast-grid {
+  gap: 8px;
+}
+.cast-card {
+  width: 60px;
+}
+.cast-card img, .cast-card-ph {
+  width: 52px;
+  height: 52px;
+}
+.cast-name { font-size: 9px; }
+.cast-char { display: none; }
+
+/* Trailer lien bouton sur mobile */
+.modal-content a[href*="youtube"] {
+  padding: 10px 12px;
+}
+.modal-content a[href*="youtube"] span:first-child {
+  font-size: 22px;
+}
+.modal-content a[href*="youtube"] div div:first-child {
+  font-size: 12px;
+}
 
     /* Modal mobile : empilé verticalement */
     .modal {
@@ -2109,7 +2132,6 @@
   border: none;
   margin-top: 8px;
   background: #000;
-  max-height: 200px;
 }
 .modal-rating {
   display: inline-flex;
