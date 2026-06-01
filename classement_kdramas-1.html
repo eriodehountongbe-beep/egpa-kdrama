@@ -2511,6 +2511,491 @@
   background: linear-gradient(90deg, #7c4dff, #b39ddb);
   transition: width linear;
 }
+/* ── QUIZ PAGE ───────────────────────────────────────────────────── */
+.quiz-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 800;
+  overflow-y: auto;
+  animation: fadeIn .3s ease;
+}
+.quiz-page.open { display: block; }
+
+.quiz-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 20px 72px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.quiz-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: #fff;
+}
+.quiz-close {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #fff;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.quiz-close:hover { background: rgba(255,255,255,.18); }
+
+.quiz-content {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+/* Menu principal quiz */
+.quiz-menu { text-align: center; }
+.quiz-menu-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.quiz-menu-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+.quiz-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.quiz-level-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: all .2s;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+}
+.quiz-level-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.quiz-level-easy  { border-color: rgba(105,240,174,.3); }
+.quiz-level-easy:hover  { border-color: #69f0ae; background: rgba(105,240,174,.06); }
+.quiz-level-medium { border-color: rgba(255,213,79,.3); }
+.quiz-level-medium:hover { border-color: #ffd54f; background: rgba(255,213,79,.06); }
+.quiz-level-hard  { border-color: rgba(239,154,154,.3); }
+.quiz-level-hard:hover  { border-color: #ef9a9a; background: rgba(239,154,154,.06); }
+
+.quiz-level-icon { font-size: 32px; flex-shrink: 0; }
+.quiz-level-info { flex: 1; }
+.quiz-level-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.quiz-level-easy  .quiz-level-name { color: #69f0ae; }
+.quiz-level-medium .quiz-level-name { color: #ffd54f; }
+.quiz-level-hard  .quiz-level-name { color: #ef9a9a; }
+.quiz-level-desc { font-size: 12px; color: var(--muted); }
+.quiz-level-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.quiz-level-easy  .quiz-level-score { color: #69f0ae; }
+.quiz-level-medium .quiz-level-score { color: #ffd54f; }
+.quiz-level-hard  .quiz-level-score { color: #ef9a9a; }
+
+/* Question */
+.quiz-game { animation: fadeIn .3s ease; }
+.quiz-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.quiz-progress-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.quiz-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .4s ease;
+}
+.quiz-progress-easy   { background: #69f0ae; }
+.quiz-progress-medium { background: #ffd54f; }
+.quiz-progress-hard   { background: #ef9a9a; }
+.quiz-progress-text {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.quiz-score-live {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.quiz-question-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 20px;
+}
+.quiz-question-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.quiz-synopsis {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.7;
+  font-style: italic;
+}
+.quiz-genre-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.quiz-option-btn {
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all .2s;
+}
+.quiz-option-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(179,157,219,.1);
+}
+.quiz-option-btn.correct {
+  border-color: #69f0ae;
+  background: rgba(105,240,174,.15);
+  color: #69f0ae;
+}
+.quiz-option-btn.wrong {
+  border-color: #ef9a9a;
+  background: rgba(239,154,154,.15);
+  color: #ef9a9a;
+}
+.quiz-option-btn:disabled { cursor: not-allowed; }
+
+.quiz-input-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.quiz-input {
+  flex: 1;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  padding: 12px 16px;
+  outline: none;
+  transition: border-color .2s;
+}
+.quiz-input:focus { border-color: var(--accent); }
+.quiz-input::placeholder { color: var(--muted); }
+.quiz-submit-btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #7c4dff, #b39ddb);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.quiz-submit-btn:hover { opacity: .9; }
+
+.quiz-feedback {
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: none;
+  animation: fadeIn .2s ease;
+}
+.quiz-feedback.correct { background: rgba(105,240,174,.15); color: #69f0ae; border: 1px solid rgba(105,240,174,.3); display: block; }
+.quiz-feedback.wrong { background: rgba(239,154,154,.15); color: #ef9a9a; border: 1px solid rgba(239,154,154,.3); display: block; }
+
+.quiz-next-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(179,157,219,.15);
+  border: 1px solid rgba(179,157,219,.3);
+  color: var(--accent);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  display: none;
+}
+.quiz-next-btn.show { display: block; }
+.quiz-next-btn:hover { background: rgba(179,157,219,.25); }
+
+/* Résultats */
+.quiz-results {
+  text-align: center;
+  animation: fadeIn .4s ease;
+  padding: 20px 0;
+}
+.quiz-results-icon { font-size: 64px; margin-bottom: 16px; }
+.quiz-results-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.quiz-results-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  margin-bottom: 8px;
+}
+.quiz-results-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+.quiz-results-best {
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+.quiz-results-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.quiz-retry-btn {
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #7c4dff, #b39ddb);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.quiz-retry-btn:hover { opacity: .9; }
+.quiz-menu-btn {
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.quiz-menu-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── CHALLENGE PAGE ──────────────────────────────────────────────── */
+.challenge-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 800;
+  overflow-y: auto;
+  animation: fadeIn .3s ease;
+}
+.challenge-page.open { display: block; }
+
+.challenge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 20px 72px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.challenge-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: #fff;
+}
+.challenge-close {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #fff;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.challenge-close:hover { background: rgba(255,255,255,.18); }
+
+.challenge-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+.challenge-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+.challenge-stat {
+  flex: 1;
+  min-width: 120px;
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.challenge-stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.challenge-stat-lbl {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.challenge-badges-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.challenge-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.challenge-badge {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.06);
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+.challenge-badge.unlocked {
+  border-color: rgba(179,157,219,.4);
+  background: rgba(179,157,219,.08);
+}
+.challenge-badge.unlocked::after {
+  content: '✓';
+  position: absolute;
+  top: 8px; right: 10px;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 800;
+}
+.challenge-badge.locked { opacity: .5; filter: grayscale(.6); }
+
+.challenge-badge-icon { font-size: 40px; margin-bottom: 10px; }
+.challenge-badge-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.challenge-badge-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.challenge-badge-progress {
+  margin-top: 8px;
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.challenge-badge-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7c4dff, #b39ddb);
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+
+@media (max-width: 767px) {
+  .quiz-header, .challenge-header { padding: 16px; flex-wrap: wrap; }
+  .quiz-title, .challenge-title { font-size: 24px; }
+  .quiz-content, .challenge-content { padding: 16px 12px 40px; }
+  .challenge-badges-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .quiz-results-score { font-size: 42px; }
+}
 </style>
 </head>
 <body>
@@ -2551,6 +3036,16 @@
   <span class="sidebar-btn-icon">📰</span>
   Actualités
   <span class="sidebar-btn-count has" id="sb-news-count" style="background:rgba(239,154,154,.2);color:#ef9a9a;">NEW</span>
+</button>
+  <button class="sidebar-btn" onclick="openQuizSidebar()">
+  <span class="sidebar-btn-icon">🧠</span>
+  Quiz K-Drama
+  <span class="sidebar-btn-count has" id="sb-quiz-best" style="background:rgba(179,157,219,.2);color:var(--accent);">0</span>
+</button>
+<button class="sidebar-btn" onclick="openChallengeSidebar()">
+  <span class="sidebar-btn-icon">🏆</span>
+  Challenges
+  <span class="sidebar-btn-count" id="sb-challenge-count">0</span>
 </button>
   </div>
 
@@ -5476,32 +5971,17 @@ loadStatuses();
 setTimeout(addStatusButtons, 900);
 // ── PAGE D'ACCUEIL & TUTORIEL ─────────────────────────────────────────────────
 const TUTO_STEPS = [
-{
-  icon: '⭐',
-  title: 'Les catégories',
-  desc: 'Les dramas sont classés en <strong>5 niveaux</strong> : de ⭐ Passable à ⭐⭐⭐⭐⭐ Master. Ouvre le <strong>menu ☰ en haut à gauche</strong> pour filtrer par catégorie.'
-},
-{
-  icon: '🎭',
-  title: 'Les genres',
-  desc: 'Dans le <strong>menu ☰</strong>, tu trouveras les filtres par genre : Romance, Thriller, Historique... Clique sur un genre pour afficher uniquement ces dramas.'
-},
-{
-  icon: '🔖',
-  title: 'Mon espace',
-  desc: 'Dans le <strong>menu ☰</strong>, accède à tes <strong>Favoris</strong> et à <strong>Mes K-Dramas</strong> pour retrouver tes statuts de visionnage et tes dramas récents.'
-},
   {
-    icon: '🗳️',
-    title: 'Les votes',
-    desc: 'Dans chaque fiche drama, tu peux voter <strong>▲ Mérite mieux</strong>, <strong>✦ Place idéale</strong> ou <strong>▼ Mérite moins</strong>. À partir de 10 votes d\'écart, le drama change de catégorie automatiquement !'
+    icon: '⭐',
+    title: 'Les catégories',
+    desc: 'Les dramas sont classés en <strong>5 niveaux</strong> : de ⭐ Passable à ⭐⭐⭐⭐⭐ Master. Ouvre le <strong>menu ☰ en haut à gauche</strong> pour filtrer par catégorie ou genre.'
   },
-{
-  icon: '🔍',
-  title: 'La recherche',
-  desc: 'La barre de recherche en haut te permet de trouver un drama <strong>par titre ou par genre</strong>. Les résultats s\'affichent en temps réel.'
-},
-{
+  {
+    icon: '🔍',
+    title: 'La recherche',
+    desc: 'La barre de recherche te permet de trouver un drama <strong>par titre ou par genre</strong> en temps réel.'
+  },
+  {
   icon: '▶',
   title: 'Les plateformes',
   desc: 'Dans chaque fiche drama, des badges colorés indiquent <strong>où regarder</strong> le drama (Netflix, Disney+, Viki, VoirDrama, French Stream...). <strong>Clique directement dessus</strong> pour être redirigé vers la plateforme ! <br><br>⚠️ <em>Un drama n\'est pas forcément disponible sur toutes les plateformes indiquées, mais <strong>au moins une fonctionne</strong> !</em>'
@@ -5511,20 +5991,50 @@ const TUTO_STEPS = [
     title: 'Statut de visionnage',
     desc: 'Dans chaque fiche, tu peux définir ton statut : <strong>À voir</strong>, <strong>En cours</strong> ou <strong>Terminé</strong>. Le badge apparaît directement sur le poster.'
   },
-  {
+    {
     icon: '💬',
     title: 'Les commentaires',
     desc: 'Partage ton avis sur chaque drama dans la section commentaires de sa fiche. <strong>La communauté peut te lire !</strong>'
   },
   {
+    icon: '🗳️',
+    title: 'Les votes',
+    desc: 'Dans chaque fiche, vote <strong>▲ Mérite mieux</strong>, <strong>✦ Place idéale</strong> ou <strong>▼ Mérite moins</strong>. À 10 votes d\'écart, le drama <strong>change de catégorie automatiquement</strong> !'
+  },
+  {
+    icon: '🔖',
+    title: 'Favoris & Statut',
+    desc: 'Clique sur 🔖 pour sauvegarder un drama. Dans chaque fiche, définis ton statut : <strong>👀 À voir</strong>, <strong>▶ En cours</strong> ou <strong>✅ Terminé</strong>. Retrouve tout dans <strong>☰ → Mes K-Dramas</strong>.'
+  },
+  {
+    icon: '🎭',
+    title: 'Casting & Trailer',
+    desc: 'Dans chaque fiche drama, retrouve la <strong>note TMDB</strong>, un lien vers la <strong>bande-annonce YouTube</strong> et le <strong>casting principal</strong>. Clique sur un acteur pour voir tous ses dramas !'
+  },
+  {
+    icon: '📰',
+    title: 'Actualités',
+    desc: 'L\'onglet <strong>Actualités</strong> dans le menu te donne les dernières news K-Drama de Soompi et Dramabeans, mises à jour automatiquement toutes les 6h.'
+  },
+  {
+    icon: '🧠',
+    title: 'Quiz K-Drama',
+    desc: 'Teste tes connaissances avec le <strong>Quiz K-Drama</strong> en 3 niveaux : Facile (4 choix), Moyen (2 choix) et Difficile (saisie libre). Tes meilleurs scores sont sauvegardés !'
+  },
+  {
+    icon: '🏆',
+    title: 'Challenges & Badges',
+    desc: 'Débloque des <strong>badges</strong> en explorant le site : consulter des dramas, en terminer, voter, commenter... Retrouve ta progression dans <strong>☰ → Challenges</strong>.'
+  },
+  {
     icon: '🎲',
     title: 'Drama aléatoire',
-    desc: 'Tu ne sais pas quoi regarder ? Clique sur le bouton <strong>🎲 Drama aléatoire</strong> en bas à droite pour découvrir un drama au hasard !'
+    desc: 'Indécis ? Le bouton <strong>🎲 Drama aléatoire</strong> en bas à droite te propose un drama au hasard. Les touches <strong>← →</strong> naviguent entre les dramas d\'une même catégorie.'
   },
   {
     icon: '🎬',
     title: 'Sans classement',
-    desc: 'La section <strong>Sans classement</strong> regroupe les dramas pas encore notés. Tu peux voter pour les classer dans une catégorie !'
+    desc: 'La section <strong>Sans classement</strong> regroupe les dramas à découvrir. Vote pour les classer dans une catégorie et aider la communauté !'
   }
 ];
 
@@ -5876,6 +6386,8 @@ function closeAllPages() {
   document.getElementById('my-page').classList.remove('open');
   document.getElementById('bookmarks-page').classList.remove('open');
   document.getElementById('bookmarks-panel').classList.remove('open');
+  document.getElementById('quiz-page').classList.remove('open');
+  document.getElementById('challenge-page').classList.remove('open');
   document.body.style.overflow = '';
 }
 
@@ -6319,6 +6831,420 @@ closeModalBtn = function() {
   if (_slideshowActive) stopSlideshow();
   _origCloseModal();
 };
+// ── QUIZ K-DRAMA ──────────────────────────────────────────────────────────────
+const QUIZ_QUESTIONS = 10;
+const QUIZ_SCORES_KEY = 'kdrama_quiz_scores';
+
+function getQuizScores() {
+  try { return JSON.parse(localStorage.getItem(QUIZ_SCORES_KEY)) || { easy: 0, medium: 0, hard: 0 }; }
+  catch { return { easy: 0, medium: 0, hard: 0 }; }
+}
+function saveQuizScore(level, score) {
+  const scores = getQuizScores();
+  if (score > scores[level]) {
+    scores[level] = score;
+    try { localStorage.setItem(QUIZ_SCORES_KEY, JSON.stringify(scores)); } catch {}
+  }
+  updateSidebarQuizScore();
+}
+function updateSidebarQuizScore() {
+  const scores = getQuizScores();
+  const best = Math.max(scores.easy, scores.medium, scores.hard);
+  const el = document.getElementById('sb-quiz-best');
+  if (el) el.textContent = best > 0 ? best + '/' + QUIZ_QUESTIONS : '0';
+}
+
+let _quizState = {
+  level: null,
+  questions: [],
+  current: 0,
+  score: 0,
+  answered: false
+};
+
+function openQuizSidebar() {
+  closeSidebar();
+  openQuizPage();
+}
+function openQuizPage() {
+  closeAllPages();
+  document.getElementById('quiz-page').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderQuizMenu();
+}
+function closeQuizPage() {
+  document.getElementById('quiz-page').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderQuizMenu() {
+  const scores = getQuizScores();
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-menu">
+      <div class="quiz-menu-title">🎬 Teste tes connaissances</div>
+      <div class="quiz-menu-sub">Devine le drama depuis son synopsis.<br>${QUIZ_QUESTIONS} questions par partie.</div>
+      <div class="quiz-levels">
+        <button class="quiz-level-btn quiz-level-easy" onclick="startQuiz('easy')">
+          <div class="quiz-level-icon">😊</div>
+          <div class="quiz-level-info">
+            <div class="quiz-level-name">Facile</div>
+            <div class="quiz-level-desc">4 choix · Catégorie indiquée</div>
+          </div>
+          <div class="quiz-level-score">${scores.easy}/${QUIZ_QUESTIONS}</div>
+        </button>
+        <button class="quiz-level-btn quiz-level-medium" onclick="startQuiz('medium')">
+          <div class="quiz-level-icon">🤔</div>
+          <div class="quiz-level-info">
+            <div class="quiz-level-name">Moyen</div>
+            <div class="quiz-level-desc">2 choix · Sans indices</div>
+          </div>
+          <div class="quiz-level-score">${scores.medium}/${QUIZ_QUESTIONS}</div>
+        </button>
+        <button class="quiz-level-btn quiz-level-hard" onclick="startQuiz('hard')">
+          <div class="quiz-level-icon">🔥</div>
+          <div class="quiz-level-info">
+            <div class="quiz-level-name">Difficile</div>
+            <div class="quiz-level-desc">Saisie libre · Aucun indice</div>
+          </div>
+          <div class="quiz-level-score">${scores.hard}/${QUIZ_QUESTIONS}</div>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function getAllQuizDramas() {
+  const all = [];
+  for (const cat of Object.values(DRAMAS)) {
+    cat.items.forEach(d => { if (d[1] && d[1].length > 20) all.push(d); });
+  }
+  return all;
+}
+
+function startQuiz(level) {
+  const all = getAllQuizDramas().sort(() => Math.random() - .5);
+  _quizState = {
+    level,
+    questions: all.slice(0, QUIZ_QUESTIONS),
+    current: 0,
+    score: 0,
+    answered: false
+  };
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const { level, questions, current, score } = _quizState;
+  if (current >= questions.length) { renderQuizResults(); return; }
+
+  const drama = questions[current];
+  const [title, synopsis, , genre] = drama;
+  const pct = Math.round((current / questions.length) * 100);
+
+  let optionsHTML = '';
+  if (level === 'easy' || level === 'medium') {
+    const count = level === 'easy' ? 4 : 2;
+    const all = getAllQuizDramas();
+    const wrong = all.filter(d => d[0] !== title).sort(() => Math.random() - .5).slice(0, count - 1);
+    const options = [...wrong.map(d => d[0]), title].sort(() => Math.random() - .5);
+    optionsHTML = `<div class="quiz-options">${options.map(opt => `
+      <button class="quiz-option-btn" onclick="answerQuiz('${opt.replace(/'/g,"\\'")}', '${title.replace(/'/g,"\\'")}', this)">${opt}</button>
+    `).join('')}</div>`;
+  } else {
+    optionsHTML = `
+      <div class="quiz-input-wrap">
+        <input class="quiz-input" id="quiz-input" placeholder="Titre du drama..." autocomplete="off"
+          onkeydown="if(event.key==='Enter') submitQuizHard('${title.replace(/'/g,"\\'")}')">
+        <button class="quiz-submit-btn" onclick="submitQuizHard('${title.replace(/'/g,"\\'")}')">→</button>
+      </div>`;
+  }
+
+  const colorClass = { easy: 'quiz-progress-easy', medium: 'quiz-progress-medium', hard: 'quiz-progress-hard' }[level];
+
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-game">
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-bar-wrap">
+          <div class="quiz-progress-bar ${colorClass}" style="width:${pct}%"></div>
+        </div>
+        <span class="quiz-progress-text">${current + 1}/${questions.length}</span>
+        <span class="quiz-score-live">🏅 ${score}</span>
+      </div>
+      <div class="quiz-question-card">
+        <div class="quiz-question-label">Quel drama correspond à ce synopsis ?</div>
+        <div class="quiz-synopsis">${synopsis}</div>
+        ${level === 'easy' ? `<div class="quiz-genre-hint">🎭 ${genre}</div>` : ''}
+      </div>
+      ${optionsHTML}
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <button class="quiz-next-btn" id="quiz-next" onclick="nextQuizQuestion()">
+        ${current + 1 < questions.length ? 'Question suivante →' : 'Voir les résultats 🎉'}
+      </button>
+    </div>
+  `;
+  if (level === 'hard') setTimeout(() => { const inp = document.getElementById('quiz-input'); if (inp) inp.focus(); }, 100);
+}
+
+function answerQuiz(chosen, correct, btn) {
+  if (_quizState.answered) return;
+  _quizState.answered = true;
+  const isCorrect = chosen === correct;
+  if (isCorrect) _quizState.score++;
+
+  document.querySelectorAll('.quiz-option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === correct) b.classList.add('correct');
+    else if (b === btn && !isCorrect) b.classList.add('wrong');
+  });
+
+  showQuizFeedback(isCorrect, correct);
+}
+
+function submitQuizHard(correct) {
+  if (_quizState.answered) return;
+  const input = document.getElementById('quiz-input');
+  if (!input) return;
+  const val = input.value.trim().toLowerCase();
+  const isCorrect = val === correct.toLowerCase() ||
+    correct.toLowerCase().includes(val) && val.length > 3;
+  _quizState.answered = true;
+  if (isCorrect) _quizState.score++;
+  input.disabled = true;
+  showQuizFeedback(isCorrect, correct);
+}
+
+function showQuizFeedback(isCorrect, correct) {
+  const fb = document.getElementById('quiz-feedback');
+  if (fb) {
+    fb.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong');
+    fb.textContent = isCorrect ? '✅ Bravo ! Bonne réponse !' : `❌ C'était : ${correct}`;
+  }
+  const next = document.getElementById('quiz-next');
+  if (next) next.classList.add('show');
+}
+
+function nextQuizQuestion() {
+  _quizState.current++;
+  _quizState.answered = false;
+  renderQuizQuestion();
+}
+
+function renderQuizResults() {
+  const { level, score, questions } = _quizState;
+  saveQuizScore(level, score);
+  const scores = getQuizScores();
+  const pct = Math.round(score / questions.length * 100);
+  const icon = pct === 100 ? '🏆' : pct >= 70 ? '🎉' : pct >= 40 ? '😊' : '😅';
+  const msg = pct === 100 ? 'Parfait ! Tu es un expert K-Drama !'
+    : pct >= 70 ? 'Très bien ! Tu connais tes dramas !'
+    : pct >= 40 ? 'Pas mal ! Continue à regarder !'
+    : 'Continue d\'explorer les K-Dramas !';
+  const levelColors = { easy: '#69f0ae', medium: '#ffd54f', hard: '#ef9a9a' };
+
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-results">
+      <div class="quiz-results-icon">${icon}</div>
+      <div class="quiz-results-title">Résultat</div>
+      <div class="quiz-results-score" style="color:${levelColors[level]}">${score}/${questions.length}</div>
+      <div class="quiz-results-sub">${msg}</div>
+      <div class="quiz-results-best">
+        🏅 Meilleurs scores — Facile: ${scores.easy} · Moyen: ${scores.medium} · Difficile: ${scores.hard}
+      </div>
+      <div class="quiz-results-btns">
+        <button class="quiz-retry-btn" onclick="startQuiz('${level}')">🔄 Rejouer</button>
+        <button class="quiz-menu-btn" onclick="renderQuizMenu()">← Menu</button>
+      </div>
+    </div>
+  `;
+  updateChallengeData();
+}
+
+// ── CHALLENGE ─────────────────────────────────────────────────────────────────
+const CHALLENGE_BADGES = [
+  { id: 'first_drama',   icon: '🎬', name: 'Premier Drama',      desc: 'Consulte ta première fiche drama',         type: 'viewed',    target: 1 },
+  { id: 'explorer_10',   icon: '👀', name: 'Explorateur',        desc: 'Consulte 10 dramas différents',            type: 'viewed',    target: 10 },
+  { id: 'explorer_50',   icon: '🔍', name: 'Grand Explorateur',  desc: 'Consulte 50 dramas différents',            type: 'viewed',    target: 50 },
+  { id: 'watched_5',     icon: '✅', name: 'Sérievore',          desc: 'Marque 5 dramas comme Terminés',           type: 'finished',  target: 5 },
+  { id: 'watched_20',    icon: '📺', name: 'Passionné',          desc: 'Marque 20 dramas comme Terminés',          type: 'finished',  target: 20 },
+  { id: 'watched_50',    icon: '🏆', name: 'Légende K-Drama',    desc: 'Marque 50 dramas comme Terminés',          type: 'finished',  target: 50 },
+  { id: 'bookmark_5',    icon: '🔖', name: 'Collectionneur',     desc: 'Ajoute 5 dramas en favoris',               type: 'bookmarks', target: 5 },
+  { id: 'bookmark_20',   icon: '💜', name: 'Fan Absolu',         desc: 'Ajoute 20 dramas en favoris',              type: 'bookmarks', target: 20 },
+  { id: 'voter',         icon: '🗳️', name: 'Premier Vote',       desc: 'Vote pour la première fois',               type: 'votes',     target: 1 },
+  { id: 'quiz_easy',     icon: '😊', name: 'Quiz Facile',        desc: 'Termine un quiz en mode Facile',           type: 'quiz',      target: 1 },
+  { id: 'quiz_perfect',  icon: '🌟', name: 'Parfait !',          desc: 'Obtiens 10/10 dans n\'importe quel quiz',  type: 'quiz_perfect', target: 10 },
+  { id: 'commenter',     icon: '💬', name: 'Critique',           desc: 'Laisse ton premier commentaire',           type: 'comments',  target: 1 },
+  { id: 'watchlist_10',  icon: '📋', name: 'Liste de souhaits',  desc: 'Ajoute 10 dramas en "À voir"',             type: 'wishlist',  target: 10 },
+  { id: 'night_owl',     icon: '🦉', name: 'Hibou',             desc: 'Visite le site après minuit',               type: 'time',      target: 0 },
+  { id: 'genre_explorer',icon: '🎭', name: 'Touche-à-tout',     desc: 'Consulte des dramas de 5 genres différents', type: 'genres',  target: 5 },
+];
+
+const CHALLENGE_KEY = 'kdrama_challenge_data';
+
+function getChallengeData() {
+  try {
+    return JSON.parse(localStorage.getItem(CHALLENGE_KEY)) || {
+      viewed: [], finished: 0, bookmarks: 0, votes: 0,
+      quiz: 0, quiz_perfect: 0, comments: 0, wishlist: 0,
+      genres: [], time: false, unlocked: []
+    };
+  } catch { return { viewed: [], finished: 0, bookmarks: 0, votes: 0, quiz: 0, quiz_perfect: 0, comments: 0, wishlist: 0, genres: [], time: false, unlocked: [] }; }
+}
+
+function saveChallengeData(data) {
+  try { localStorage.setItem(CHALLENGE_KEY, JSON.stringify(data)); } catch {}
+}
+
+function updateChallengeData() {
+  const data = getChallengeData();
+
+  // Dramas terminés
+  data.finished = Object.values(_statusesCache).filter(s => s === 'termine').length;
+  // À voir
+  data.wishlist = Object.values(_statusesCache).filter(s => s === 'voir').length;
+  // Favoris
+  data.bookmarks = _bookmarksCache.length;
+  // Dramas vus (récents)
+  const recent = getRecentDramas();
+  recent.forEach(r => { if (!data.viewed.includes(r.title)) data.viewed.push(r.title); });
+  // Nuit
+  const h = new Date().getHours();
+  if (h >= 0 && h < 5) data.time = true;
+  // Quiz
+  const scores = getQuizScores();
+  data.quiz = (scores.easy > 0 ? 1 : 0) + (scores.medium > 0 ? 1 : 0) + (scores.hard > 0 ? 1 : 0);
+  data.quiz_perfect = Math.max(scores.easy, scores.medium, scores.hard);
+
+  // Genres vus
+  recent.forEach(r => {
+    for (const cat of Object.values(DRAMAS)) {
+      const d = cat.items.find(item => item[0] === r.title);
+      if (d) {
+        d[3].split('/').forEach(g => {
+          const genre = g.trim().toLowerCase();
+          if (!data.genres.includes(genre)) data.genres.push(genre);
+        });
+      }
+    }
+  });
+
+  // Vérifie les badges débloqués
+  const newlyUnlocked = [];
+  CHALLENGE_BADGES.forEach(badge => {
+    if (data.unlocked.includes(badge.id)) return;
+    let unlocked = false;
+    if (badge.type === 'viewed') unlocked = data.viewed.length >= badge.target;
+    else if (badge.type === 'finished') unlocked = data.finished >= badge.target;
+    else if (badge.type === 'bookmarks') unlocked = data.bookmarks >= badge.target;
+    else if (badge.type === 'votes') unlocked = data.votes >= badge.target;
+    else if (badge.type === 'quiz') unlocked = data.quiz >= badge.target;
+    else if (badge.type === 'quiz_perfect') unlocked = data.quiz_perfect >= badge.target;
+    else if (badge.type === 'comments') unlocked = data.comments >= badge.target;
+    else if (badge.type === 'wishlist') unlocked = data.wishlist >= badge.target;
+    else if (badge.type === 'time') unlocked = data.time;
+    else if (badge.type === 'genres') unlocked = data.genres.length >= badge.target;
+    if (unlocked) { data.unlocked.push(badge.id); newlyUnlocked.push(badge); }
+  });
+
+  saveChallengeData(data);
+  updateSidebarChallengeCount();
+
+  // Notifie les nouveaux badges
+  newlyUnlocked.forEach(badge => {
+    showBadgeNotification(badge);
+  });
+}
+
+function showBadgeNotification(badge) {
+  const notif = document.createElement('div');
+  notif.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a2a;border:1px solid rgba(179,157,219,.4);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;padding:12px 20px;border-radius:12px;z-index:9999;backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,.5);animation:fadeIn .3s ease;text-align:center;white-space:nowrap;`;
+  notif.innerHTML = `${badge.icon} <strong>Badge débloqué !</strong> ${badge.name}`;
+  document.body.appendChild(notif);
+  setTimeout(() => notif.remove(), 3500);
+}
+
+function updateSidebarChallengeCount() {
+  const data = getChallengeData();
+  const el = document.getElementById('sb-challenge-count');
+  if (el) el.textContent = data.unlocked.length + '/' + CHALLENGE_BADGES.length;
+}
+
+function openChallengeSidebar() {
+  closeSidebar();
+  openChallengePage();
+}
+function openChallengePage() {
+  closeAllPages();
+  document.getElementById('challenge-page').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  updateChallengeData();
+  renderChallengePage();
+}
+function closeChallengePage() {
+  document.getElementById('challenge-page').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderChallengePage() {
+  const data = getChallengeData();
+  const unlockedCount = data.unlocked.length;
+  const totalCount = CHALLENGE_BADGES.length;
+
+  const statsHTML = `
+    <div class="challenge-stats">
+      <div class="challenge-stat">
+        <div class="challenge-stat-num">${data.viewed.length}</div>
+        <div class="challenge-stat-lbl">Dramas consultés</div>
+      </div>
+      <div class="challenge-stat">
+        <div class="challenge-stat-num">${data.finished}</div>
+        <div class="challenge-stat-lbl">Terminés</div>
+      </div>
+      <div class="challenge-stat">
+        <div class="challenge-stat-num">${data.bookmarks}</div>
+        <div class="challenge-stat-lbl">Favoris</div>
+      </div>
+      <div class="challenge-stat">
+        <div class="challenge-stat-num" style="color:#ffd54f">${unlockedCount}/${totalCount}</div>
+        <div class="challenge-stat-lbl">Badges</div>
+      </div>
+    </div>
+  `;
+
+  const badgesHTML = CHALLENGE_BADGES.map(badge => {
+    const unlocked = data.unlocked.includes(badge.id);
+    let progress = 0;
+    let current = 0;
+    if (badge.type === 'viewed') { current = data.viewed.length; progress = Math.min(100, current / badge.target * 100); }
+    else if (badge.type === 'finished') { current = data.finished; progress = Math.min(100, current / badge.target * 100); }
+    else if (badge.type === 'bookmarks') { current = data.bookmarks; progress = Math.min(100, current / badge.target * 100); }
+    else if (badge.type === 'wishlist') { current = data.wishlist; progress = Math.min(100, current / badge.target * 100); }
+    else if (badge.type === 'genres') { current = data.genres.length; progress = Math.min(100, current / badge.target * 100); }
+    else if (unlocked) progress = 100;
+
+    return `
+      <div class="challenge-badge ${unlocked ? 'unlocked' : 'locked'}">
+        <div class="challenge-badge-icon">${badge.icon}</div>
+        <div class="challenge-badge-name">${badge.name}</div>
+        <div class="challenge-badge-desc">${badge.desc}</div>
+        ${badge.target > 1 && !unlocked ? `
+          <div class="challenge-badge-progress">
+            <div class="challenge-badge-bar" style="width:${progress}%"></div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">${Math.min(current||0, badge.target)}/${badge.target}</div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('challenge-content').innerHTML = statsHTML + `
+    <div class="challenge-badges-title">🎖️ Badges (${unlockedCount}/${totalCount})</div>
+    <div class="challenge-badges-grid">${badgesHTML}</div>
+  `;
+}
+
+updateSidebarQuizScore();
+updateSidebarChallengeCount();
+updateChallengeData();
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 
@@ -6382,6 +7308,23 @@ closeModalBtn = function() {
 <button class="slideshow-btn" id="slideshow-btn" onclick="toggleSlideshow()">▶ Présentation</button>
 <div class="slideshow-progress" id="slideshow-progress">
   <div class="slideshow-progress-bar" id="slideshow-bar"></div>
+</div>
+<!-- QUIZ PAGE -->
+<div class="quiz-page" id="quiz-page">
+  <div class="quiz-header">
+    <div class="quiz-title">🧠 QUIZ K-DRAMA</div>
+    <button class="quiz-close" onclick="closeQuizPage()">✕</button>
+  </div>
+  <div class="quiz-content" id="quiz-content"></div>
+</div>
+
+<!-- CHALLENGE PAGE -->
+<div class="challenge-page" id="challenge-page">
+  <div class="challenge-header">
+    <div class="challenge-title">🏆 CHALLENGES</div>
+    <button class="challenge-close" onclick="closeChallengePage()">✕</button>
+  </div>
+  <div class="challenge-content" id="challenge-content"></div>
 </div>
 </body>
 </html>
