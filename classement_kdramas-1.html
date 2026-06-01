@@ -2444,6 +2444,73 @@
   .actor-dramas-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
   .actor-page-header { padding: 16px; }
 }
+/* HISTORIQUE MODAL */
+.modal-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 0;
+}
+.modal-back-btn {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.modal-back-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+.modal-nav-hint {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--muted);
+  opacity: .6;
+}
+@media (max-width: 767px) {
+  .modal-nav-hint { display: none; }
+}
+/* MODE PRÉSENTATION */
+.slideshow-btn {
+  position: fixed;
+  bottom: 88px;
+  right: 28px;
+  padding: 12px 20px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #1a1a2e, #2a1a4e);
+  border: 1px solid rgba(179,157,219,.3);
+  color: var(--accent);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  z-index: 500;
+  transition: all .2s;
+}
+.slideshow-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+.slideshow-btn.active { background: linear-gradient(135deg, #7c4dff, #b39ddb); border-color: transparent; color: #fff; }
+
+.slideshow-progress {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,.1);
+  z-index: 9999;
+  display: none;
+}
+.slideshow-progress.active { display: block; }
+.slideshow-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7c4dff, #b39ddb);
+  transition: width linear;
+}
 </style>
 </head>
 <body>
@@ -4247,6 +4314,9 @@ function buildPlatformHTML(title) {
 }
 
 function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, imgSrc) {
+  pushModalHistory(title, synopsis, avis, genre, eps, year, catLabel, catCls);
+  _currentModalTitle = title;
+  _currentModalCat = catCls;
   trackRecentDrama(title);
   const catColors = { master: '#b39ddb', tresbien: '#64b5f6', bien: '#69f0ae', assez: '#ffd54f', passable: '#ef9a9a' };
   const color = catColors[catCls] || '#fff';
@@ -4265,11 +4335,20 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
     `;
   }
   const inner = document.getElementById('modal-inner');
+  const canGoBack = _modalHistory.length > 1;
   inner.innerHTML = `
     <div class="modal-poster" id="modal-poster-wrap">
       <img src="" alt="${title}" id="modal-poster-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
       <div class="modal-poster-ph" style="display:none">🎬</div>
     </div>
+    ${canGoBack ? `
+  <div class="modal-nav-bar">
+    <button class="modal-back-btn" onclick="goBackModal()">← Retour</button>
+    <span class="modal-nav-hint">← → pour naviguer • Échap pour fermer</span>
+  </div>` : `
+  <div class="modal-nav-bar">
+    <span class="modal-nav-hint">← → pour naviguer • Échap pour fermer</span>
+  </div>`}
     <div class="modal-content">
       <div class="modal-cat-badge" style="color:${color}">${catLabel}</div>
       <div class="modal-title">${title}</div>
@@ -6115,6 +6194,131 @@ function buildBookmarkCard(b) {
     </div>
   `;
 }
+// ── RACCOURCIS CLAVIER ────────────────────────────────────────────────────────
+let _currentModalTitle = null;
+let _currentModalCat = null;
+
+// Remplace le addEventListener Escape existant par celui-ci
+document.removeEventListener('keydown', null);
+document.addEventListener('keydown', (e) => {
+  const modalOpen = document.getElementById('modal-overlay').classList.contains('open');
+
+  if (e.key === 'Escape') {
+    if (document.getElementById('actor-page').classList.contains('open')) { closeActorPage(); return; }
+    if (document.getElementById('news-page').classList.contains('open')) { closeNewsPage(); return; }
+    if (document.getElementById('my-page').classList.contains('open')) { closeMyPage(); return; }
+    if (document.getElementById('bookmarks-page').classList.contains('open')) { closeBookmarksPage(); return; }
+    if (document.getElementById('bookmarks-panel').classList.contains('open')) { toggleBookmarksPanel(); return; }
+    if (modalOpen) { closeModalBtn(); return; }
+    if (document.getElementById('sidebar').classList.contains('open')) { closeSidebar(); return; }
+  }
+
+  if (modalOpen) {
+    if (e.key === 'ArrowRight') navigateModal(1);
+    if (e.key === 'ArrowLeft') navigateModal(-1);
+  }
+});
+
+function navigateModal(dir) {
+  if (!_currentModalCat) return;
+  const cat = DRAMAS[_currentModalCat];
+  if (!cat) return;
+  const items = cat.items;
+  const idx = items.findIndex(d => d[0] === _currentModalTitle);
+  if (idx === -1) return;
+  const nextIdx = idx + dir;
+  if (nextIdx < 0 || nextIdx >= items.length) return;
+  const [title, synopsis, avis, genre, eps, year] = items[nextIdx];
+  openModal(title, synopsis, avis, genre, eps, year, cat.label, cat.cls, '');
+}
+// ── HISTORIQUE DE NAVIGATION ──────────────────────────────────────────────────
+const _modalHistory = [];
+
+function pushModalHistory(title, synopsis, avis, genre, eps, year, catLabel, catCls) {
+  _modalHistory.push({ title, synopsis, avis, genre, eps, year, catLabel, catCls });
+  if (_modalHistory.length > 10) _modalHistory.shift();
+}
+
+function goBackModal() {
+  if (_modalHistory.length < 2) return;
+  _modalHistory.pop(); // retire le courant
+  const prev = _modalHistory.pop(); // récupère le précédent
+  if (prev) openModal(prev.title, prev.synopsis, prev.avis, prev.genre, prev.eps, prev.year, prev.catLabel, prev.catCls, '');
+}
+// ── MODE PRÉSENTATION ─────────────────────────────────────────────────────────
+let _slideshowActive = false;
+let _slideshowTimer = null;
+let _slideshowIdx = 0;
+const SLIDESHOW_DELAY = 5000;
+
+function getAllDramas() {
+  const all = [];
+  for (const cat of Object.values(DRAMAS)) {
+    cat.items.forEach(d => all.push({ drama: d, cat }));
+  }
+  return all.sort(() => Math.random() - .5);
+}
+
+let _slideshowList = [];
+
+function toggleSlideshow() {
+  if (_slideshowActive) {
+    stopSlideshow();
+  } else {
+    startSlideshow();
+  }
+}
+
+function startSlideshow() {
+  _slideshowActive = true;
+  _slideshowList = getAllDramas();
+  _slideshowIdx = 0;
+  document.getElementById('slideshow-btn').classList.add('active');
+  document.getElementById('slideshow-btn').textContent = '⏹ Arrêter';
+  document.getElementById('slideshow-progress').classList.add('active');
+  showSlideshowDrama();
+}
+
+function stopSlideshow() {
+  _slideshowActive = false;
+  clearTimeout(_slideshowTimer);
+  document.getElementById('slideshow-btn').classList.remove('active');
+  document.getElementById('slideshow-btn').textContent = '▶ Présentation';
+  document.getElementById('slideshow-progress').classList.remove('active');
+  closeModalBtn();
+}
+
+function showSlideshowDrama() {
+  if (!_slideshowActive) return;
+  if (_slideshowIdx >= _slideshowList.length) {
+    _slideshowList = getAllDramas();
+    _slideshowIdx = 0;
+  }
+  const { drama, cat } = _slideshowList[_slideshowIdx];
+  const [title, synopsis, avis, genre, eps, year] = drama;
+  openModal(title, synopsis, avis, genre, eps, year, cat.label, cat.cls, '');
+
+  // Barre de progression
+  const bar = document.getElementById('slideshow-bar');
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  setTimeout(() => {
+    bar.style.transition = `width ${SLIDESHOW_DELAY}ms linear`;
+    bar.style.width = '100%';
+  }, 50);
+
+  _slideshowTimer = setTimeout(() => {
+    _slideshowIdx++;
+    showSlideshowDrama();
+  }, SLIDESHOW_DELAY);
+}
+
+// Arrête le slideshow si on ferme le modal manuellement
+const _origCloseModal = closeModalBtn;
+closeModalBtn = function() {
+  if (_slideshowActive) stopSlideshow();
+  _origCloseModal();
+};
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 
@@ -6174,6 +6378,10 @@ function buildBookmarkCard(b) {
       <div style="color:var(--muted);font-size:13px;">⏳ Chargement...</div>
     </div>
   </div>
+</div>
+<button class="slideshow-btn" id="slideshow-btn" onclick="toggleSlideshow()">▶ Présentation</button>
+<div class="slideshow-progress" id="slideshow-progress">
+  <div class="slideshow-progress-bar" id="slideshow-bar"></div>
 </div>
 </body>
 </html>
