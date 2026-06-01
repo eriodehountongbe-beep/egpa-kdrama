@@ -2996,6 +2996,51 @@
   .challenge-badges-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .quiz-results-score { font-size: 42px; }
 }
+/* ── MARQUER TOUT TERMINÉ ─────────────────────────────────────────── */
+.mark-all-done-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 50px;
+  border: 1px solid rgba(105,240,174,.3);
+  background: rgba(105,240,174,.08);
+  color: #69f0ae;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+  margin-left: auto;
+}
+.mark-all-done-btn:hover {
+  background: rgba(105,240,174,.2);
+  border-color: #69f0ae;
+}
+.mark-all-done-btn.undone {
+  border-color: rgba(255,213,79,.3);
+  background: rgba(255,213,79,.08);
+  color: #ffd54f;
+}
+.mark-all-done-btn.undone:hover {
+  background: rgba(255,213,79,.2);
+  border-color: #ffd54f;
+}
+
+/* Badge statut inline sur card (à côté du titre) */
+.card-status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-left: 5px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.card-status-dot.voir    { background: #64b5f6; }
+.card-status-dot.encours { background: #ffd54f; }
+.card-status-dot.termine { background: #69f0ae; }
 </style>
 </head>
 <body>
@@ -4520,6 +4565,7 @@ function buildSections() {
         <div class="section-stars">${cat.label.split(' ')[0]}</div>
         <div class="section-title">${cat.label.replace(/^[⭐]+ /, '')}</div>
         <div class="section-count">${cat.items.length} dramas</div>
+        <button class="mark-all-done-btn" id="mark-all-${catKey}" onclick="markAllDone('${catKey}')">✅ Tout terminé</button>
       </div>
       <div class="drama-grid" id="grid-${catKey}"></div>
     `;
@@ -5620,6 +5666,94 @@ async function openActorPage(personId, actorName, photoUrl) {
     if (grid) grid.innerHTML = '<div style="color:#ef9a9a;font-size:13px;grid-column:1/-1;">Erreur de chargement.</div>';
   }
 }
+// ── TOUT TERMINÉ PAR CATÉGORIE ─────────────────────────────────────────────
+
+async function markAllDone(catKey) {
+  const cat = DRAMAS[catKey];
+  if (!cat) return;
+
+  const btn = document.getElementById('mark-all-' + catKey);
+  const isAllDone = cat.items.every(d => getStatus(d[0]) === 'termine');
+
+  if (isAllDone) {
+    // Tout retirer
+    if (!confirm(`Retirer le statut "Terminé" de tous les dramas de la catégorie ${cat.label.replace(/^[⭐]+ /, '')} ?`)) return;
+    for (const drama of cat.items) {
+      await saveStatus(drama[0], null);
+    }
+    if (btn) { btn.textContent = '✅ Tout terminé'; btn.classList.remove('undone'); }
+  } else {
+    // Tout marquer terminé (ne touche pas ceux déjà avec un autre statut choisi manuellement)
+    const notDone = cat.items.filter(d => getStatus(d[0]) !== 'termine');
+    if (!confirm(`Marquer ${notDone.length} drama(s) comme Terminé dans ${cat.label.replace(/^[⭐]+ /, '')} ?`)) return;
+    for (const drama of notDone) {
+      await saveStatus(drama[0], 'termine');
+    }
+    if (btn) { btn.innerHTML = '↩ Tout retirer'; btn.classList.add('undone'); }
+  }
+
+  // Refresh visuels
+  refreshAllStatusBadges();
+  updateMarkAllBtns();
+}
+
+function updateMarkAllBtns() {
+  for (const [catKey, cat] of Object.entries(DRAMAS)) {
+    const btn = document.getElementById('mark-all-' + catKey);
+    if (!btn) continue;
+    const allDone = cat.items.length > 0 && cat.items.every(d => getStatus(d[0]) === 'termine');
+    if (allDone) {
+      btn.innerHTML = '↩ Tout retirer';
+      btn.classList.add('undone');
+    } else {
+      btn.innerHTML = '✅ Tout terminé';
+      btn.classList.remove('undone');
+    }
+  }
+}
+
+// Met à jour le bouton quand on change un statut individuel
+const _origSaveStatus = saveStatus;
+saveStatus = async function(title, status) {
+  await _origSaveStatus(title, status);
+  updateMarkAllBtns();
+  updateStatusDotOnCard(title, status);
+};
+
+// Point vert/bleu/jaune à côté du titre sur la card
+function updateStatusDotOnCard(title, status) {
+  document.querySelectorAll('.drama-card').forEach(card => {
+    const titleEl = card.querySelector('.card-title');
+    if (!titleEl || titleEl.textContent.replace(/\s*●.*/, '').trim() !== title) return;
+    let dot = titleEl.querySelector('.card-status-dot');
+    if (!dot) {
+      dot = document.createElement('span');
+      dot.className = 'card-status-dot';
+      titleEl.appendChild(dot);
+    }
+    if (!status) { dot.remove(); return; }
+    dot.className = 'card-status-dot ' + status;
+  });
+}
+
+function refreshAllStatusDots() {
+  document.querySelectorAll('.drama-card').forEach(card => {
+    const titleEl = card.querySelector('.card-title');
+    if (!titleEl) return;
+    const title = titleEl.textContent.trim();
+    const status = getStatus(title);
+    let dot = titleEl.querySelector('.card-status-dot');
+    if (!dot && status) {
+      dot = document.createElement('span');
+      dot.className = 'card-status-dot ' + status;
+      titleEl.appendChild(dot);
+    } else if (dot && !status) {
+      dot.remove();
+    } else if (dot && status) {
+      dot.className = 'card-status-dot ' + status;
+    }
+  });
+}
 buildSections();
 buildUnseenSection();
 buildAwardsSection();
@@ -5967,7 +6101,10 @@ async function setStatusFromModal(title, status) {
   }
 }
 
-loadStatuses();
+loadStatuses().then(() => {
+  updateMarkAllBtns();
+  refreshAllStatusDots();
+});
 setTimeout(addStatusButtons, 900);
 // ── PAGE D'ACCUEIL & TUTORIEL ─────────────────────────────────────────────────
 const TUTO_STEPS = [
@@ -6037,6 +6174,96 @@ const TUTO_STEPS = [
     desc: 'La section <strong>Sans classement</strong> regroupe les dramas à découvrir. Vote pour les classer dans une catégorie et aider la communauté !'
   }
 ];
+
+// ── CHALLENGES ─────────────────────────────────────────────────────────────
+const CHALLENGES = [
+  { emoji: '🌱', label: 'Débutant',         target: 5,   desc: 'Regarder 5 dramas' },
+  { emoji: '📺', label: 'Curieux',           target: 10,  desc: 'Regarder 10 dramas' },
+  { emoji: '🎬', label: 'Amateur',           target: 20,  desc: 'Regarder 20 dramas' },
+  { emoji: '⭐', label: 'Passionné',         target: 30,  desc: 'Regarder 30 dramas' },
+  { emoji: '🔥', label: 'Accro',             target: 50,  desc: 'Regarder 50 dramas' },
+  { emoji: '💎', label: 'Connaisseur',       target: 75,  desc: 'Regarder 75 dramas' },
+  { emoji: '🏆', label: 'Expert',            target: 100, desc: 'Regarder 100 dramas' },
+  { emoji: '🌟', label: 'Maître des dramas', target: 150, desc: 'Regarder 150 dramas' },
+  { emoji: '👑', label: 'Légende',           target: 200, desc: 'Regarder 200 dramas' },
+  { emoji: '🚀', label: 'Astronaute',        target: 250, desc: 'Regarder 250 dramas' },
+  { emoji: '🌙', label: 'Noctambule',        target: 300, desc: 'Regarder 300 dramas' },
+  { emoji: '⚡', label: 'Éclair',            target: 350, desc: 'Regarder 350 dramas' },
+  { emoji: '🌌', label: 'Galaxie',           target: 400, desc: 'Regarder 400 dramas' },
+  { emoji: '🔮', label: 'Oracle',            target: 450, desc: 'Regarder 450 dramas' },
+  { emoji: '🌠', label: 'Supernova',         target: 500, desc: 'Regarder 500 dramas' },
+];
+
+function getChallengeInfo() {
+  const done = Object.values(_statusesCache).filter(s => s === 'termine').length;
+  const current = [...CHALLENGES].reverse().find(c => done >= c.target) || null;
+  const next = CHALLENGES.find(c => done < c.target) || null;
+  return { done, current, next };
+}
+
+function buildChallengeHTML() {
+  const { done, current, next } = getChallengeInfo();
+  const pct = next ? Math.min(100, Math.round((done / next.target) * 100)) : 100;
+  const prevTarget = current ? current.target : 0;
+  const progress = next ? done - prevTarget : done;
+  const total = next ? next.target - prevTarget : 1;
+
+  return `
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.07);">
+      <div class="my-section-header" style="margin-bottom:16px;">
+        <div class="my-section-icon">🏅</div>
+        <div class="my-section-title">Mes Challenges</div>
+      </div>
+
+      ${current ? `
+        <div style="display:flex;align-items:center;gap:10px;background:rgba(179,157,219,.08);border:1px solid rgba(179,157,219,.2);border-radius:12px;padding:14px 18px;margin-bottom:14px;">
+          <div style="font-size:32px;">${current.emoji}</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#fff;">${current.label}</div>
+            <div style="font-size:11px;color:var(--muted);">Niveau atteint · ${current.target} dramas terminés</div>
+          </div>
+          <div style="margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);">${done}</div>
+        </div>
+      ` : ''}
+
+      ${next ? `
+        <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:14px 18px;border:1px solid rgba(255,255,255,.07);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;opacity:.5;">${next.emoji}</span>
+              <span style="font-size:13px;color:var(--muted);">Prochain : <strong style="color:#fff;">${next.label}</strong></span>
+            </div>
+            <span style="font-size:12px;color:var(--muted);">${progress} / ${total}</span>
+          </div>
+          <div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#7c4dff,#b39ddb);border-radius:3px;transition:width .5s;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">Plus que ${next.target - done} drama${next.target - done > 1 ? 's' : ''} pour débloquer ${next.emoji} ${next.label}</div>
+        </div>
+      ` : `
+        <div style="text-align:center;padding:20px;color:var(--accent);font-size:14px;font-weight:700;">
+          🌠 Tu as atteint le niveau maximum ! Félicitations !
+        </div>
+      `}
+
+      <div style="margin-top:16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;">Tous les niveaux</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          ${CHALLENGES.map(c => {
+            const unlocked = done >= c.target;
+            return `
+              <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:${unlocked ? 'rgba(105,240,174,.06)' : 'rgba(255,255,255,.02)'};border:1px solid ${unlocked ? 'rgba(105,240,174,.15)' : 'rgba(255,255,255,.05)'};">
+                <span style="font-size:16px;${unlocked ? '' : 'filter:grayscale(1);opacity:.3;'}">${c.emoji}</span>
+                <span style="font-size:12px;font-weight:600;color:${unlocked ? '#fff' : 'var(--muted)'};">${c.label}</span>
+                <span style="font-size:11px;color:var(--muted);margin-left:auto;">${c.target} dramas${unlocked ? ' ✓' : ''}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
 
 let tutoCurrentStep = 0;
 
@@ -6268,7 +6495,7 @@ function renderMyPage() {
     </div>
   `;
 
-  container.innerHTML = html;
+  container.innerHTML = html + buildChallengeHTML();
 
   // Charge les posters
   const allTitles = [...new Set([...encours, ...aVoir, ...termines, ...recents.map(r => r.title)])];
