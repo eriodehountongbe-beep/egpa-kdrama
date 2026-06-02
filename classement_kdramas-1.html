@@ -3130,7 +3130,7 @@
 
 .upcoming-card-banner {
   width: 100%;
-  height: 160px;
+  height: 220px;        /* ← était 160px */
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #1e1e2e, #2a1a3e);
@@ -3146,9 +3146,10 @@
 .upcoming-card-banner img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: top;
-  opacity: .85;        /* ← était .6, monte à .85 */
+  object-fit: contain;  /* ← était cover, change en contain */
+  object-position: center;
+  opacity: .85;
+  background: #111120;  /* ← fond noir derrière l'image */
   transition: opacity .3s;
 }
 .upcoming-card:hover .upcoming-card-banner img { opacity: 1; }  /* ← était .8 */
@@ -3540,6 +3541,10 @@
 </div>
 
 <div id="sections-container"></div>
+<button onclick="alert('Promotions: ' + localStorage.getItem('drama_promotions'))" 
+  style="position:fixed;bottom:80px;right:28px;z-index:9999;background:#333;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:11px;cursor:pointer;">
+  🔍 Debug
+</button>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
@@ -6104,20 +6109,32 @@ function refreshAllStatusDots() {
   });
 }
 buildSections();
-buildUnseenSection();
 // Restaure les promotions persistées au rechargement
 function restorePromotions() {
   try {
     const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
     promotions.forEach(({ title, targetCat }) => {
+      if (!DRAMAS[targetCat]) return;
+      // Vérifie que le drama n'est pas déjà dans la catégorie cible
+      const alreadyThere = DRAMAS[targetCat].items.some(d => d[0] === title);
+      if (alreadyThere) {
+        // Retire quand même de UNSEEN_DRAMAS si présent
+        const idx = UNSEEN_DRAMAS.findIndex(d => d.title === title);
+        if (idx !== -1) UNSEEN_DRAMAS.splice(idx, 1);
+        return;
+      }
       const idx = UNSEEN_DRAMAS.findIndex(d => d.title === title);
-      if (idx === -1) return; // déjà promu ou introuvable
+      if (idx === -1) return;
       const d = UNSEEN_DRAMAS.splice(idx, 1)[0];
-      DRAMAS[targetCat].items.push([d.title, d.synopsis, 'Classé par la communauté.', d.genre, d.eps || '', d.year || '']);
+      DRAMAS[targetCat].items.push([
+        d.title, d.synopsis, 'Classé par la communauté.',
+        d.genre, d.eps || '', d.year || ''
+      ]);
     });
-  } catch {}
+  } catch(e) { console.error('restorePromotions error', e); }
 }
 restorePromotions();
+buildUnseenSection();
 buildAwardsSection();
 fetchSortedDramas();
 setInterval(fetchSortedDramas, 20000);
@@ -8090,9 +8107,25 @@ function buildUpcomingCard(d) {
     ? `<img class="upcoming-card-poster" src="${posterUrl}" alt="${d.title}" onerror="this.outerHTML='<div class=\\'upcoming-card-poster-ph\\'>🎬</div>'">`
     : `<div class="upcoming-card-poster-ph">🎬</div>`;
 
-  const platformsHTML = d.networks.map(n =>
-    `<span class="platform-badge ${networkToPlatformClass(n)}" style="cursor:default">▶ ${n}</span>`
-  ).join('');
+const networkToUrl = (n) => {
+  const nl = n.toLowerCase();
+  if (nl.includes('netflix')) return 'https://www.netflix.com';
+  if (nl.includes('disney')) return 'https://www.disneyplus.com';
+  if (nl.includes('tving')) return 'https://www.tving.com';
+  if (nl.includes('wavve')) return 'https://www.wavve.com';
+  if (nl.includes('viki')) return 'https://www.viki.com';
+  if (nl.includes('mbc')) return 'https://www.imbc.com';
+  if (nl.includes('kbs')) return 'https://www.kbs.co.kr';
+  if (nl.includes('sbs')) return 'https://www.sbs.co.kr';
+  if (nl.includes('tvn')) return 'https://www.tvncontent.com';
+  if (nl.includes('jtbc')) return 'https://www.jtbc.co.kr';
+  if (nl.includes('lezhin')) return 'https://www.lezhin.com';
+  return `https://www.google.com/search?q=${encodeURIComponent(n + ' kdrama streaming')}`;
+};
+
+const platformsHTML = d.networks.map(n =>
+  `<a class="platform-badge ${networkToPlatformClass(n)}" href="${networkToUrl(n)}" target="_blank" rel="noopener">▶ ${n}</a>`
+).join('');
 
   const castHTML = d.cast.length > 0
     ? `<div style="margin-top:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:6px">Casting</div>
