@@ -4520,11 +4520,10 @@ function promoteUnseenDrama(title, targetCat) {
   const entry = [d.title, d.synopsis, 'Classé par la communauté.', d.genre, d.eps || '', d.year || ''];
   DRAMAS[targetCat].items.push(entry);
 
-  // Sauvegarde avec toutes les données du drama
   try {
     const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
     if (!promotions.find(p => p.title === title)) {
-      promotions.push({ title, targetCat, entry });
+      promotions.push({ title, targetCat, synopsis: d.synopsis, genre: d.genre, eps: d.eps || '', year: d.year || '' });
       localStorage.setItem('drama_promotions', JSON.stringify(promotions));
     }
   } catch(e) {}
@@ -6115,19 +6114,22 @@ buildSections();
 function restorePromotions() {
   try {
     const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
-    promotions.forEach(({ title, targetCat, entry }) => {
+    promotions.forEach(({ title, targetCat, synopsis, genre, eps, year }) => {
       if (!DRAMAS[targetCat]) return;
-      // Pas déjà là ?
-      if (DRAMAS[targetCat].items.some(d => d[0] === title)) {
-        UNSEEN_DRAMAS.splice(UNSEEN_DRAMAS.findIndex(d => d.title === title), 1);
-        return;
-      }
       // Retire de UNSEEN
       const i = UNSEEN_DRAMAS.findIndex(d => d.title === title);
       if (i !== -1) UNSEEN_DRAMAS.splice(i, 1);
-      // Ajoute dans la catégorie avec les données complètes
-      const dramaEntry = entry || [title, '', 'Classé par la communauté.', 'Drama', '', ''];
-      DRAMAS[targetCat].items.push(dramaEntry);
+      // Pas déjà dans la catégorie cible ?
+      if (!DRAMAS[targetCat].items.some(d => d[0] === title)) {
+        DRAMAS[targetCat].items.push([
+          title,
+          synopsis || '',
+          'Classé par la communauté.',
+          genre || 'Drama',
+          eps || '',
+          year || ''
+        ]);
+      }
     });
   } catch(e) {}
 }
