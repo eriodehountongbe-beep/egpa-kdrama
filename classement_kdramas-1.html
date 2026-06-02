@@ -6109,7 +6109,6 @@ function refreshAllStatusDots() {
     }
   });
 }
-buildSections();
 // Restaure les promotions persistées au rechargement
 function restorePromotions() {
   try {
@@ -6134,6 +6133,7 @@ function restorePromotions() {
   } catch(e) {}
 }
 restorePromotions();
+buildSections();
 buildUnseenSection();
 buildAwardsSection();
 fetchSortedDramas();
