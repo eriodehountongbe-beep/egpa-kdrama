@@ -3041,6 +3041,335 @@
 .card-status-dot.voir    { background: #64b5f6; }
 .card-status-dot.encours { background: #ffd54f; }
 .card-status-dot.termine { background: #69f0ae; }
+/* ── PROCHAINES SORTIES ──────────────────────────────────────────── */
+.upcoming-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 800;
+  overflow-y: auto;
+  animation: fadeIn .3s ease;
+}
+.upcoming-page.open { display: block; }
+
+.upcoming-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 20px 72px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+  gap: 16px;
+}
+.upcoming-page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: #fff;
+  white-space: nowrap;
+}
+.upcoming-page-close {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.upcoming-page-close:hover { background: rgba(255,255,255,.18); }
+
+.upcoming-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+.upcoming-month-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin: 32px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(179,157,219,.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upcoming-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.upcoming-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.07);
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+  cursor: default;
+}
+.upcoming-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  border-color: rgba(179,157,219,.25);
+}
+
+.upcoming-card-banner {
+  width: 100%;
+  height: 160px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1e1e2e, #2a1a3e);
+}
+.upcoming-card-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 60%;
+  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  z-index: 1;
+}
+.upcoming-card-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  opacity: .6;
+  transition: opacity .3s;
+}
+.upcoming-card:hover .upcoming-card-banner img { opacity: .8; }
+
+.upcoming-card-poster {
+  position: absolute;
+  left: 16px;
+  bottom: -24px;
+  z-index: 2;
+  width: 64px;
+  height: 96px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,.15);
+  box-shadow: 0 4px 16px rgba(0,0,0,.5);
+}
+.upcoming-card-poster-ph {
+  position: absolute;
+  left: 16px;
+  bottom: -24px;
+  z-index: 2;
+  width: 64px;
+  height: 96px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2a2a3e, #3a2a4e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: 2px solid rgba(255,255,255,.1);
+}
+
+.upcoming-card-body {
+  padding: 32px 16px 16px;
+}
+
+.upcoming-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(179,157,219,.15);
+  border: 1px solid rgba(179,157,219,.3);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 50px;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+.upcoming-date-badge.soon {
+  background: rgba(105,240,174,.15);
+  border-color: rgba(105,240,174,.3);
+  color: #69f0ae;
+}
+.upcoming-date-badge.today {
+  background: rgba(255,213,79,.15);
+  border-color: rgba(255,213,79,.3);
+  color: #ffd54f;
+  animation: pulse-badge 1.5s infinite;
+}
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+
+.upcoming-card-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.upcoming-card-genre {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.upcoming-card-synopsis {
+  font-size: 12px;
+  color: #b0a8c8;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-style: italic;
+}
+.upcoming-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.upcoming-cast {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.upcoming-cast::-webkit-scrollbar { display: none; }
+.upcoming-cast-member {
+  flex-shrink: 0;
+  text-align: center;
+  width: 52px;
+}
+.upcoming-cast-member img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(179,157,219,.25);
+  background: #2a2a3e;
+}
+.upcoming-cast-member-ph {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a2a3e, #3a2a4e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin: 0 auto;
+  border: 1.5px solid rgba(179,157,219,.15);
+}
+.upcoming-cast-name {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 3px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+}
+
+.upcoming-eps-badge {
+  display: inline-flex;
+  gap: 4px;
+  background: rgba(255,255,255,.06);
+  color: var(--muted);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 50px;
+  margin-bottom: 6px;
+}
+
+.upcoming-loading {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.upcoming-error {
+  text-align: center;
+  padding: 60px 20px;
+  color: #ef9a9a;
+  font-size: 14px;
+}
+.upcoming-last-update {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.upcoming-filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.upcoming-filter-btn {
+  padding: 6px 14px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+}
+.upcoming-filter-btn.active, .upcoming-filter-btn:hover {
+  color: #fff;
+  border-color: var(--accent);
+  background: rgba(179,157,219,.1);
+}
+.upcoming-notif-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+  margin-top: 8px;
+}
+.upcoming-notif-btn:hover { border-color: #ffd54f; color: #ffd54f; }
+.upcoming-notif-btn.notified { border-color: #ffd54f; color: #ffd54f; background: rgba(255,213,79,.1); }
+
+@media (max-width: 767px) {
+  .upcoming-page-header { padding: 16px; flex-wrap: wrap; }
+  .upcoming-page-title { font-size: 24px; }
+  .upcoming-content { padding: 16px 12px 40px; }
+  .upcoming-grid { grid-template-columns: 1fr; gap: 14px; }
+}
 </style>
 </head>
 <body>
@@ -3081,6 +3410,11 @@
   <span class="sidebar-btn-icon">📰</span>
   Actualités
   <span class="sidebar-btn-count has" id="sb-news-count" style="background:rgba(239,154,154,.2);color:#ef9a9a;">NEW</span>
+</button>
+  <button class="sidebar-btn" onclick="openUpcomingPageSidebar()">
+  <span class="sidebar-btn-icon">🗓</span>
+  Prochaines sorties
+  <span class="sidebar-btn-count has" id="sb-upcoming-count" style="background:rgba(105,240,174,.2);color:#69f0ae;">NEW</span>
 </button>
   <button class="sidebar-btn" onclick="openQuizSidebar()">
   <span class="sidebar-btn-icon">🧠</span>
@@ -6154,6 +6488,11 @@ const TUTO_STEPS = [
     desc: 'L\'onglet <strong>Actualités</strong> dans le menu te donne les dernières news K-Drama de Soompi et Dramabeans, mises à jour automatiquement toutes les 6h.'
   },
   {
+  icon: '🗓',
+  title: 'Prochaines sorties',
+  desc: 'Découvre les <strong>K-Dramas à venir</strong> via le menu ☰. Les sorties sont regroupées par mois avec poster, casting et plateforme — et se mettent à jour automatiquement. Clique sur <strong>🔕 Me rappeler</strong> pour marquer ceux qui t\'intéressent !'
+  },
+  {
     icon: '🧠',
     title: 'Quiz K-Drama',
     desc: 'Teste tes connaissances avec le <strong>Quiz K-Drama</strong> en 3 niveaux : Facile (4 choix), Moyen (2 choix) et Difficile (saisie libre). Tes meilleurs scores sont sauvegardés !'
@@ -6608,6 +6947,11 @@ function openNewsPageSidebar() {
   openNewsPage();
 }
 
+function openUpcomingPageSidebar() {
+  closeSidebar();
+  openUpcomingPage();
+}
+
 function closeAllPages() {
   document.getElementById('news-page').classList.remove('open');
   document.getElementById('my-page').classList.remove('open');
@@ -6616,6 +6960,7 @@ function closeAllPages() {
   document.getElementById('quiz-page').classList.remove('open');
   document.getElementById('challenge-page').classList.remove('open');
   document.body.style.overflow = '';
+  document.getElementById('upcoming-page').classList.remove('open');
 }
 
 function openNewsPage() {
@@ -7488,6 +7833,281 @@ function renderChallengePage() {
 updateSidebarQuizScore();
 updateSidebarChallengeCount();
 updateChallengeData();
+// ── PROCHAINES SORTIES ────────────────────────────────────────────────────────
+let _upcomingData = [];
+let _upcomingFetched = false;
+let _upcomingFilter = 'all';
+let _upcomingNotifs = {};
+try { _upcomingNotifs = JSON.parse(localStorage.getItem('upcoming_notifs')) || {}; } catch {}
+
+function openUpcomingPage() {
+  closeAllPages();
+  document.getElementById('upcoming-page').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (!_upcomingFetched) fetchUpcoming();
+}
+
+function closeUpcomingPage() {
+  document.getElementById('upcoming-page').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function fetchUpcoming() {
+  const container = document.getElementById('upcoming-container');
+  container.innerHTML = '<div class="upcoming-loading">⏳ Récupération des prochaines sorties K-Drama...</div>';
+
+  try {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const today = `${year}-${month}-01`;
+    // 4 mois en avant
+    const end = new Date(now);
+    end.setMonth(end.getMonth() + 4);
+    const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-28`;
+
+    // TMDB : séries coréennes avec date de première entre aujourd'hui et +4 mois
+    const pages = await Promise.all([1, 2, 3].map(page =>
+      fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=fr-FR&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}&vote_count.gte=0`)
+        .then(r => r.json())
+    ));
+
+    const all = pages.flatMap(p => p.results || []);
+    // Déduplique
+    const seen = new Set();
+    const unique = all.filter(d => {
+      if (seen.has(d.id)) return false;
+      seen.add(d.id);
+      return true;
+    });
+
+    // Enrichit avec détails (genre + casting) en parallèle par batch
+    const enriched = await enrichUpcomingBatch(unique.slice(0, 40));
+    _upcomingData = enriched;
+    _upcomingFetched = true;
+
+    const lastUpdate = document.getElementById('upcoming-last-update');
+    if (lastUpdate) lastUpdate.innerHTML = `🔄 Mis à jour le ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})} · Source : TMDB`;
+
+    buildUpcomingFilters();
+    renderUpcoming();
+
+    // Refresh auto toutes les 6h
+    setTimeout(() => { _upcomingFetched = false; }, 6 * 3600 * 1000);
+
+  } catch(e) {
+    container.innerHTML = '<div class="upcoming-error">❌ Impossible de charger les données. Réessaie plus tard.<br><small>' + e.message + '</small></div>';
+  }
+}
+
+async function enrichUpcomingBatch(dramas) {
+  const BATCH = 6;
+  const results = [];
+  for (let i = 0; i < dramas.length; i += BATCH) {
+    const batch = dramas.slice(i, i + BATCH);
+    const enriched = await Promise.all(batch.map(d => enrichOneDrama(d)));
+    results.push(...enriched);
+  }
+  return results;
+}
+
+async function enrichOneDrama(d) {
+  try {
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${d.id}?api_key=${KEY}&language=fr-FR&append_to_response=aggregate_credits`);
+    const data = await res.json();
+    return {
+      id: d.id,
+      title: data.name || d.name,
+      original_title: data.original_name || '',
+      synopsis: data.overview || d.overview || '',
+      poster: data.poster_path || d.poster_path || null,
+      backdrop: data.backdrop_path || d.backdrop_path || null,
+      date: data.first_air_date || d.first_air_date || '',
+      genres: (data.genres || []).map(g => g.name).slice(0, 2),
+      episodes: data.number_of_episodes || null,
+      networks: (data.networks || []).map(n => n.name).slice(0, 2),
+      cast: (data.aggregate_credits?.cast || []).slice(0, 5).map(a => ({
+        name: a.name,
+        photo: a.profile_path ? `https://image.tmdb.org/t/p/w92${a.profile_path}` : null
+      }))
+    };
+  } catch {
+    return {
+      id: d.id,
+      title: d.name,
+      original_title: d.original_name || '',
+      synopsis: d.overview || '',
+      poster: d.poster_path || null,
+      backdrop: d.backdrop_path || null,
+      date: d.first_air_date || '',
+      genres: [],
+      episodes: null,
+      networks: [],
+      cast: []
+    };
+  }
+}
+
+function buildUpcomingFilters() {
+  const bar = document.getElementById('upcoming-filter-bar');
+  if (!bar) return;
+
+  // Récupère les mois uniques
+  const months = [...new Set(_upcomingData.map(d => {
+    if (!d.date) return null;
+    const dt = new Date(d.date);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+  }).filter(Boolean))].sort();
+
+  const labels = { 'all': '🗓 Tous' };
+  months.forEach(m => {
+    const [y, mo] = m.split('-');
+    const label = new Date(parseInt(y), parseInt(mo) - 1, 1)
+      .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    labels[m] = label.charAt(0).toUpperCase() + label.slice(1);
+  });
+
+  bar.innerHTML = Object.entries(labels).map(([key, label]) =>
+    `<button class="upcoming-filter-btn ${_upcomingFilter === key ? 'active' : ''}"
+      onclick="setUpcomingFilter('${key}')">${label}</button>`
+  ).join('');
+}
+
+function setUpcomingFilter(filter) {
+  _upcomingFilter = filter;
+  document.querySelectorAll('.upcoming-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === document.querySelector(`.upcoming-filter-btn[onclick="setUpcomingFilter('${filter}')"]`)?.textContent.trim());
+  });
+  buildUpcomingFilters();
+  renderUpcoming();
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(dateStr); target.setHours(0,0,0,0);
+  return Math.round((target - today) / 86400000);
+}
+
+function upcomingDateLabel(dateStr) {
+  const days = daysUntil(dateStr);
+  if (days === null) return { label: 'Date inconnue', cls: '' };
+  if (days === 0) return { label: '🔴 Aujourd\'hui !', cls: 'today' };
+  if (days <= 7) return { label: `Dans ${days} jour${days > 1 ? 's' : ''}`, cls: 'soon' };
+  const dt = new Date(dateStr);
+  const label = dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  return { label, cls: '' };
+}
+
+function networkToPlatformClass(network) {
+  const n = network.toLowerCase();
+  if (n.includes('netflix')) return 'pb-netflix';
+  if (n.includes('disney')) return 'pb-disney';
+  if (n.includes('tvn') || n.includes('tving')) return 'pb-tving';
+  if (n.includes('viki')) return 'pb-viki';
+  if (n.includes('mbc') || n.includes('kbs') || n.includes('sbs')) return 'pb-other';
+  if (n.includes('wavve')) return 'pb-wavve';
+  return 'pb-other';
+}
+
+function renderUpcoming() {
+  const container = document.getElementById('upcoming-container');
+  if (!container) return;
+
+  let data = [..._upcomingData];
+  if (_upcomingFilter !== 'all') {
+    data = data.filter(d => {
+      if (!d.date) return false;
+      const dt = new Date(d.date);
+      const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+      return key === _upcomingFilter;
+    });
+  }
+
+  if (data.length === 0) {
+    container.innerHTML = '<div class="upcoming-loading">Aucun drama trouvé pour cette période.</div>';
+    return;
+  }
+
+  // Groupe par mois
+  const byMonth = {};
+  data.forEach(d => {
+    if (!d.date) { (byMonth['Inconnu'] = byMonth['Inconnu'] || []).push(d); return; }
+    const dt = new Date(d.date);
+    const key = dt.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const cap = key.charAt(0).toUpperCase() + key.slice(1);
+    (byMonth[cap] = byMonth[cap] || []).push(d);
+  });
+
+  let html = '';
+  for (const [month, items] of Object.entries(byMonth)) {
+    html += `<div class="upcoming-month-title">📅 ${month} <span style="font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;">(${items.length} drama${items.length > 1 ? 's' : ''})</span></div>`;
+    html += '<div class="upcoming-grid">';
+    items.forEach(d => { html += buildUpcomingCard(d); });
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function buildUpcomingCard(d) {
+  const { label, cls } = upcomingDateLabel(d.date);
+  const isNotified = _upcomingNotifs[d.id];
+  const posterUrl = d.poster ? `https://image.tmdb.org/t/p/w342${d.poster}` : null;
+  const backdropUrl = d.backdrop ? `https://image.tmdb.org/t/p/w780${d.backdrop}` : null;
+
+  const bannerHTML = backdropUrl
+    ? `<img src="${backdropUrl}" alt="${d.title}" onerror="this.style.display='none'">`
+    : '';
+  const posterHTML = posterUrl
+    ? `<img class="upcoming-card-poster" src="${posterUrl}" alt="${d.title}" onerror="this.outerHTML='<div class=\\'upcoming-card-poster-ph\\'>🎬</div>'">`
+    : `<div class="upcoming-card-poster-ph">🎬</div>`;
+
+  const platformsHTML = d.networks.map(n =>
+    `<span class="platform-badge ${networkToPlatformClass(n)}" style="cursor:default">▶ ${n}</span>`
+  ).join('');
+
+  const castHTML = d.cast.length > 0
+    ? `<div style="margin-top:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:6px">Casting</div>
+       <div class="upcoming-cast">
+         ${d.cast.map(a => `
+           <div class="upcoming-cast-member">
+             ${a.photo
+               ? `<img src="${a.photo}" alt="${a.name}" onerror="this.outerHTML='<div class=\\'upcoming-cast-member-ph\\'>🎭</div>'">`
+               : `<div class="upcoming-cast-member-ph">🎭</div>`}
+             <div class="upcoming-cast-name">${a.name}</div>
+           </div>`).join('')}
+       </div></div>`
+    : '';
+
+  const genreStr = d.genres.length ? d.genres.join(' · ') : 'K-Drama';
+  const epsStr = d.episodes ? `📺 ${d.episodes} ép.` : '';
+
+  return `
+    <div class="upcoming-card">
+      <div class="upcoming-card-banner">${bannerHTML}${posterHTML}</div>
+      <div class="upcoming-card-body">
+        <div class="upcoming-date-badge ${cls}">🗓 ${label}</div>
+        ${epsStr ? `<div class="upcoming-eps-badge">${epsStr}</div>` : ''}
+        <div class="upcoming-card-title">${d.title}</div>
+        ${d.original_title && d.original_title !== d.title ? `<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">${d.original_title}</div>` : ''}
+        <div class="upcoming-card-genre">${genreStr}</div>
+        ${d.synopsis ? `<div class="upcoming-card-synopsis">${d.synopsis}</div>` : ''}
+        <div class="upcoming-platforms">${platformsHTML}</div>
+        ${castHTML}
+        <button class="upcoming-notif-btn ${isNotified ? 'notified' : ''}"
+          onclick="toggleUpcomingNotif(${d.id}, '${d.title.replace(/'/g,"\\'")}', this)">
+          ${isNotified ? '🔔 Rappel activé' : '🔕 Me rappeler'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function toggleUpcomingNotif(id, title, btn) {
+  _upcomingNotifs[id] = !_upcomingNotifs[id];
+  try { localStorage.setItem('upcoming_notifs', JSON.stringify(_upcomingNotifs)); } catch {}
+  btn.className = 'upcoming-notif-btn' + (_upcomingNotifs[id] ? ' notified' : '');
+  btn.textContent = _upcomingNotifs[id] ? '🔔 Rappel activé' : '🔕 Me rappeler';
+}
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 
@@ -7568,6 +8188,18 @@ updateChallengeData();
     <button class="challenge-close" onclick="closeChallengePage()">✕</button>
   </div>
   <div class="challenge-content" id="challenge-content"></div>
+</div>
+<!-- PROCHAINES SORTIES PAGE -->
+<div class="upcoming-page" id="upcoming-page">
+  <div class="upcoming-page-header">
+    <div class="upcoming-page-title">🗓 PROCHAINES SORTIES</div>
+    <button class="upcoming-page-close" onclick="closeUpcomingPage()">✕</button>
+  </div>
+  <div class="upcoming-content">
+    <div class="upcoming-last-update" id="upcoming-last-update"></div>
+    <div class="upcoming-filter-bar" id="upcoming-filter-bar"></div>
+    <div id="upcoming-container"><div class="upcoming-loading">⏳ Chargement des prochaines sorties...</div></div>
+  </div>
 </div>
 </body>
 </html>
