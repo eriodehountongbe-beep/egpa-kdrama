@@ -6113,25 +6113,31 @@ buildSections();
 function restorePromotions() {
   try {
     const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
+    let restored = 0;
     promotions.forEach(({ title, targetCat }) => {
       if (!DRAMAS[targetCat]) return;
-      // Vérifie que le drama n'est pas déjà dans la catégorie cible
       const alreadyThere = DRAMAS[targetCat].items.some(d => d[0] === title);
       if (alreadyThere) {
-        // Retire quand même de UNSEEN_DRAMAS si présent
-        const idx = UNSEEN_DRAMAS.findIndex(d => d.title === title);
-        if (idx !== -1) UNSEEN_DRAMAS.splice(idx, 1);
+        const i = UNSEEN_DRAMAS.findIndex(d => d.title === title);
+        if (i !== -1) UNSEEN_DRAMAS.splice(i, 1);
         return;
       }
-      const idx = UNSEEN_DRAMAS.findIndex(d => d.title === title);
-      if (idx === -1) return;
+      // Cherche avec trim() pour éviter les espaces cachés
+      const idx = UNSEEN_DRAMAS.findIndex(d => d.title.trim() === title.trim());
+      if (idx === -1) {
+        // Drama introuvable dans UNSEEN — l'ajoute quand même depuis les données sauvegardées
+        DRAMAS[targetCat].items.push([title, '', 'Classé par la communauté.', 'Drama', '', '']);
+        restored++;
+        return;
+      }
       const d = UNSEEN_DRAMAS.splice(idx, 1)[0];
       DRAMAS[targetCat].items.push([
         d.title, d.synopsis, 'Classé par la communauté.',
         d.genre, d.eps || '', d.year || ''
       ]);
+      restored++;
     });
-  } catch(e) { console.error('restorePromotions error', e); }
+  } catch(e) {}
 }
 restorePromotions();
 buildUnseenSection();
