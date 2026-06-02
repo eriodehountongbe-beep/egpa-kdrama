@@ -3148,10 +3148,10 @@
   height: 100%;
   object-fit: cover;
   object-position: top;
-  opacity: .6;
+  opacity: .85;        /* ← était .6, monte à .85 */
   transition: opacity .3s;
 }
-.upcoming-card:hover .upcoming-card-banner img { opacity: .8; }
+.upcoming-card:hover .upcoming-card-banner img { opacity: 1; }  /* ← était .8 */
 
 .upcoming-card-poster {
   position: absolute;
@@ -4434,9 +4434,14 @@ const CLASS_THRESHOLD = 10;
 const _classVoteStore = {};
 
 function getClassVotes(title) {
-  return _classVoteStore[title] || { M:0, TB:0, B:0, AB:0, P:0, voted: null };
+  try {
+    return JSON.parse(localStorage.getItem('classVote_' + title)) || { M:0, TB:0, B:0, AB:0, P:0, voted: null };
+  } catch { return { M:0, TB:0, B:0, AB:0, P:0, voted: null }; }
 }
-function saveClassVotes(title, data) { _classVoteStore[title] = data; }
+
+function saveClassVotes(title, data) {
+  try { localStorage.setItem('classVote_' + title, JSON.stringify(data)); } catch {}
+}
 
 function buildClassVoteHTML(title) {
   const v = getClassVotes(title);
@@ -4507,6 +4512,16 @@ function promoteUnseenDrama(title, targetCat) {
   const d = UNSEEN_DRAMAS[idx];
   UNSEEN_DRAMAS.splice(idx, 1);
   DRAMAS[targetCat].items.push([d.title, d.synopsis, 'Classé par la communauté.', d.genre, d.eps || '', d.year || '']);
+
+  // ← Persiste la promotion
+  try {
+    const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
+    if (!promotions.find(p => p.title === title)) {
+      promotions.push({ title, targetCat });
+      localStorage.setItem('drama_promotions', JSON.stringify(promotions));
+    }
+  } catch {}
+
   rebuildUnseenSection();
   rebuildGrid(targetCat);
   updateCounts();
@@ -6090,6 +6105,19 @@ function refreshAllStatusDots() {
 }
 buildSections();
 buildUnseenSection();
+// Restaure les promotions persistées au rechargement
+function restorePromotions() {
+  try {
+    const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
+    promotions.forEach(({ title, targetCat }) => {
+      const idx = UNSEEN_DRAMAS.findIndex(d => d.title === title);
+      if (idx === -1) return; // déjà promu ou introuvable
+      const d = UNSEEN_DRAMAS.splice(idx, 1)[0];
+      DRAMAS[targetCat].items.push([d.title, d.synopsis, 'Classé par la communauté.', d.genre, d.eps || '', d.year || '']);
+    });
+  } catch {}
+}
+restorePromotions();
 buildAwardsSection();
 fetchSortedDramas();
 setInterval(fetchSortedDramas, 20000);
@@ -7868,7 +7896,7 @@ async function fetchUpcoming() {
 
     // TMDB : séries coréennes avec date de première entre aujourd'hui et +4 mois
     const pages = await Promise.all([1, 2, 3].map(page =>
-      fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=fr-FR&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}&vote_count.gte=0`)
+      fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=-US&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}&vote_count.gte=0`)
         .then(r => r.json())
     ));
 
@@ -7913,7 +7941,7 @@ async function enrichUpcomingBatch(dramas) {
 
 async function enrichOneDrama(d) {
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${d.id}?api_key=${KEY}&language=fr-FR&append_to_response=aggregate_credits`);
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${d.id}?api_key=${KEY}&language=-US&append_to_response=aggregate_credits`);
     const data = await res.json();
     return {
       id: d.id,
