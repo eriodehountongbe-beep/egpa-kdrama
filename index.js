@@ -423,7 +423,70 @@ app.patch('/api/nouveaux/:tmdb_id/complet', async (req, res) => {
     res.json(result.rows[0]);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+// Cache en mémoire
+let upcomingCache = { data: [], fetchedAt: 0 };
 
+app.get('/api/upcoming', async (req, res) => {
+  // Refresh toutes les 6h
+  if (Date.now() - upcomingCache.fetchedAt < 6 * 3600 * 1000 && upcomingCache.data.length > 0) {
+    return res.json(upcomingCache.data);
+  }
+  try {
+    const KEY = process.env.TMDB_KEY || '8265bd1679663a7ea12ac168da84d2e8';
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const end = new Date(now);
+    end.setMonth(end.getMonth() + 4);
+    const endStr = end.toISOString().split('T')[0];
+
+    // Récupère 3 pages
+    const pages = await Promise.all([1, 2, 3].map(page =>
+      fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=en-US&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}`)
+        .then(r => r.json())
+    ));
+    const all = pages.flatMap(p => p.results || []);
+
+    // Déduplique
+    const seen = new Set();
+    const unique = all.filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true; });
+
+    // Enrichit par batch de 6
+    const BATCH = 6;
+    const enriched = [];
+    for (let i = 0; i < Math.min(unique.length, 40); i += BATCH) {
+      const batch = unique.slice(i, i + BATCH);
+      const results = await Promise.all(batch.map(async d => {
+        try {
+          const r = await fetch(`https://api.themoviedb.org/3/tv/${d.id}?api_key=${KEY}&language=en-US&append_to_response=aggregate_credits`);
+          const data = await r.json();
+          return {
+            id: d.id,
+            title: data.name || d.name,
+            original_title: data.original_name || '',
+            synopsis: data.overview || '',
+            poster: data.poster_path || null,
+            backdrop: data.backdrop_path || null,
+            date: data.first_air_date || d.first_air_date || '',
+            genres: (data.genres || []).map(g => g.name).slice(0, 2),
+            episodes: data.number_of_episodes || null,
+            networks: (data.networks || []).map(n => n.name).slice(0, 2),
+            cast: (data.aggregate_credits?.cast || []).slice(0, 5).map(a => ({
+              name: a.name,
+              photo: a.profile_path ? `https://image.tmdb.org/t/p/w92${a.profile_path}` : null
+            }))
+          };
+        } catch { return { id: d.id, title: d.name, date: d.first_air_date, poster: d.poster_path, backdrop: d.backdrop_path, synopsis: d.overview, genres: [], networks: [], cast: [] }; }
+      }));
+      enriched.push(...results);
+    }
+
+    upcomingCache = { data: enriched, fetchedAt: Date.now() };
+    res.json(enriched);
+  } catch(e) {
+    console.error('upcoming error', e);
+    res.status(500).json([]);
+  }
+});
 // ── VISITEURS EN LIGNE ─────────────────────────────────────────────
 const activeVisitors = new Map(); // sessionId -> timestamp
 
