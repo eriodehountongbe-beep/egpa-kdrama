@@ -78,6 +78,29 @@ await client.query(`CREATE TABLE IF NOT EXISTS statuses (
   UNIQUE(user_id, title)
 )`);
 await client.query('CREATE INDEX IF NOT EXISTS idx_statuses_user ON statuses(user_id)');
+await client.query(`CREATE TABLE IF NOT EXISTS classvotes (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  cat TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(title, user_id)
+)`);
+await client.query('CREATE INDEX IF NOT EXISTS idx_classvotes_title ON classvotes(title)');
+await client.query(`CREATE TABLE IF NOT EXISTS nouveaux_dramas (
+  id SERIAL PRIMARY KEY,
+  tmdb_id INTEGER UNIQUE,
+  title TEXT NOT NULL,
+  synopsis TEXT DEFAULT '',
+  genre TEXT DEFAULT 'K-Drama',
+  eps TEXT DEFAULT '',
+  year INTEGER,
+  poster TEXT DEFAULT '',
+  platforms JSONB DEFAULT '[]',
+  status TEXT DEFAULT 'encours',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+)`);
+await client.query('CREATE INDEX IF NOT EXISTS idx_nouveaux_status ON nouveaux_dramas(status)');
   } finally {
     client.release();
   }
