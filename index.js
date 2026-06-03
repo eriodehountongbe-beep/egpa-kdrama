@@ -414,7 +414,7 @@ app.post('/api/classvotes/:title', async (req, res) => {
 });
 
 // ── PROMOTION D'UN DRAMA SANS CLASSEMENT ─────────────────────────────────────
-const CLASS_PROMOTE_THRESHOLD = 5;
+const CLASS_PROMOTE_THRESHOLD = 1;
 
 app.post('/api/classvotes/:title/promote', async (req, res) => {
   const title = decodeURIComponent(req.params.title);

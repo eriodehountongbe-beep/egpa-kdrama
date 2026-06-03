@@ -4498,7 +4498,7 @@ function buildClassVoteHTMLFromData(title, v) {
   // Barre de progression vers la promotion
   let progressHTML = '';
   if (winner && maxV > 0) {
-    const threshold = typeof CLASS_PROMOTE_THRESHOLD !== 'undefined' ? CLASS_PROMOTE_THRESHOLD : 5;
+    const threshold = typeof CLASS_PROMOTE_THRESHOLD !== 'undefined' ? CLASS_PROMOTE_THRESHOLD : 1;
     const pct = Math.min(100, Math.round(maxV / threshold * 100));
     const remaining = Math.max(0, threshold - maxV);
     progressHTML = `<div style="margin-top:8px;">
@@ -4527,7 +4527,7 @@ function buildClassVoteHTMLFromData(title, v) {
   </div>`;
 }
 
-const CLASS_PROMOTE_THRESHOLD = 5; // Nombre de votes identiques pour déclencher la promotion
+const CLASS_PROMOTE_THRESHOLD = 1; // Nombre de votes identiques pour déclencher la promotion
 
 async function castClassVote(title, cat) {
   const userId = getUserId();
