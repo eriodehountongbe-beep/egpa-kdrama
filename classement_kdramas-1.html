@@ -5391,6 +5391,8 @@ document.querySelectorAll('.genre-btn').forEach(btn => {
   });
 });
 
+let _nouveauxData = [];
+
 function updateCounts() {
   for (const [key, cat] of Object.entries(DRAMAS)) {
     const el = document.getElementById(`cnt-${key}`);
@@ -8183,7 +8185,6 @@ function toggleUpcomingNotif(id, title, btn) {
   btn.textContent = _upcomingNotifs[id] ? '🔔 Rappel activé' : '🔕 Me rappeler';
 }
 // ── NOUVEAUX EN COURS ──────────────────────────────────────────────────────
-let _nouveauxData = [];
 
 async function loadNouveaux() {
   try {

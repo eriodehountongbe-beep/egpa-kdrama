@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -n '3582,8356p' /Users/deogratiaspatinvoh/egpa-kdrama/classement_kdramas-1.html)",
+      "Bash(node --check /tmp/kdrama_script.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://egpa-kdrama.onrender.com/api/health\")",
+      "Bash(curl -s \"https://egpa-kdrama.onrender.com/api/news\")",
+      "Bash(curl -s \"https://egpa-kdrama.onrender.com/api/upcoming\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'Count: {len\\(d\\)}'\\); print\\(d[0]['title'] if d else 'empty'\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(sed -n '3582,8357p' /Users/deogratiaspatinvoh/egpa-kdrama/classement_kdramas-1.html)",
+      "Bash(node --check /tmp/kdrama_script2.js)",
+      "Bash(node --check /tmp/kdrama_final.js)"
+    ]
+  }
+}
