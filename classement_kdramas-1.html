@@ -7950,7 +7950,7 @@ async function fetchUpcoming() {
 
     // TMDB : séries coréennes avec date de première entre aujourd'hui et +4 mois
     const pages = await Promise.all([1, 2, 3].map(page =>
-      fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=-US&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}&vote_count.gte=0`)
+      fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=en-US&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}&vote_count.gte=0`)
         .then(r => r.json())
     ));
 
@@ -8001,7 +8001,7 @@ async function enrichUpcomingBatch(dramas) {
 
 async function enrichOneDrama(d) {
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${d.id}?api_key=${KEY}&language=-US&append_to_response=aggregate_credits`);
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${d.id}?api_key=${KEY}&language=en-US&append_to_response=aggregate_credits`);
     const data = await res.json();
     return {
       id: d.id,
@@ -8295,9 +8295,11 @@ function buildNouveauxSection() {
     <div class="drama-grid" id="grid-nouveaux"></div>
   `;
   // Insère avant la section "unseen"
-  const unseenSection = document.querySelector('section[data-cat="unseen"]');
-  if (unseenSection) container.insertBefore(section, unseenSection);
-  else container.appendChild(section);
+  // Insère à la fin du container (après toutes les sections classées)
+   container.appendChild(section);
+  // Puis remet unseen après
+   const unseenSection = document.querySelector('section[data-cat="unseen"]');
+   if (unseenSection) container.appendChild(unseenSection);
 
   const grid = section.querySelector('#grid-nouveaux');
   actifs.forEach((d, idx) => {
