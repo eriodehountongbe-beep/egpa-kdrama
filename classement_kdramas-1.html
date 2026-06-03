@@ -7937,54 +7937,20 @@ function closeUpcomingPage() {
 async function fetchUpcoming() {
   const container = document.getElementById('upcoming-container');
   container.innerHTML = '<div class="upcoming-loading">⏳ Récupération des prochaines sorties K-Drama...</div>';
-
   try {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const today = `${year}-${month}-01`;
-    // 4 mois en avant
-    const end = new Date(now);
-    end.setMonth(end.getMonth() + 4);
-    const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-28`;
-
-    // TMDB : séries coréennes avec date de première entre aujourd'hui et +4 mois
-    const pages = await Promise.all([1, 2, 3].map(page =>
-      fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=en-US&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}&vote_count.gte=0`)
-        .then(r => r.json())
-    ));
-
-    const all = pages.flatMap(p => p.results || []);
-    // Déduplique
-    const seen = new Set();
-    const unique = all.filter(d => {
-      if (seen.has(d.id)) return false;
-      seen.add(d.id);
-      return true;
-    });
-
-    // Enrichit avec détails (genre + casting) en parallèle par batch
-    const enriched = await enrichUpcomingBatch(unique.slice(0, 40));
-    _upcomingData = enriched;
+    const res = await fetch(`${API_BASE}/upcoming`);
+    if (!res.ok) throw new Error('network');
+    _upcomingData = await res.json();
     _upcomingFetched = true;
-    // Auto-détection : dramas dont la date est passée → proposer ajout en Nouveaux
-   _upcomingData.forEach(d => {
-   if (d.date && daysUntil(d.date) <= 0 && !_nouveauxData.find(n => n.tmdb_id === d.id)) {
-    // Badge visuel dans la carte uniquement, pas d'ajout auto
-    }
-   });
 
     const lastUpdate = document.getElementById('upcoming-last-update');
-    if (lastUpdate) lastUpdate.innerHTML = `🔄 Mis à jour le ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})} · Source : TMDB`;
+    if (lastUpdate) lastUpdate.innerHTML = `🔄 Mis à jour automatiquement · Source : TMDB`;
 
     buildUpcomingFilters();
     renderUpcoming();
-
-    // Refresh auto toutes les 6h
     setTimeout(() => { _upcomingFetched = false; }, 6 * 3600 * 1000);
-
   } catch(e) {
-    container.innerHTML = '<div class="upcoming-error">❌ Impossible de charger les données. Réessaie plus tard.<br><small>' + e.message + '</small></div>';
+    container.innerHTML = '<div class="upcoming-error">❌ Impossible de charger les données. Réessaie plus tard.</div>';
   }
 }
 
