@@ -273,6 +273,19 @@
     color: var(--muted);
     margin-bottom: 16px;
   }
+  .card-img-loader {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px; height: 24px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: #69f0ae;
+    border-radius: 50%;
+    animation: spin-loader 1s linear infinite;
+    z-index: 5;
+  }
+  @keyframes spin-loader { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+  
   .poster-placeholder {
     width: 100%; height: 100%;
     display: flex;
@@ -4684,13 +4697,24 @@ function buildUnseenSection() {
 
 function rebuildUnseenSection() { buildUnseenSection(); }
 
+function removeLoader(img) {
+  const loader = img.parentElement.querySelector('.card-img-loader');
+  if (loader) loader.remove();
+}
+
 async function loadUnseenPoster(img, title) {
-  const showFallback = () => { img.style.display='none'; img.nextElementSibling.style.display='flex'; };
+  const showFallback = () => { 
+    removeLoader(img);
+    img.style.display='none'; 
+    const ph = img.parentElement.querySelector('.poster-placeholder');
+    if(ph) ph.style.display='flex'; 
+  };
   if (posterCache[title]) {
     if (posterCache[title] === 'fallback') {
       showFallback();
     } else {
       img.onerror = showFallback;
+      img.onload = () => removeLoader(img);
       const src = `https://image.tmdb.org/t/p/w342${posterCache[title]}`;
       img.src = src;
       img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
@@ -4714,6 +4738,7 @@ async function loadUnseenPoster(img, title) {
     }
     if (posterPath) {
       img.onerror = showFallback;
+      img.onload = () => removeLoader(img);
       const src = 'https://image.tmdb.org/t/p/w342' + posterPath;
       img.src = src;
       img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
@@ -5147,16 +5172,29 @@ const posterObserver = new IntersectionObserver((entries, observer) => {
 function lazyLoadPoster(img, title, isUnseen = false) {
   img.dataset.titleToLoad = title;
   img.dataset.isUnseen = isUnseen;
+  
+  if (!img.parentElement.querySelector('.card-img-loader')) {
+    const loader = document.createElement('div');
+    loader.className = 'card-img-loader';
+    img.after(loader);
+  }
+  
   posterObserver.observe(img);
 }
 
 async function loadPoster(img, title) {
-  const showFallback = () => { img.style.display='none'; img.nextElementSibling.style.display='flex'; };
+  const showFallback = () => { 
+    removeLoader(img);
+    img.style.display='none'; 
+    const ph = img.parentElement.querySelector('.poster-placeholder');
+    if(ph) ph.style.display='flex'; 
+  };
   if (posterCache[title]) {
     if (posterCache[title] === 'fallback') {
       showFallback();
     } else {
       img.onerror = showFallback;
+      img.onload = () => removeLoader(img);
       const src = `https://image.tmdb.org/t/p/w342${posterCache[title]}`;
       img.src = src;
       img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
@@ -5180,6 +5218,7 @@ async function loadPoster(img, title) {
     }
     if (posterPath) {
       img.onerror = showFallback;
+      img.onload = () => removeLoader(img);
       const src = `https://image.tmdb.org/t/p/w342${posterPath}`;
       img.src = src;
       img.parentElement.style.setProperty('--bg-url', `url('${src}')`);
