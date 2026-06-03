@@ -4611,6 +4611,14 @@ function promoteUnseenDrama(title, targetCat) {
     DRAMAS[targetCat].items.push(entry);
   }
 
+  try {
+    const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
+    if (!promotions.find(p => p.title === title)) {
+      promotions.push({ title, targetCat, synopsis: d.synopsis, genre: d.genre, eps: d.eps || '', year: d.year || '' });
+      localStorage.setItem('drama_promotions', JSON.stringify(promotions));
+    }
+  } catch(e) {}
+
   rebuildUnseenSection();
   rebuildGrid(targetCat);
   updateCounts();
@@ -6229,7 +6237,8 @@ function refreshAllStatusDots() {
 // Applique une liste de promotions [{title, target_cat}] au state local
 function applyPromotions(promotions) {
   promotions.forEach(({ title, target_cat, targetCat, synopsis, genre, eps, year }) => {
-    const cat = target_cat || targetCat;
+    let cat = target_cat || targetCat;
+    if (CLASS_MAP[cat]) cat = CLASS_MAP[cat]; // Convertit le code court ('TB') en identifiant complet ('tresbien')
     if (!DRAMAS[cat]) return;
     const i = UNSEEN_DRAMAS.findIndex(d => d.title === title);
     if (i !== -1) UNSEEN_DRAMAS.splice(i, 1);
@@ -6260,7 +6269,8 @@ async function initWithPromotions() {
       if (serverPromotions.length > 0) {
         let changed = false;
         serverPromotions.forEach(({ title, target_cat }) => {
-          const cat = target_cat;
+          let cat = target_cat;
+          if (CLASS_MAP[cat]) cat = CLASS_MAP[cat]; // Convertit le code court ('TB') en identifiant complet ('tresbien')
           if (!DRAMAS[cat]) return;
           const inUnseen = UNSEEN_DRAMAS.findIndex(d => d.title === title);
           if (inUnseen !== -1) {
