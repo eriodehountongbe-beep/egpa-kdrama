@@ -7954,6 +7954,23 @@ async function fetchUpcoming() {
         .then(r => r.json())
     ));
 
+    const debugDiv = document.createElement('div');
+    debugDiv.style.cssText = 'position:fixed;top:80px;left:10px;right:10px;background:#1a1a2a;border:1px solid #b39ddb;color:#fff;font-size:11px;padding:12px;border-radius:10px;z-index:9999;max-height:300px;overflow-y:auto;';
+    debugDiv.id = 'debug-panel';
+    document.body.appendChild(debugDiv);
+
+const pages = await Promise.all([1, 2, 3].map(page =>
+  fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${KEY}&with_origin_country=KR&language=fr-FR&sort_by=first_air_date.asc&first_air_date.gte=${today}&first_air_date.lte=${endStr}&page=${page}&vote_count.gte=0`)
+    .then(r => r.json())
+));
+
+document.getElementById('debug-panel').innerHTML = 
+  'Date debut: ' + today + '<br>' +
+  'Date fin: ' + endStr + '<br>' +
+  'Page 1 resultats: ' + (pages[0].results?.length || 0) + '<br>' +
+  'Status: ' + (pages[0].status_message || 'OK') + '<br>' +
+  'Total: ' + (pages[0].total_results || 0);
+
     const all = pages.flatMap(p => p.results || []);
     // Déduplique
     const seen = new Set();
