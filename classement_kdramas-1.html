@@ -3371,6 +3371,24 @@
   .upcoming-content { padding: 16px 12px 40px; }
   .upcoming-grid { grid-template-columns: 1fr; gap: 14px; }
 }
+/* ── NOUVEAUX EN COURS ─────────────────────────────────────────── */
+.nouveaux .section-title { color: #69f0ae; }
+.nouveaux .drama-card { border-left: 2px solid #69f0ae; }
+.nouveaux .drama-card:hover { border-color: rgba(105,240,174,.5); }
+
+.nouveau-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: rgba(105,240,174,.85);
+  color: #000;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 50px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  animation: pulse-badge 2s infinite;
+}
 </style>
 </head>
 <body>
@@ -3460,6 +3478,10 @@
       <span class="sidebar-btn-icon">🎬</span> Sans classement
       <span class="sidebar-btn-count" id="sb-cnt-unseen">0</span>
     </button>
+    <button class="sidebar-btn" data-sidebar-cat="nouveaux" onclick="setSidebarCat('nouveaux', this)">
+  <span class="sidebar-btn-icon">🆕</span> Nouveaux
+  <span class="sidebar-btn-count" id="sb-cnt-nouveaux">0</span>
+</button>
   </div>
 
   <div class="sidebar-divider"></div>
@@ -4438,77 +4460,82 @@ const CLASS_COLORS = { M:'#b39ddb', TB:'#64b5f6', B:'#69f0ae', AB:'#ffd54f', P:'
 const CLASS_THRESHOLD = 10;
 const _classVoteStore = {};
 
-function getClassVotes(title) {
+async function getClassVotes(title) {
   try {
-    return JSON.parse(localStorage.getItem('classVote_' + title)) || { M:0, TB:0, B:0, AB:0, P:0, voted: null };
-  } catch { return { M:0, TB:0, B:0, AB:0, P:0, voted: null }; }
+    const userId = getUserId();
+    const res = await fetch(`${API_BASE}/classvotes/${encodeURIComponent(title)}?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error('network');
+    return await res.json();
+  } catch(e) { return { M:0, TB:0, B:0, AB:0, P:0, voted: null }; }
 }
 
 function saveClassVotes(title, data) {
   try { localStorage.setItem('classVote_' + title, JSON.stringify(data)); } catch {}
 }
 
-function buildClassVoteHTML(title) {
-  const v = getClassVotes(title);
-  const total = Object.keys(CLASS_MAP).reduce((s,k) => s + v[k], 0);
-  const t = title.replace(/'/g, "\'");
+
+function buildClassVoteHTMLFromData(title, v) {
+  const total = Object.keys(CLASS_MAP).reduce((s,k) => s + (v[k]||0), 0);
+  const t = title.replace(/'/g, "\\'");
 
   const bars = Object.keys(CLASS_MAP).map(k => {
-    const pct = total ? Math.round(v[k]/total*100) : 0;
-    return '<div class="class-bar" style="background:' + CLASS_COLORS[k] + ';flex:' + (pct||1) + '" title="' + k + ': ' + v[k] + ' votes"></div>';
+    const pct = total ? Math.round((v[k]||0)/total*100) : 0;
+    return `<div class="class-bar" style="background:${CLASS_COLORS[k]};flex:${pct||1}" title="${k}: ${v[k]||0} votes"></div>`;
   }).join('');
 
   const btns = Object.keys(CLASS_MAP).map(k =>
-    '<button class="class-btn ' + (v.voted===k?'selected':'') + '" onclick="castClassVote(\'' + t + '\',\'' + k + '\')" ' + (v.voted && v.voted!==k ? 'disabled' : '') + '>' + k + '</button>'
+    `<button class="class-btn ${v.voted===k?'selected':''}" onclick="castClassVote('${t}','${k}')" ${v.voted && v.voted!==k ? 'disabled' : ''}>${k}</button>`
   ).join('');
 
   let winner = null, maxV = 0;
-  for (const k of Object.keys(CLASS_MAP)) { if (v[k] > maxV) { maxV = v[k]; winner = k; } }
+  for (const k of Object.keys(CLASS_MAP)) { if ((v[k]||0) > maxV) { maxV = v[k]||0; winner = k; } }
 
-  let status = '';
-  if (maxV >= CLASS_THRESHOLD && winner) {
-    status = '<span style="color:' + CLASS_COLORS[winner] + '">🏆 Rejoint la catégorie <strong>' + CLASS_MAP[winner].toUpperCase() + '</strong> !</span>';
-  } else if (total > 0 && winner) {
-    status = 'En tête : <strong style="color:' + CLASS_COLORS[winner] + '">' + winner + '</strong> (' + maxV + '/' + CLASS_THRESHOLD + ' votes)';
-  } else {
-    status = 'Imposer votre choix aux autres';
-  }
+  let status = total > 0 && winner
+    ? `En tête : <strong style="color:${CLASS_COLORS[winner]}">${winner}</strong> (${maxV} votes)`
+    : 'Sois le premier à classer ce drama !';
 
-  const changeBtn = v.voted ? '<button class="vote-change" onclick="resetClassVote(\'' + t + '\')">↩ Changer mon avis</button>' : '';
+  const changeBtn = v.voted ? `<button class="vote-change" onclick="resetClassVote('${t}')">↩ Changer mon avis</button>` : '';
 
-  return '<div class="class-vote-wrap">' +
-    '<div class="class-vote-label">📊 Où classer ce drama ?</div>' +
-    '<div class="class-btns">' + btns + '</div>' +
-    '<div class="class-vote-bars">' + bars + '</div>' +
-    '<div class="class-vote-status">' + status + '</div>' +
-    changeBtn +
-    '</div>';
+  return `<div class="class-vote-wrap">
+    <div class="class-vote-label">📊 Où classer ce drama ?</div>
+    <div class="class-btns">${btns}</div>
+    <div class="class-vote-bars">${bars}</div>
+    <div class="class-vote-status">${status}</div>
+    ${changeBtn}
+  </div>`;
 }
 
-function castClassVote(title, cat) {
-  const v = getClassVotes(title);
-  // Toggle off if same button
-  if (v.voted === cat) { v[cat] = Math.max(0, v[cat]-1); v.voted = null; saveClassVotes(title, v); refreshClassVoteUI(title); return; }
-  if (v.voted !== null) return;
-  v[cat]++;
-  v.voted = cat;
-  saveClassVotes(title, v);
-  // First voter immediately sets the category
-  promoteUnseenDrama(title, CLASS_MAP[cat]);
+async function castClassVote(title, cat) {
+  const userId = getUserId();
+  try {
+    const res = await fetch(`${API_BASE}/classvotes/${encodeURIComponent(title)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, cat })
+    });
+    const v = await res.json();
+    refreshClassVoteUI(title, v);
+    // Premier vote → promotion immédiate
+    if (v.voted) promoteUnseenDrama(title, CLASS_MAP[cat]);
+  } catch(e) { alert('Erreur réseau'); }
 }
 
-function resetClassVote(title) {
-  const v = getClassVotes(title);
+async function resetClassVote(title) {
+  const userId = getUserId();
+  const v = await getClassVotes(title);
   if (!v.voted) return;
-  v[v.voted] = Math.max(0, v[v.voted] - 1);
-  v.voted = null;
-  saveClassVotes(title, v);
-  refreshClassVoteUI(title);
+  await fetch(`${API_BASE}/classvotes/${encodeURIComponent(title)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, cat: v.voted })
+  });
+  const fresh = await getClassVotes(title);
+  refreshClassVoteUI(title, fresh);
 }
 
-function refreshClassVoteUI(title) {
+function refreshClassVoteUI(title, v) {
   const el = document.getElementById('class-vote-' + CSS.escape(title));
-  if (el) el.innerHTML = buildClassVoteHTML(title);
+  if (el) el.innerHTML = buildClassVoteHTMLFromData(title, v);
 }
 
 function promoteUnseenDrama(title, targetCat) {
@@ -4680,10 +4707,14 @@ function openUnseenModal(d) {
       '<div class="modal-synopsis">' + d.synopsis + '</div>' +
       '<div class="modal-label" style="margin-top:16px">Où regarder</div>' +
       '<div class="modal-platforms">' + platformBadges + vdBadge + '</div>' +
-      '<div id="class-vote-' + CSS.escape(d.title) + '">' + buildClassVoteHTML(d.title) + '</div>' +
+      '<div id="class-vote-' + CSS.escape(d.title) + '"><div style="color:var(--muted);font-size:12px">⏳ Chargement des votes...</div></div>' +
     '</div>';
 
   document.getElementById('modal-overlay').classList.add('open');
+  getClassVotes(d.title).then(v => {
+  const el = document.getElementById('class-vote-' + CSS.escape(d.title));
+  if (el) el.innerHTML = buildClassVoteHTMLFromData(d.title, v);
+});
   document.body.style.overflow = 'hidden';
 
   const img = document.getElementById('unseen-modal-img');
@@ -5367,6 +5398,8 @@ function updateCounts() {
   }
   const unEl = document.getElementById('cnt-unseen');
   if (unEl) unEl.textContent = UNSEEN_DRAMAS.length;
+  const nvCnt = document.getElementById('cnt-nouveaux');
+  if (nvCnt) nvCnt.textContent = _nouveauxData.filter(d => d.status === 'encours').length;
 }
 
 // ESC to close modal
@@ -6484,6 +6517,7 @@ loadStatuses().then(() => {
   updateMarkAllBtns();
   refreshAllStatusDots();
 });
+loadNouveaux();
 setTimeout(addStatusButtons, 900);
 // ── PAGE D'ACCUEIL & TUTORIEL ─────────────────────────────────────────────────
 const TUTO_STEPS = [
@@ -6971,6 +7005,8 @@ function updateSidebarCounts() {
   if (bkEl) bkEl.textContent = _bookmarksCache.length;
   const myEl = document.getElementById('sb-mypage-count');
   if (myEl) myEl.textContent = Object.keys(_statusesCache).length;
+  const nvEl = document.getElementById('sb-cnt-nouveaux');
+  if (nvEl) nvEl.textContent = _nouveauxData.filter(d => d.status === 'encours').length;
 }
 
 // Appelle updateSidebarCounts après updateCounts
@@ -7005,6 +7041,7 @@ function closeAllPages() {
   document.getElementById('quiz-page').classList.remove('open');
   document.getElementById('challenge-page').classList.remove('open');
   document.body.style.overflow = '';
+  document.getElementById('upcoming-page').classList.remove('open');
   document.getElementById('upcoming-page').classList.remove('open');
 }
 
@@ -7930,6 +7967,12 @@ async function fetchUpcoming() {
     const enriched = await enrichUpcomingBatch(unique.slice(0, 40));
     _upcomingData = enriched;
     _upcomingFetched = true;
+    // Auto-détection : dramas dont la date est passée → proposer ajout en Nouveaux
+   _upcomingData.forEach(d => {
+   if (d.date && daysUntil(d.date) <= 0 && !_nouveauxData.find(n => n.tmdb_id === d.id)) {
+    // Badge visuel dans la carte uniquement, pas d'ajout auto
+    }
+   });
 
     const lastUpdate = document.getElementById('upcoming-last-update');
     if (lastUpdate) lastUpdate.innerHTML = `🔄 Mis à jour le ${new Date().toLocaleString('fr-FR', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})} · Source : TMDB`;
@@ -8155,6 +8198,10 @@ const platformsHTML = d.networks.map(n =>
         ${d.synopsis ? `<div class="upcoming-card-synopsis">${d.synopsis}</div>` : ''}
         <div class="upcoming-platforms">${platformsHTML}</div>
         ${castHTML}
+        <button class="upcoming-notif-btn" style="background:rgba(105,240,174,.1);border-color:rgba(105,240,174,.3);color:#69f0ae;margin-right:6px;"
+        onclick="addToNouveaux(${JSON.stringify(d).replace(/'/g, "&#39;")})">
+        🆕 En cours de diffusion
+        </button>
         <button class="upcoming-notif-btn ${isNotified ? 'notified' : ''}"
           onclick="toggleUpcomingNotif(${d.id}, '${d.title.replace(/'/g,"\\'")}', this)">
           ${isNotified ? '🔔 Rappel activé' : '🔕 Me rappeler'}
@@ -8168,6 +8215,176 @@ function toggleUpcomingNotif(id, title, btn) {
   try { localStorage.setItem('upcoming_notifs', JSON.stringify(_upcomingNotifs)); } catch {}
   btn.className = 'upcoming-notif-btn' + (_upcomingNotifs[id] ? ' notified' : '');
   btn.textContent = _upcomingNotifs[id] ? '🔔 Rappel activé' : '🔕 Me rappeler';
+}
+// ── NOUVEAUX EN COURS ──────────────────────────────────────────────────────
+let _nouveauxData = [];
+
+async function loadNouveaux() {
+  try {
+    const res = await fetch(`${API_BASE}/nouveaux`);
+    if (!res.ok) throw new Error('network');
+    _nouveauxData = await res.json();
+    buildNouveauxSection();
+    updateSidebarCounts();
+  } catch(e) { console.error('loadNouveaux error', e); }
+}
+
+async function addToNouveaux(drama) {
+  try {
+    const platforms = (drama.networks || []).map(n => [n, '', networkToPlatformClass(n)]);
+    const res = await fetch(`${API_BASE}/nouveaux`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tmdb_id: drama.id,
+        title: drama.title,
+        synopsis: drama.synopsis || '',
+        genre: drama.genres?.join(' / ') || 'K-Drama',
+        eps: drama.episodes ? drama.episodes + ' ép.' : '',
+        year: drama.date ? new Date(drama.date).getFullYear() : '',
+        poster: drama.poster || '',
+        platforms
+      })
+    });
+    _nouveauxData = await res.json();
+    buildNouveauxSection();
+    updateSidebarCounts();
+    alert(`"${drama.title}" ajouté aux Nouveaux en cours !`);
+  } catch(e) { alert('Erreur réseau'); }
+}
+
+async function markNouveauComplet(tmdbId, title, synopsis, genre, eps, year, poster, platforms) {
+  if (!confirm(`Marquer "${title}" comme complet ? Il sera ajouté en Sans classement.`)) return;
+  try {
+    await fetch(`${API_BASE}/nouveaux/${tmdbId}/complet`, { method: 'PATCH' });
+    // Ajoute dans UNSEEN_DRAMAS
+    if (!UNSEEN_DRAMAS.find(d => d.title === title)) {
+      const platformsList = (platforms || []).map(p => Array.isArray(p) ? p : [p.name || p, '', 'pb-other']);
+      platformsList.push(["VoirDrama", `https://voirdrama.to/drama/${title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-')}/`, "pb-voirdrama"]);
+      UNSEEN_DRAMAS.unshift({
+        title, synopsis: synopsis || '', year, genre: genre || 'K-Drama',
+        eps: eps || '', platforms: platformsList
+      });
+    }
+    // Retire des nouveaux en mémoire
+    _nouveauxData = _nouveauxData.filter(d => d.tmdb_id !== tmdbId);
+    buildNouveauxSection();
+    rebuildUnseenSection();
+    updateCounts();
+    alert(`"${title}" déplacé en Sans classement !`);
+  } catch(e) { alert('Erreur réseau'); }
+}
+
+function buildNouveauxSection() {
+  const container = document.getElementById('sections-container');
+  const old = document.querySelector('section[data-cat="nouveaux"]');
+  if (old) old.remove();
+
+  const actifs = _nouveauxData.filter(d => d.status === 'encours');
+  if (actifs.length === 0) { updateCounts(); return; }
+
+  const section = document.createElement('section');
+  section.className = 'section nouveaux';
+  section.dataset.cat = 'nouveaux';
+  section.innerHTML = `
+    <div class="section-header">
+      <div class="section-stars">🆕</div>
+      <div class="section-title">NOUVEAUX (EN COURS)</div>
+      <div class="section-count">${actifs.length} dramas</div>
+    </div>
+    <div class="drama-grid" id="grid-nouveaux"></div>
+  `;
+  // Insère avant la section "unseen"
+  const unseenSection = document.querySelector('section[data-cat="unseen"]');
+  if (unseenSection) container.insertBefore(section, unseenSection);
+  else container.appendChild(section);
+
+  const grid = section.querySelector('#grid-nouveaux');
+  actifs.forEach((d, idx) => {
+    const card = document.createElement('div');
+    card.className = 'drama-card nouveaux-card' + (idx >= INITIAL_SHOW ? ' collapsed' : '');
+    card.dataset.title = d.title.toLowerCase();
+    card.dataset.cat = 'nouveaux';
+    const genrePrimary = (d.genre || 'K-Drama').split('/')[0].trim();
+    card.innerHTML = `
+      <div class="poster-wrap">
+        ${d.poster ? `<img src="https://image.tmdb.org/t/p/w342${d.poster}" alt="${d.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+        <div class="poster-placeholder" style="display:${d.poster ? 'none' : 'flex'}">🎬</div>
+        <div class="genre-badge">${genrePrimary}</div>
+        ${d.year ? `<div class="year-badge">${d.year}</div>` : ''}
+        ${d.eps ? `<div class="eps-badge">${d.eps}</div>` : ''}
+        <div class="nouveau-badge">🆕 EN COURS</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${d.title}</div>
+        <div class="card-synopsis">${d.synopsis || ''}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => openNouveauModal(d));
+    grid.appendChild(card);
+  });
+
+  if (actifs.length > INITIAL_SHOW) {
+    const wrap = document.createElement('div');
+    wrap.className = 'show-more-wrap';
+    const remaining = actifs.length - INITIAL_SHOW;
+    wrap.innerHTML = `<button class="show-more-btn">Voir les ${remaining} autres ▾</button>`;
+    grid.appendChild(wrap);
+    wrap.querySelector('.show-more-btn').addEventListener('click', function() {
+      const collapsed = grid.querySelectorAll('.drama-card.collapsed');
+      if (collapsed.length > 0) {
+        collapsed.forEach(c => c.classList.remove('collapsed'));
+        this.textContent = '▲ Replier';
+      } else {
+        let count = 0;
+        grid.querySelectorAll('.drama-card').forEach(c => {
+          if (count >= INITIAL_SHOW) c.classList.add('collapsed');
+          count++;
+        });
+        this.textContent = `Voir les ${remaining} autres ▾`;
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  }
+  updateCounts();
+}
+
+function openNouveauModal(d) {
+  trackRecentDrama(d.title);
+  const platforms = (d.platforms || []);
+  const platformsArray = Array.isArray(platforms) ? platforms : JSON.parse(platforms || '[]');
+  const platformBadges = platformsArray.map(p => {
+    const [name, url, cls] = Array.isArray(p) ? p : [p.name||'', p.url||'', 'pb-other'];
+    return `<a class="platform-badge ${cls||'pb-other'}" href="${url||'#'}" target="_blank" rel="noopener">▶ ${name}</a>`;
+  }).join('');
+  const vdSlug = d.title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
+  const vdBadge = `<a class="platform-badge pb-voirdrama" href="https://voirdrama.to/drama/${vdSlug}/" target="_blank" rel="noopener">🎬 VoirDrama</a>`;
+
+  const inner = document.getElementById('modal-inner');
+  inner.innerHTML = `
+    <div class="modal-poster" id="nouveau-modal-poster-wrap">
+      ${d.poster ? `<img src="https://image.tmdb.org/t/p/w342${d.poster}" alt="${d.title}" id="nouveau-modal-img">` : '<div class="modal-poster-ph">🎬</div>'}
+    </div>
+    <div class="modal-content">
+      <div class="modal-cat-badge" style="color:#69f0ae">🆕 Nouveau — En cours de diffusion</div>
+      <div class="modal-title">${d.title}</div>
+      <div class="modal-genre">${d.genre || 'K-Drama'}${d.year ? ' · ' + d.year : ''}</div>
+      ${d.eps ? `<div class="modal-eps">📺 ${d.eps}</div>` : ''}
+      <div class="modal-label">Synopsis</div>
+      <div class="modal-synopsis">${d.synopsis || 'Synopsis non disponible.'}</div>
+      <div class="modal-label" style="margin-top:16px">Où regarder</div>
+      <div class="modal-platforms">${platformBadges}${vdBadge}</div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)">
+        <button onclick="markNouveauComplet(${d.tmdb_id},'${d.title.replace(/'/g,"\\'")}','${(d.synopsis||'').replace(/'/g,"\\'").replace(/\n/g,' ')}','${(d.genre||'').replace(/'/g,"\\'")}','${(d.eps||'').replace(/'/g,"\\'")}',${d.year||0},'${d.poster||''}',${JSON.stringify(platformsArray)})"
+          style="padding:10px 20px;border-radius:50px;border:1px solid rgba(105,240,174,.4);background:rgba(105,240,174,.1);color:#69f0ae;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;">
+          ✅ Tous les épisodes sont disponibles
+        </button>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Ce drama sera déplacé en "Sans classement" pour que la communauté puisse le classer.</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
