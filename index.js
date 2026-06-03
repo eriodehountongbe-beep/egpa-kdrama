@@ -458,6 +458,16 @@ app.get('/api/promotions', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// Route d'administration pour remettre un drama dans "Sans classement"
+app.delete('/api/classvotes/:title/reset-all', async (req, res) => {
+  const title = decodeURIComponent(req.params.title);
+  try {
+    await pool.query('DELETE FROM drama_promotions WHERE title=$1', [title]);
+    await pool.query('DELETE FROM classvotes WHERE title=$1', [title]);
+    res.json({ ok: true, message: 'Drama réinitialisé dans Sans classement' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── NOUVEAUX EN COURS ──────────────────────────────────────────────────────
 app.get('/api/nouveaux', async (req, res) => {
   try {
