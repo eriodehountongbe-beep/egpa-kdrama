@@ -331,6 +331,99 @@ app.get('/api/proxy-image', async (req, res) => {
   } catch(e) { res.status(500).end(); }
 });
 
+// ── CLASSEMENT VOTES (Sans classement → catégorie) ─────────────────────────
+app.get('/api/classvotes/:title', async (req, res) => {
+  const title = decodeURIComponent(req.params.title);
+  const userId = req.query.userId;
+  try {
+    const result = await pool.query(
+      'SELECT cat, COUNT(*) as count FROM classvotes WHERE title=$1 GROUP BY cat',
+      [title]
+    );
+    const votes = { M:0, TB:0, B:0, AB:0, P:0 };
+    result.rows.forEach(r => { votes[r.cat] = parseInt(r.count); });
+    let voted = null;
+    if (userId) {
+      const v = await pool.query(
+        'SELECT cat FROM classvotes WHERE title=$1 AND user_id=$2',
+        [title, userId]
+      );
+      if (v.rows.length > 0) voted = v.rows[0].cat;
+    }
+    res.json({ ...votes, voted });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/classvotes/:title', async (req, res) => {
+  const title = decodeURIComponent(req.params.title);
+  const { userId, cat } = req.body;
+  try {
+    // Toggle
+    const existing = await pool.query(
+      'SELECT cat FROM classvotes WHERE title=$1 AND user_id=$2',
+      [title, userId]
+    );
+    if (existing.rows.length > 0) {
+      await pool.query(
+        'DELETE FROM classvotes WHERE title=$1 AND user_id=$2',
+        [title, userId]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO classvotes (title, user_id, cat) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING',
+        [title, userId, cat]
+      );
+    }
+    const result = await pool.query(
+      'SELECT cat, COUNT(*) as count FROM classvotes WHERE title=$1 GROUP BY cat',
+      [title]
+    );
+    const votes = { M:0, TB:0, B:0, AB:0, P:0 };
+    result.rows.forEach(r => { votes[r.cat] = parseInt(r.count); });
+    let voted = null;
+    const v = await pool.query(
+      'SELECT cat FROM classvotes WHERE title=$1 AND user_id=$2',
+      [title, userId]
+    );
+    if (v.rows.length > 0) voted = v.rows[0].cat;
+    res.json({ ...votes, voted });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── NOUVEAUX EN COURS ──────────────────────────────────────────────────────
+app.get('/api/nouveaux', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM nouveaux_dramas ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/nouveaux', async (req, res) => {
+  const { tmdb_id, title, synopsis, genre, eps, year, poster, platforms } = req.body;
+  try {
+    await pool.query(
+      `INSERT INTO nouveaux_dramas (tmdb_id, title, synopsis, genre, eps, year, poster, platforms, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'encours')
+       ON CONFLICT (tmdb_id) DO NOTHING`,
+      [tmdb_id, title, synopsis, genre, eps, year, poster, JSON.stringify(platforms || [])]
+    );
+    const result = await pool.query('SELECT * FROM nouveaux_dramas ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/nouveaux/:tmdb_id/complet', async (req, res) => {
+  const { tmdb_id } = req.params;
+  try {
+    await pool.query(
+      'UPDATE nouveaux_dramas SET status=$1 WHERE tmdb_id=$2',
+      ['complet', tmdb_id]
+    );
+    const result = await pool.query('SELECT * FROM nouveaux_dramas WHERE tmdb_id=$1', [tmdb_id]);
+    res.json(result.rows[0]);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── VISITEURS EN LIGNE ─────────────────────────────────────────────
 const activeVisitors = new Map(); // sessionId -> timestamp
 
