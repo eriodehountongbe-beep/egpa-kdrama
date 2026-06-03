@@ -413,6 +413,51 @@ app.post('/api/classvotes/:title', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── PROMOTION D'UN DRAMA SANS CLASSEMENT ─────────────────────────────────────
+const CLASS_PROMOTE_THRESHOLD = 5;
+
+app.post('/api/classvotes/:title/promote', async (req, res) => {
+  const title = decodeURIComponent(req.params.title);
+  const { targetCat } = req.body;
+  try {
+    // Vérifie que le seuil est vraiment atteint
+    const result = await pool.query(
+      'SELECT cat, COUNT(*) as count FROM classvotes WHERE title=$1 GROUP BY cat',
+      [title]
+    );
+    const votes = { M:0, TB:0, B:0, AB:0, P:0 };
+    result.rows.forEach(r => { votes[r.cat] = parseInt(r.count); });
+    const maxCat = Object.keys(votes).reduce((a, b) => votes[a] > votes[b] ? a : b);
+    if (votes[maxCat] < CLASS_PROMOTE_THRESHOLD) {
+      return res.status(400).json({ error: 'Seuil non atteint', votes });
+    }
+    // Enregistre la promotion dans une table dédiée
+    await pool.query(`CREATE TABLE IF NOT EXISTS drama_promotions (
+      title TEXT PRIMARY KEY,
+      target_cat TEXT NOT NULL,
+      promoted_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+    )`);
+    await pool.query(
+      'INSERT INTO drama_promotions (title, target_cat) VALUES ($1,$2) ON CONFLICT (title) DO UPDATE SET target_cat=$2, promoted_at=now()',
+      [title, targetCat || maxCat]
+    );
+    res.json({ ok: true, title, targetCat: targetCat || maxCat });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Route GET pour récupérer toutes les promotions (chargée au démarrage du frontend)
+app.get('/api/promotions', async (req, res) => {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS drama_promotions (
+      title TEXT PRIMARY KEY,
+      target_cat TEXT NOT NULL,
+      promoted_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+    )`);
+    const result = await pool.query('SELECT title, target_cat FROM drama_promotions ORDER BY promoted_at DESC');
+    res.json(result.rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── NOUVEAUX EN COURS ──────────────────────────────────────────────────────
 app.get('/api/nouveaux', async (req, res) => {
   try {

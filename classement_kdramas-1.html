@@ -3554,6 +3554,7 @@
   <div class="stat assez"><div class="stat-num" id="cnt-assez">12</div><div class="stat-lbl">⭐⭐ Assez bien</div></div>
   <div class="stat passable"><div class="stat-num" id="cnt-passable">2</div><div class="stat-lbl">⭐ Passable</div></div>
   <div class="stat unseen"><div class="stat-num" id="cnt-unseen">48</div><div class="stat-lbl">🎬 Sans classement</div></div>
+  <div class="stat nouveaux"><div class="stat-num" id="cnt-nouveaux">0</div><div class="stat-lbl">🆕 Nouveaux</div></div>
 </div>
   
 
@@ -4491,8 +4492,28 @@ function buildClassVoteHTMLFromData(title, v) {
   for (const k of Object.keys(CLASS_MAP)) { if ((v[k]||0) > maxV) { maxV = v[k]||0; winner = k; } }
 
   let status = total > 0 && winner
-    ? `En tête : <strong style="color:${CLASS_COLORS[winner]}">${winner}</strong> (${maxV} votes)`
+    ? `En tête : <strong style="color:${CLASS_COLORS[winner]}">${winner}</strong> (${maxV} vote${maxV>1?'s':''})`
     : 'Sois le premier à classer ce drama !';
+
+  // Barre de progression vers la promotion
+  let progressHTML = '';
+  if (winner && maxV > 0) {
+    const threshold = typeof CLASS_PROMOTE_THRESHOLD !== 'undefined' ? CLASS_PROMOTE_THRESHOLD : 5;
+    const pct = Math.min(100, Math.round(maxV / threshold * 100));
+    const remaining = Math.max(0, threshold - maxV);
+    progressHTML = `<div style="margin-top:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <div style="flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${CLASS_COLORS[winner]};border-radius:2px;transition:width .4s;"></div>
+        </div>
+        <span style="font-size:10px;color:var(--muted);white-space:nowrap;">${maxV}/${threshold}</span>
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-style:italic;">${remaining > 0
+        ? `🗳️ Encore <strong>${remaining} vote${remaining>1?'s':''}</strong> pour classer définitivement ce drama`
+        : `✅ Seuil atteint !`
+      }</div>
+    </div>`;
+  }
 
   const changeBtn = v.voted ? `<button class="vote-change" onclick="resetClassVote('${t}')">↩ Changer mon avis</button>` : '';
 
@@ -4501,9 +4522,12 @@ function buildClassVoteHTMLFromData(title, v) {
     <div class="class-btns">${btns}</div>
     <div class="class-vote-bars">${bars}</div>
     <div class="class-vote-status">${status}</div>
+    ${progressHTML}
     ${changeBtn}
   </div>`;
 }
+
+const CLASS_PROMOTE_THRESHOLD = 5; // Nombre de votes identiques pour déclencher la promotion
 
 async function castClassVote(title, cat) {
   const userId = getUserId();
@@ -4513,11 +4537,36 @@ async function castClassVote(title, cat) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, cat })
     });
+    if (!res.ok) throw new Error('network');
     const v = await res.json();
     refreshClassVoteUI(title, v);
-    // Premier vote → promotion immédiate
-    if (v.voted) promoteUnseenDrama(title, CLASS_MAP[cat]);
+
+    // Vérifie si le seuil de votes est atteint pour cette catégorie
+    if (v.voted) {
+      const votesForCat = v[cat] || 0;
+      if (votesForCat >= CLASS_PROMOTE_THRESHOLD) {
+        // Promotion côté serveur via l'API
+        await promoteUnseenDramaAPI(title, cat);
+      } else {
+        const remaining = CLASS_PROMOTE_THRESHOLD - votesForCat;
+        // Feedback discret - pas d'alert, juste mise à jour du statut
+        refreshClassVoteUI(title, v);
+      }
+    }
   } catch(e) { alert('Erreur réseau'); }
+}
+
+async function promoteUnseenDramaAPI(title, cat) {
+  // Notifie le backend de la promotion
+  try {
+    await fetch(`${API_BASE}/classvotes/${encodeURIComponent(title)}/promote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetCat: cat })
+    });
+  } catch(e) {}
+  // Applique localement aussi
+  promoteUnseenDrama(title, CLASS_MAP[cat]);
 }
 
 async function resetClassVote(title) {
@@ -4545,21 +4594,15 @@ function promoteUnseenDrama(title, targetCat) {
   UNSEEN_DRAMAS.splice(idx, 1);
 
   const entry = [d.title, d.synopsis, 'Classé par la communauté.', d.genre, d.eps || '', d.year || ''];
-  DRAMAS[targetCat].items.push(entry);
-
-  try {
-    const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
-    if (!promotions.find(p => p.title === title)) {
-      promotions.push({ title, targetCat, synopsis: d.synopsis, genre: d.genre, eps: d.eps || '', year: d.year || '' });
-      localStorage.setItem('drama_promotions', JSON.stringify(promotions));
-    }
-  } catch(e) {}
+  if (!DRAMAS[targetCat].items.some(i => i[0] === title)) {
+    DRAMAS[targetCat].items.push(entry);
+  }
 
   rebuildUnseenSection();
   rebuildGrid(targetCat);
   updateCounts();
   closeModalBtn();
-  alert('"' + title + '" a rejoint la catégorie ' + targetCat.toUpperCase() + ' !');
+  alert('🎉 "' + title + '" a été classé en ' + targetCat.toUpperCase() + ' par la communauté !');
 }
 
 function buildUnseenSection() {
@@ -6144,33 +6187,65 @@ function refreshAllStatusDots() {
     }
   });
 }
-// Restaure les promotions persistées au rechargement
-function restorePromotions() {
+// Applique une liste de promotions [{title, target_cat}] au state local
+function applyPromotions(promotions) {
+  promotions.forEach(({ title, target_cat, targetCat, synopsis, genre, eps, year }) => {
+    const cat = target_cat || targetCat;
+    if (!DRAMAS[cat]) return;
+    const i = UNSEEN_DRAMAS.findIndex(d => d.title === title);
+    if (i !== -1) UNSEEN_DRAMAS.splice(i, 1);
+    if (!DRAMAS[cat].items.some(d => d[0] === title)) {
+      DRAMAS[cat].items.push([title, synopsis || '', 'Classé par la communauté.', genre || 'Drama', eps || '', year || '']);
+    }
+  });
+}
+
+// Restaure d'abord depuis l'API (source of truth), puis reconstruit les sections
+async function initWithPromotions() {
+  // 1. Promotions locales (instantané, avant la réponse réseau)
   try {
-    const promotions = JSON.parse(localStorage.getItem('drama_promotions')) || [];
-    promotions.forEach(({ title, targetCat, synopsis, genre, eps, year }) => {
-      if (!DRAMAS[targetCat]) return;
-      // Retire de UNSEEN
-      const i = UNSEEN_DRAMAS.findIndex(d => d.title === title);
-      if (i !== -1) UNSEEN_DRAMAS.splice(i, 1);
-      // Pas déjà dans la catégorie cible ?
-      if (!DRAMAS[targetCat].items.some(d => d[0] === title)) {
-        DRAMAS[targetCat].items.push([
-          title,
-          synopsis || '',
-          'Classé par la communauté.',
-          genre || 'Drama',
-          eps || '',
-          year || ''
-        ]);
+    const local = JSON.parse(localStorage.getItem('drama_promotions')) || [];
+    applyPromotions(local);
+  } catch(e) {}
+
+  // 2. Construit les sections immédiatement
+  buildSections();
+  buildUnseenSection();
+  buildAwardsSection();
+
+  // 3. Charge les promotions serveur en arrière-plan et met à jour si besoin
+  try {
+    const res = await fetch(`${API_BASE}/promotions`);
+    if (res.ok) {
+      const serverPromotions = await res.json();
+      if (serverPromotions.length > 0) {
+        let changed = false;
+        serverPromotions.forEach(({ title, target_cat }) => {
+          const cat = target_cat;
+          if (!DRAMAS[cat]) return;
+          const inUnseen = UNSEEN_DRAMAS.findIndex(d => d.title === title);
+          if (inUnseen !== -1) {
+            UNSEEN_DRAMAS.splice(inUnseen, 1);
+            if (!DRAMAS[cat].items.some(d => d[0] === title)) {
+              DRAMAS[cat].items.push([title, '', 'Classé par la communauté.', 'Drama', '', '']);
+            }
+            changed = true;
+          }
+        });
+        if (changed) {
+          // Reconstruit les sections avec les nouvelles promotions
+          document.getElementById('sections-container').innerHTML = '';
+          buildSections();
+          buildUnseenSection();
+          buildAwardsSection();
+          updateCounts();
+        }
       }
-    });
+    }
   } catch(e) {}
 }
-restorePromotions();
-buildSections();
-buildUnseenSection();
-buildAwardsSection();
+
+initWithPromotions();
 fetchSortedDramas();
 setInterval(fetchSortedDramas, 20000);
 // ── VISITEURS EN LIGNE (admin) ─────────────────────────────────────
