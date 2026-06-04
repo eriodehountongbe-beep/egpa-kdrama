@@ -6638,11 +6638,6 @@ async function setStatusFromModal(title, status) {
     wrap.querySelector('span').outerHTML = current;
   }
 }
-
-loadStatuses().then(() => {
-  updateMarkAllBtns();
-  refreshAllStatusDots();
-});
 async function loadNouveaux() {
   try {
     const res = await fetch(`${API_BASE}/nouveaux`);
@@ -6672,6 +6667,12 @@ async function loadNouveaux() {
     updateSidebarCounts();
   } catch(e) { console.error('loadNouveaux error', e); }
 }
+loadStatuses().then(() => {
+  updateMarkAllBtns();
+  refreshAllStatusDots();
+});
+// Charge les nouveaux APRÈS que tout le DOM soit construit
+setTimeout(() => loadNouveaux(), 500);
 setTimeout(addStatusButtons, 900);
 // ── PAGE D'ACCUEIL & TUTORIEL ─────────────────────────────────────────────────
 const TUTO_STEPS = [
