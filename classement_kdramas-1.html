@@ -6643,7 +6643,35 @@ loadStatuses().then(() => {
   updateMarkAllBtns();
   refreshAllStatusDots();
 });
-loadNouveaux();
+async function loadNouveaux() {
+  try {
+    const res = await fetch(`${API_BASE}/nouveaux`);
+    if (!res.ok) throw new Error('network');
+    _nouveauxData = await res.json();
+
+    // Ajout manuel de Doctor on the Edge si absent
+    if (!_nouveauxData.find(d => d.title === 'Doctor on the Edge')) {
+      await fetch(`${API_BASE}/nouveaux`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tmdb_id: 999901,
+          title: 'Doctor on the Edge',
+          synopsis: 'En Corée du Sud, le service militaire est obligatoire pour tous les hommes. Mais quelques privilégiés — comme les étudiants en médecine — peuvent servir comme médecins de santé publique à la place.',
+          genre: 'Comédie / Médical',
+          eps: '12 ép.',
+          year: 2026,
+          poster: '',
+          platforms: [["ENA","https://www.google.com/search?q=Doctor+on+the+Edge+kdrama+streaming","pb-other"],["French Stream","https://fs17.lol","pb-frstream"]]
+        })
+      });
+      _nouveauxData = await (await fetch(`${API_BASE}/nouveaux`)).json();
+    }
+
+    buildNouveauxSection();
+    updateSidebarCounts();
+  } catch(e) { console.error('loadNouveaux error', e); }
+}
 setTimeout(addStatusButtons, 900);
 // ── PAGE D'ACCUEIL & TUTORIEL ─────────────────────────────────────────────────
 const TUTO_STEPS = [
@@ -8459,7 +8487,10 @@ function openNouveauModal(d) {
   }).join('');
   const vdSlug = d.title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
   const vdBadge = `<a class="platform-badge pb-voirdrama" href="https://voirdrama.to/drama/${vdSlug}/" target="_blank" rel="noopener">🎬 VoirDrama</a>`;
-
+  const fsSlug = `https://fs17.lol/search?q=${encodeURIComponent(d.title)}`;
+  const fsBadge = platformsArray.some(p => (Array.isArray(p) ? p[0] : p.name||'').toLowerCase().includes('french'))
+  ? ''
+  : `<a class="platform-badge pb-frstream" href="${fsSlug}" target="_blank" rel="noopener">▶ French Stream</a>`;
   const inner = document.getElementById('modal-inner');
   inner.innerHTML = `
     <div class="modal-poster" id="nouveau-modal-poster-wrap">
@@ -8473,7 +8504,7 @@ function openNouveauModal(d) {
       <div class="modal-label">Synopsis</div>
       <div class="modal-synopsis">${d.synopsis || 'Synopsis non disponible.'}</div>
       <div class="modal-label" style="margin-top:16px">Où regarder</div>
-      <div class="modal-platforms">${platformBadges}${vdBadge}</div>
+      <div class="modal-platforms">${platformBadges}${vdBadge}${fsBadge}</div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)">
         <button onclick="markNouveauComplet(${d.tmdb_id},'${d.title.replace(/'/g,"\\'")}','${(d.synopsis||'').replace(/'/g,"\\'").replace(/\n/g,' ')}','${(d.genre||'').replace(/'/g,"\\'")}','${(d.eps||'').replace(/'/g,"\\'")}',${d.year||0},'${d.poster||''}',${JSON.stringify(platformsArray)})"
           style="padding:10px 20px;border-radius:50px;border:1px solid rgba(105,240,174,.4);background:rgba(105,240,174,.1);color:#69f0ae;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;">
