@@ -8074,6 +8074,13 @@ async function fetchUpcoming() {
 
     buildUpcomingFilters();
     renderUpcoming();
+    // Auto-ajout dans Nouveaux si date passée
+    const dejaSortis = _upcomingData.filter(d => d.date && daysUntil(d.date) <= 0);
+    for (const d of dejaSortis) {
+    if (!_nouveauxData.find(n => n.tmdb_id === d.id)) {
+    await addToNouveaux(d);
+  }
+}
     setTimeout(() => { _upcomingFetched = false; }, 6 * 3600 * 1000);
   } catch(e) {
     container.innerHTML = '<div class="upcoming-error">❌ Impossible de charger les données. Réessaie plus tard.</div>';
@@ -8290,10 +8297,10 @@ const platformsHTML = d.networks.map(n =>
         ${d.synopsis ? `<div class="upcoming-card-synopsis">${d.synopsis}</div>` : ''}
         <div class="upcoming-platforms">${platformsHTML}</div>
         ${castHTML}
-        <button class="upcoming-notif-btn" style="background:rgba(105,240,174,.1);border-color:rgba(105,240,174,.3);color:#69f0ae;margin-right:6px;"
-        onclick="addToNouveaux(${JSON.stringify(d).replace(/'/g, "&#39;")})">
-        🆕 En cours de diffusion
-        </button>
+         <button class="upcoming-notif-btn" style="background:rgba(105,240,174,.1);border-color:rgba(105,240,174,.3);color:#69f0ae;margin-right:6px;"
+           onclick="addToNouveauxById(${d.id})">
+           🆕 En cours de diffusion
+         </button>
         <button class="upcoming-notif-btn ${isNotified ? 'notified' : ''}"
           onclick="toggleUpcomingNotif(${d.id}, '${d.title.replace(/'/g,"\\'")}', this)">
           ${isNotified ? '🔔 Rappel activé' : '🔕 Me rappeler'}
@@ -8478,6 +8485,11 @@ function openNouveauModal(d) {
   `;
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+function addToNouveauxById(tmdbId) {
+  const drama = _upcomingData.find(d => d.id === tmdbId);
+  if (!drama) return;
+  addToNouveaux(drama);
 }
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
