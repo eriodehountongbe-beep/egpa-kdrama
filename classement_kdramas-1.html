@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   :root {
+    --king:      #FFD700;
     --master:    #1A1A2E;
     --tresbien:  #0D3B6E;
     --bien:      #145A32;
@@ -3599,6 +3600,15 @@
   .ost-content { padding: 16px 12px 40px; }
   .ost-header-title { font-size: 20px; }
 }
+.king .section-title { color: #FFD700; }
+.king .drama-card { border-left: 2px solid #FFD700; }
+.king .drama-card:hover { border-color: rgba(255,215,0,.5); }
+.tab-btn[data-cat="king"].active {
+  color: #FFD700;
+  border-color: #FFD700;
+  background: rgba(255,215,0,.1);
+}
+.stat.king .stat-num { color: #FFD700; }
 </style>
 </head>
 <body>
@@ -3664,6 +3674,10 @@
     <button class="sidebar-btn active" data-sidebar-cat="all" onclick="setSidebarCat('all', this)">
       <span class="sidebar-btn-icon">🎬</span> Tous
     </button>
+    <button class="sidebar-btn" data-sidebar-cat="king" onclick="setSidebarCat('king', this)">
+  <span class="sidebar-btn-icon">👑</span> King
+  <span class="sidebar-btn-count" id="sb-cnt-king">0</span>
+</button>
     <button class="sidebar-btn" data-sidebar-cat="master" onclick="setSidebarCat('master', this)">
       <span class="sidebar-btn-icon">⭐</span> Master
       <span class="sidebar-btn-count" id="sb-cnt-master">0</span>
@@ -3758,6 +3772,7 @@
 </div>
 
 <div class="stats-bar">
+  <div class="stat king"><div class="stat-num" id="cnt-king">0</div><div class="stat-lbl">👑 King</div></div>
   <div class="stat master"><div class="stat-num" id="cnt-master">27</div><div class="stat-lbl">⭐⭐⭐⭐⭐ Master</div></div>
   <div class="stat tresbien"><div class="stat-num" id="cnt-tresbien">75</div><div class="stat-lbl">⭐⭐⭐⭐ Très bien</div></div>
   <div class="stat bien"><div class="stat-num" id="cnt-bien">68</div><div class="stat-lbl">⭐⭐⭐ Bien</div></div>
@@ -3976,6 +3991,15 @@ const DRAMA_AWARDS = {
 };
 
 const DRAMAS = {
+  "king": {
+  label: "👑 GOAT —INDETRONABLE",
+  cls: "king",
+  items: [
+    // Déplace ici tes dramas depuis master
+    // exemple :
+    ["Crash Landing on You","Une héritière sud-coréenne atterrit accidentellement en Corée du Nord...","Chef-d'œuvre romantique absolu...","Romance / Thriller","16 ép.",2019],
+  ]
+},
   "master": {
     label: "⭐⭐⭐⭐⭐ MASTER",
     cls: "master",
@@ -5549,7 +5573,7 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
   _currentModalTitle = title;
   _currentModalCat = catCls;
   trackRecentDrama(title);
-  const catColors = { master: '#b39ddb', tresbien: '#64b5f6', bien: '#69f0ae', assez: '#ffd54f', passable: '#ef9a9a' };
+  const catColors = { master: '#b39ddb', tresbien: '#64b5f6', bien: '#69f0ae', assez: '#ffd54f', passable: '#ef9a9a',king: '#FFD700' };
   const color = catColors[catCls] || '#fff';
   const awards = typeof DRAMA_AWARDS !== 'undefined' && DRAMA_AWARDS[title] ? DRAMA_AWARDS[title] : [];
   let awardsHTML = '';
@@ -5713,8 +5737,8 @@ function updateCounts() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
 
 // ── VOTE SYSTEM ─────────────────────────────────────────────────────────────
-const CAT_ORDER = ['passable','assez','bien','tresbien','master'];
-const CAT_LABELS = { master:'⭐⭐⭐⭐⭐ MASTER', tresbien:'⭐⭐⭐⭐ TRÈS BIEN', bien:'⭐⭐⭐ BIEN', assez:'⭐⭐ ASSEZ BIEN', passable:'⭐ PASSABLE' };
+const CAT_ORDER = ['passable','assez','bien','tresbien','master','king'];
+const CAT_LABELS = { master:'⭐⭐⭐⭐⭐ MASTER', tresbien:'⭐⭐⭐⭐ TRÈS BIEN', bien:'⭐⭐⭐ BIEN', assez:'⭐⭐ ASSEZ BIEN', passable:'⭐ PASSABLE', king: '👑 GOAT — INDETRONABLE' };
 const VOTE_THRESHOLD = 10;
 
 const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : 'https://egpa-kdrama.onrender.com/api';
