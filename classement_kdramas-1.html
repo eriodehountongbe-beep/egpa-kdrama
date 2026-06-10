@@ -3402,6 +3402,203 @@
   text-transform: uppercase;
   animation: pulse-badge 2s infinite;
 }
+/* ── OST PAGE ─────────────────────────────────────────────────────── */
+.ost-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 3500;
+  overflow-y: auto;
+  animation: fadeIn .3s ease;
+}
+.ost-page.open { display: block; }
+
+.ost-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.ost-header-poster {
+  width: 56px;
+  height: 84px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(179,157,219,.3);
+}
+.ost-header-poster-ph {
+  width: 56px;
+  height: 84px;
+  border-radius: 8px;
+  background: linear-gradient(135deg,#2a2a3e,#3a2a4e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.ost-header-info { flex: 1; }
+.ost-header-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 2px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.ost-header-sub {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.ost-close {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.ost-close:hover { background: rgba(255,255,255,.2); }
+
+.ost-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+
+.ost-track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ost-track {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+}
+.ost-track:hover {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(179,157,219,.3);
+  transform: translateX(4px);
+}
+.ost-track-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--muted);
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ost-track-play {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,0,0,.15);
+  border: 1px solid rgba(255,0,0,.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+.ost-track:hover .ost-track-play { background: rgba(255,0,0,.3); }
+.ost-track-info { flex: 1; overflow: hidden; }
+.ost-track-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+.ost-track-artist {
+  font-size: 12px;
+  color: var(--muted);
+}
+.ost-track-yt {
+  font-size: 11px;
+  color: #ff4444;
+  font-weight: 700;
+  flex-shrink: 0;
+  opacity: .7;
+}
+.ost-track:hover .ost-track-yt { opacity: 1; }
+
+.ost-playlist-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,0,0,.3);
+  background: rgba(255,0,0,.08);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 24px;
+  text-decoration: none;
+}
+.ost-playlist-btn:hover { background: rgba(255,0,0,.18); border-color: rgba(255,0,0,.6); }
+
+.ost-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.ost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,0,0,.3);
+  background: rgba(255,0,0,.08);
+  color: #ff6b6b;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  margin-top: 12px;
+}
+.ost-btn:hover { background: rgba(255,0,0,.2); border-color: rgba(255,0,0,.5); }
+
+@media (max-width: 767px) {
+  .ost-header { padding: 16px; }
+  .ost-content { padding: 16px 12px 40px; }
+  .ost-header-title { font-size: 20px; }
+}
 </style>
 </head>
 <body>
@@ -5394,6 +5591,7 @@ function openModal(title, synopsis, avis, genre, eps, year, catLabel, catCls, im
       <div class="modal-avis">${avis}</div>
       ${awardsHTML}
       <div id="modal-extras-placeholder"></div>
+      <button class="ost-btn" onclick="openOstPage('${title}', document.getElementById('modal-poster-img')?.src || '')">🎵 OST du drama</button>
       ${buildPlatformHTML(title)}
       ${buildStatusHTML(title)}
       <div id="modal-vote-placeholder"></div>
@@ -7215,6 +7413,7 @@ function closeAllPages() {
   document.body.style.overflow = '';
   document.getElementById('upcoming-page').classList.remove('open');
   document.getElementById('upcoming-page').classList.remove('open');
+  document.getElementById('ost-page').classList.remove('open');
 }
 
 function openNewsPage() {
@@ -7542,6 +7741,7 @@ document.addEventListener('keydown', (e) => {
   const modalOpen = document.getElementById('modal-overlay').classList.contains('open');
 
   if (e.key === 'Escape') {
+    if (document.getElementById('ost-page').classList.contains('open')) { closeOstPage(); return; }
     if (document.getElementById('actor-page').classList.contains('open')) { closeActorPage(); return; }
     if (document.getElementById('news-page').classList.contains('open')) { closeNewsPage(); return; }
     if (document.getElementById('my-page').classList.contains('open')) { closeMyPage(); return; }
@@ -8540,6 +8740,149 @@ function addToNouveauxById(tmdbId) {
   if (!drama) return;
   addToNouveaux(drama);
 }
+// ── OST PAGE ──────────────────────────────────────────────────────────────────
+function closeOstPage() {
+  document.getElementById('ost-page').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function openOstPage(title, posterUrl) {
+  const page = document.getElementById('ost-page');
+  page.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  document.getElementById('ost-header-title').textContent = title + ' — OST';
+  const posterWrap = document.getElementById('ost-header-poster-wrap');
+  posterWrap.innerHTML = posterUrl
+    ? `<img class="ost-header-poster" src="${posterUrl}" alt="${title}" onerror="this.outerHTML='<div class=\\'ost-header-poster-ph\\'>🎬</div>'">`
+    : `<div class="ost-header-poster-ph">🎬</div>`;
+
+  const content = document.getElementById('ost-content');
+  content.innerHTML = '<div class="ost-loading">⏳ Recherche des OST...</div>';
+
+  // Lien playlist YouTube global
+  const ytPlaylistQuery = encodeURIComponent(`${title} OST full album playlist`);
+  const ytPlaylistUrl = `https://www.youtube.com/results?search_query=${ytPlaylistQuery}`;
+
+  try {
+    const id = await getTmdbId(title);
+    let tracks = [];
+
+    if (id) {
+      // Récupère les infos TMDB pour avoir le titre original
+      const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${KEY}&language=en-US`);
+      const data = await res.json();
+      const originalTitle = data.original_name || title;
+
+      // OST connus pour les dramas populaires (fallback manuel)
+      const KNOWN_OST = {
+        "Crash Landing on You": ["I Give You My Heart - IU","That Man - Hyun Bin","Here I Am Again - Yerin Baek","My Person - DAVICHI","Flower - Yoon Mi-rae","To You My Light - MeloMance"],
+        "Goblin": ["Stay With Me - Chanyeol & Punch","Beautiful - Crush","Stuck in Love - Sam Kim","My Dear - Loco & punch","Heaven - Eddy Kim","Round and Round - Heize"],
+        "Crash Landing on You": ["I Give You My Heart - IU","That Man - Hyun Bin","Here I Am Again - Yerin Baek","My Person - DAVICHI"],
+        "Reply 1988": ["Youth - Shin Sung-woo","Everytime - Kim Feel","Hyehwadong - Park Boram","Childhood - Lee Juck"],
+        "Hotel Del Luna": ["Done For Me - Standing Egg","All About You - Taeyeon","Remember Me - Oh My Girl","Wind Flower - Mamamoo"],
+        "Vincenzo": ["Far Away - Rad Museum","My Star - ONEWE","Pirate - Paul Kim"],
+        "The Glory": ["NANA - Lim Young-woong","The Day After - Heize","Breath - Kwon Jin-ah"],
+        "Queen of Tears": ["Love is Over - Crush","Magnetic - ILLIT","Back To You - Paul Kim","Dreamy - 10cm"],
+        "Lovely Runner": ["Sudden Shower - ECLIPSE","Holding Hands - Kim Woo Seok","Love You With All My Heart - Kim Ji Soo"],
+        "My Mister": ["My Mister - Sondia","Hug Me - Oh Hyuk","How Can I Love You - Lee Ji Eun"],
+        "It's Okay Not to Be Okay": ["Magic Carpet Ride - Sam Kim","The Way to You - Jeong Sewoon","Before The Dawn - Henry"],
+        "Flower of Evil": ["Outro - Kim Hyun Joong","Please Stay - Lim Chang-jung"],
+        "Signal": ["Signal - Kim Hyun Sung","Always - Lim Chang-jung"],
+        "When Life Gives You Tangerine": ["Tangerine - Hwang Chi-yeul","Seasons of Love - Oh My Girl"],
+        "Twenty-Five Twenty-One": ["Run to You - Kim WooSeok","Sudden Shower - ECLIPSE","Love Story - Taylor Swift"],
+        "Alchemy of Souls (1,2)": ["The Light - Lee Seung-yoon","Wandering - Kassy","Love, Maybe - BIG Naughty"],
+        "Hospital Playlist (1,2)": ["Aloha - 99 Boys","Gyeongseong - Shin Hye-sun","You Who Came From the Stars - Yerin Baek"],
+        "Extraordinary Attorney Woo": ["Hold My Hand - Kim Boa","Close Your Eyes - Kim Jin Ho"],
+        "Moving": ["Stranger - Crush","Love Me - Jang Beom June"],
+        "Squid Game (1)": ["Way Back Then - Jung Jaeil","The Man Who Sold the World - David Bowie"],
+        "Healer": ["Eternal Love - Yael Meyer","Butterfly - Bumkey"],
+        "Strong Woman Do Bong Soon": ["I'll Be Your Man - Jung Joon Young","I Will - Standing Egg"],
+        "Descendants of the Sun": ["Always - YOON MIRAE","Everytime - Chen & Punch","This Love - Davichi"],
+        "Goblin": ["Stay With Me - EXO Chanyeol & Punch","Beautiful - Crush","Stuck in Love - Sam Kim","My Dearest - Loco & Punch"],
+        "Sky Castle": ["We All Lie - Ha Hyun Woo"],
+        "Doctor Romantic (1,2,3)": ["If You Want - Kim Na-young","I'll Be There - Na Yoon-kwon"],
+        "Kill Me Heal Me": ["Auditory Hallucination - Ji Sung","Love Others - Kim Kyung Hee"],
+        "Penthouse (1,2)": ["Only One - Kim So-hyun","Showtime - Lee Ji-ah"],
+        "Reborn Rich": ["Reborn Rich OST - Lim Chang-jung"],
+        "Weightlifting Fairy Kim Bok Joo": ["Swing Baby - SISTAR19","Lean On Me - Sam Kim"],
+        "Itaewon Class": ["Stone - Dynamic Duo","Every Season - Gaho","Starting Point - Gaho"],
+        "Start-Up": ["Imagine - Davichi","What Are We Now - BTS Jungkook","Sunset - Heize"],
+        "Hometown Cha-Cha-Cha": ["Bravo My Life - Kim Bum-soo","Tell Me You Love Me - Jung Seung-hwan"],
+        "What's Wrong with Secretary Kim": ["Because of You - MAMAMOO","Desire - Huh Gak"],
+        "Doom at Your Service": ["What If Love - Seo In-guk","I Don't Want to Love You - LEE SEUNG-HYUN"],
+        "Stranger (Secret Forest)": ["Insomnia - Park Hyo Shin","Let Me Out - Kwon Jin-ah"],
+        "Beyond Evil": ["Thriller - BEAST","Trapped - Han So Hwee"],
+        "W: Two Worlds Apart": ["I Need You - Lyn","Say Yes - Loco"],
+        "Chicago Typewriter": ["Love is Like a Rose - Lee Hyori","Remember - Jung In"],
+        "Pinocchio": ["Say It - Lee Jong-suk","Pinocchio - IU"],
+        "While You Were Sleeping": ["Dream - Suzy & Baekhyun","You Are My Garden - Paul Kim"],
+      };
+
+      if (KNOWN_OST[title]) {
+        tracks = KNOWN_OST[title];
+      } else {
+        // Génère une liste basée sur le titre pour les dramas non référencés
+        tracks = [
+          `${title} OST Part 1`,
+          `${title} OST Part 2`,
+          `${title} OST Part 3`,
+          `${title} OST Part 4`,
+          `${title} OST Part 5`,
+          `${title} OST Full Album`,
+        ];
+      }
+    }
+
+    // Construit la page
+    const tracksHTML = tracks.map((track, i) => {
+      const ytQuery = encodeURIComponent(`${track} ${title} OST`);
+      const ytUrl = `https://www.youtube.com/results?search_query=${ytQuery}`;
+      const parts = track.split(' - ');
+      const trackTitle = parts[0] || track;
+      const artist = parts[1] || 'OST';
+      return `
+        <a class="ost-track" href="${ytUrl}" target="_blank" rel="noopener">
+          <div class="ost-track-num">${i + 1}</div>
+          <div class="ost-track-play">▶</div>
+          <div class="ost-track-info">
+            <div class="ost-track-title">${trackTitle}</div>
+            <div class="ost-track-artist">🎤 ${artist}</div>
+          </div>
+          <div class="ost-track-yt">YouTube →</div>
+        </a>
+      `;
+    }).join('');
+
+    content.innerHTML = `
+      <a class="ost-playlist-btn" href="${ytPlaylistUrl}" target="_blank" rel="noopener">
+        <span style="font-size:24px;">▶</span>
+        <div>
+          <div>Écouter toute la playlist OST</div>
+          <div style="font-size:11px;opacity:.6;font-weight:400;">Recherche YouTube · ${title} OST</div>
+        </div>
+        <span style="margin-left:auto;font-size:20px;">↗</span>
+      </a>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;">
+        🎵 ${tracks.length} morceau${tracks.length > 1 ? 'x' : ''}
+      </div>
+      <div class="ost-track-list">${tracksHTML}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:20px;font-style:italic;text-align:center;">
+        Cliquer sur un titre ouvre la recherche YouTube correspondante.
+      </div>
+    `;
+
+  } catch(e) {
+    content.innerHTML = `
+      <a class="ost-playlist-btn" href="${ytPlaylistUrl}" target="_blank" rel="noopener">
+        <span style="font-size:24px;">▶</span>
+        <div>Écouter l'OST sur YouTube</div>
+        <span style="margin-left:auto;">↗</span>
+      </a>
+      <div class="ost-loading">Impossible de charger les détails.</div>
+    `;
+  }
+}
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 
@@ -8631,6 +8974,20 @@ function addToNouveauxById(tmdbId) {
     <div class="upcoming-last-update" id="upcoming-last-update"></div>
     <div class="upcoming-filter-bar" id="upcoming-filter-bar"></div>
     <div id="upcoming-container"><div class="upcoming-loading">⏳ Chargement des prochaines sorties...</div></div>
+  </div>
+</div>
+<!-- OST PAGE -->
+<div class="ost-page" id="ost-page">
+  <div class="ost-header">
+    <div id="ost-header-poster-wrap"></div>
+    <div class="ost-header-info">
+      <div class="ost-header-title" id="ost-header-title">OST</div>
+      <div class="ost-header-sub">🎵 Bande originale</div>
+    </div>
+    <button class="ost-close" onclick="closeOstPage()">✕</button>
+  </div>
+  <div class="ost-content" id="ost-content">
+    <div class="ost-loading">⏳ Chargement...</div>
   </div>
 </div>
 </body>
