@@ -3609,6 +3609,367 @@
   background: rgba(255,215,0,.1);
 }
 .stat.king .stat-num { color: #FFD700; }
+/* ── RATINGS PAGE ─────────────────────────────────────────────────── */
+.ratings-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 800;
+  overflow-y: auto;
+  animation: fadeIn .3s ease;
+}
+.ratings-page.open { display: block; }
+
+.ratings-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 20px 72px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+  gap: 16px;
+}
+.ratings-page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: #fff;
+  white-space: nowrap;
+}
+.ratings-page-close {
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #fff;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.ratings-page-close:hover { background: rgba(255,255,255,.18); }
+
+.ratings-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+
+/* Stats bar ratings */
+.r-stats-bar {
+  display: flex;
+  gap: 0;
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.r-stat-item {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+  padding: 18px 12px;
+  border-right: 1px solid rgba(255,255,255,.07);
+}
+.r-stat-item:last-child { border-right: none; }
+.r-stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.r-stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Tabs ratings */
+.r-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.r-tab {
+  padding: 7px 18px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.r-tab.active, .r-tab:hover {
+  color: #fff;
+  border-color: #ff6b35;
+  background: rgba(255,107,53,.1);
+}
+
+/* Rating rows */
+.r-ratings-list { display: flex; flex-direction: column; gap: 7px; }
+
+.r-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 11px;
+  padding: 13px 16px;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+.r-row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--rrow-color, var(--muted));
+  border-radius: 3px 0 0 3px;
+}
+.r-row:hover { border-color: rgba(255,255,255,.15); transform: translateX(3px); }
+
+.r-rank {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--muted);
+  text-align: center;
+}
+.r-rank.top3 { color: #ffd700; }
+.r-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.r-bar-wrap {
+  height: 4px;
+  background: rgba(255,255,255,.07);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 3px;
+}
+.r-bar {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+}
+.r-meta { font-size: 10px; color: var(--muted); }
+.r-pct {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--rrow-color, #fff);
+  text-align: right;
+}
+.r-pct-lbl { font-size: 9px; color: var(--muted); text-align: right; }
+
+/* Network badges */
+.r-net {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 50px;
+  font-weight: 700;
+  background: rgba(255,255,255,.08);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.r-net.tvn     { background: rgba(100,181,246,.15); color: #64b5f6; }
+.r-net.mbc     { background: rgba(255,213,79,.15);  color: #ffd54f; }
+.r-net.sbs     { background: rgba(105,240,174,.15); color: #69f0ae; }
+.r-net.kbs     { background: rgba(239,154,154,.15); color: #ef9a9a; }
+.r-net.jtbc    { background: rgba(255,107,53,.15);  color: #ff6b35; }
+.r-net.netflix { background: rgba(229,9,20,.15);    color: #e50914; }
+.r-net.disney  { background: rgba(179,157,219,.15); color: #b39ddb; }
+
+/* Cat badge inline */
+.r-catbadge {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 50px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Chart cards */
+.r-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.r-chart-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 13px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.r-chart-card:hover { border-color: rgba(255,255,255,.15); }
+.r-chart-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.r-chart-meta {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.r-chart-peak { font-family: 'Bebas Neue', sans-serif; font-size: 20px; }
+.r-spark { width: 100%; height: 54px; }
+
+/* Live cards */
+.r-live-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.r-live-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,107,53,.2);
+  border-radius: 13px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.r-live-title { font-size: 14px; font-weight: 700; color: #fff; }
+.r-live-rating { font-family: 'Bebas Neue', sans-serif; font-size: 38px; color: #ff6b35; line-height: 1; }
+.r-live-change { font-size: 11px; }
+.r-live-change.up   { color: #69f0ae; }
+.r-live-change.down { color: #ef9a9a; }
+.r-live-change.same { color: var(--muted); }
+.r-live-bar { height: 4px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden; }
+.r-live-bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+
+/* Modal ratings */
+.r-modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.8);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.r-modal-overlay.open { display: flex; }
+.r-modal-box {
+  background: #12121e;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  max-width: 660px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+  position: relative;
+  box-shadow: 0 40px 100px rgba(0,0,0,.7);
+  animation: modalIn .25s ease;
+}
+.r-modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(255,255,255,.1);
+  border: none; color: #fff;
+  width: 32px; height: 32px;
+  border-radius: 50%; font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.r-modal-close:hover { background: rgba(255,255,255,.2); }
+.r-modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: #fff; margin-bottom: 6px; }
+.r-modal-meta { font-size: 11px; color: var(--muted); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.r-modal-peak { font-family: 'Bebas Neue', sans-serif; font-size: 52px; line-height: 1; margin-bottom: 4px; }
+.r-modal-peak-lbl { font-size: 11px; color: var(--muted); margin-bottom: 18px; }
+.r-modal-note {
+  font-size: 12px; color: var(--muted); line-height: 1.7;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 18px;
+}
+/* Barres épisodes */
+.r-ep-bars { display: flex; align-items: flex-end; gap: 3px; height: 72px; margin-top: 12px; }
+.r-ep-bar-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  gap: 3px; height: 100%; position: relative;
+}
+.r-ep-bar { width: 100%; border-radius: 2px 2px 0 0; cursor: pointer; min-width: 4px; transition: opacity .2s; }
+.r-ep-bar:hover { opacity: .8; }
+.r-ep-num { font-size: 8px; color: var(--muted); }
+.r-ep-tooltip {
+  position: absolute; bottom: calc(100% + 4px); left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2a; border: 1px solid rgba(255,255,255,.15);
+  border-radius: 6px; padding: 3px 7px;
+  font-size: 9px; color: #fff; white-space: nowrap;
+  pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 10;
+}
+.r-ep-bar-wrap:hover .r-ep-tooltip { opacity: 1; }
+
+/* Records */
+.r-records-note {
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* Live badge */
+.r-live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,107,53,.12); border: 1px solid rgba(255,107,53,.3);
+  color: #ff6b35; padding: 4px 12px; border-radius: 50px;
+  font-size: 11px; font-weight: 700; margin-bottom: 16px;
+}
+.r-live-dot { width: 6px; height: 6px; background: #ff6b35; border-radius: 50%; animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.r-source-note { font-size: 10px; color: var(--muted); font-style: italic; text-align: center; padding: 16px 0 0; opacity: .7; }
+
+/* Record badge sur row */
+.r-record-badge {
+  position: absolute; top: -7px; right: 10px;
+  background: #ffd700; color: #000;
+  font-size: 8px; font-weight: 800;
+  padding: 1px 7px; border-radius: 50px;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+
+@media (max-width: 767px) {
+  .ratings-page-header { padding: 16px; flex-wrap: wrap; }
+  .ratings-page-title { font-size: 24px; }
+  .ratings-content { padding: 14px 12px 40px; }
+  .r-chart-grid { grid-template-columns: 1fr; }
+  .r-row { grid-template-columns: 22px 1fr auto; gap: 8px; padding: 10px 12px; }
+  .r-pct { font-size: 20px; }
+  .r-modal-box { padding: 18px 14px 24px; }
+  .r-stat-item { min-width: 50%; }
+}
 </style>
 </head>
 <body>
@@ -3664,6 +4025,11 @@
   <span class="sidebar-btn-icon">🏆</span>
   Challenges
   <span class="sidebar-btn-count" id="sb-challenge-count">0</span>
+</button>
+  <button class="sidebar-btn" onclick="openRatingsPageSidebar()">
+  <span class="sidebar-btn-icon">📊</span>
+  Ratings TV
+  <span class="sidebar-btn-count has" style="background:rgba(255,107,53,.2);color:#ff6b35;">NEW</span>
 </button>
   </div>
 
@@ -8916,6 +9282,278 @@ async function openOstPage(title, posterUrl) {
     `;
   }
 }
+// ── RATINGS PAGE ─────────────────────────────────────────────────────────────
+const RATINGS_DATA = [
+  // GOAT
+  { title:"My Dearest", cat:"king", catLabel:"👑 GOAT", year:2023, network:"MBC", networkCls:"mbc", peak:16.2, avg:12.8, eps:21, episodes:[5.2,6.1,7.4,8.8,9.3,10.1,11.2,12.0,12.8,13.5,14.1,14.9,15.3,15.8,16.2,15.9,15.4,14.8,14.2,13.7,13.1], note:"Record personnel pour un drama historique MBC moderne. Triple nomination Baeksang." },
+  { title:"When Life Gives You Tangerine", cat:"king", catLabel:"👑 GOAT", year:2025, network:"Netflix", networkCls:"netflix", peak:9.8, avg:7.4, eps:16, episodes:[4.1,4.8,5.5,6.2,6.8,7.3,7.9,8.2,8.6,9.0,9.3,9.5,9.7,9.8,9.6,9.4], note:"Record Netflix Corée 2025. Baeksang Meilleur Drama." },
+  // MASTER
+  { title:"Crash Landing on You", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2019, network:"TVN", networkCls:"tvn", peak:21.7, avg:14.6, eps:16, episodes:[6.4,7.2,8.1,9.3,10.5,11.8,13.2,14.4,15.6,16.9,18.1,19.0,20.1,21.0,21.5,21.7], note:"Record TVN câble à l'époque. Phénomène international." },
+  { title:"Goblin", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2016, network:"TVN", networkCls:"tvn", peak:20.5, avg:13.7, eps:16, episodes:[6.3,7.8,8.9,9.9,11.0,12.0,12.9,13.7,14.4,15.1,16.0,17.2,18.3,19.1,19.8,20.5], note:"Premier drama TVN à dépasser 20% sur le câble." },
+  { title:"Reply 1988", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2015, network:"TVN", networkCls:"tvn", peak:28.4, avg:18.5, eps:20, episodes:[9.2,11.3,13.4,15.1,16.4,17.8,19.0,20.1,21.3,22.4,23.5,24.3,25.1,25.8,26.4,26.9,27.3,27.7,28.1,28.4], note:"🥇 Record absolu TVN de tous les temps." },
+  { title:"The Glory", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2022, network:"Netflix", networkCls:"netflix", peak:9.2, avg:7.1, eps:16, episodes:[3.8,4.5,5.2,5.9,6.5,7.0,7.4,7.8,8.1,8.4,8.7,8.9,9.0,9.1,9.2,9.1], note:"Top 1 mondial Netflix pendant 4 semaines." },
+  { title:"Hospital Playlist (1,2)", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2020, network:"TVN", networkCls:"tvn", peak:14.1, avg:11.2, eps:24, episodes:[6.7,7.8,8.3,9.1,9.8,10.4,11.0,11.5,12.1,12.8,13.2,13.8,7.2,8.1,8.9,9.7,10.4,11.1,11.8,12.5,13.0,13.5,14.0,14.1], note:"S1 + S2 combinées. Meilleur drama médical TVN." },
+  { title:"Moving", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2023, network:"Disney+", networkCls:"disney", peak:11.2, avg:8.7, eps:20, episodes:[4.1,4.8,5.4,6.1,6.7,7.2,7.8,8.3,8.7,9.1,9.5,9.9,10.2,10.5,10.7,10.9,11.0,11.1,11.2,11.0], note:"Record Disney+ Corée. Budget 30 milliards de wons." },
+  { title:"Vincenzo", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2021, network:"TVN", networkCls:"tvn", peak:14.6, avg:10.2, eps:20, episodes:[5.1,5.9,6.7,7.4,8.0,8.6,9.1,9.6,10.0,10.5,11.0,11.4,11.9,12.4,12.8,13.2,13.6,13.9,14.3,14.6], note:"Top drama TVN de l'année 2021." },
+  { title:"Squid Game (1)", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2021, network:"Netflix", networkCls:"netflix", peak:8.1, avg:6.4, eps:9, episodes:[4.2,5.1,5.9,6.5,7.0,7.4,7.7,7.9,8.1], note:"Série la plus regardée de l'histoire Netflix. 111M vues en 28 jours." },
+  { title:"Queen of Tears", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2024, network:"TVN", networkCls:"tvn", peak:24.9, avg:16.8, eps:16, episodes:[7.8,9.2,10.5,11.8,12.9,13.8,14.7,15.5,16.2,17.0,17.8,18.6,19.5,20.8,22.1,24.9], note:"🥇 Record TVN 2024. Dépasse Crash Landing on You." },
+  { title:"Alchemy of Souls (1,2)", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2022, network:"TVN", networkCls:"tvn", peak:12.8, avg:9.4, eps:30, episodes:[4.9,5.8,6.5,7.2,7.8,8.3,8.8,9.2,9.6,10.1,10.5,10.9,11.2,11.6,12.0,12.4,12.6,12.8,11.9,11.4,10.9,10.5,10.1,9.8,9.5,9.2,8.9,8.7,8.5,8.3], note:"S1 record fantasy TVN." },
+  { title:"It's Okay Not to Be Okay", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2020, network:"TVN", networkCls:"tvn", peak:7.3, avg:5.8, eps:16, episodes:[3.5,4.1,4.6,5.0,5.4,5.8,6.1,6.4,6.6,6.8,7.0,7.1,7.2,7.3,7.2,7.1], note:"Solide pour un drama TVN de pandémie." },
+  { title:"Twenty-Five Twenty-One", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2022, network:"TVN", networkCls:"tvn", peak:9.8, avg:7.2, eps:16, episodes:[4.2,4.9,5.5,6.1,6.6,7.0,7.4,7.7,8.0,8.3,8.6,8.9,9.1,9.4,9.6,9.8], note:"Carton critique et public." },
+  { title:"Mr. Queen", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2020, network:"TVN", networkCls:"tvn", peak:17.4, avg:11.3, eps:20, episodes:[6.1,7.2,8.4,9.3,10.0,10.6,11.1,11.6,12.1,12.6,13.1,13.7,14.3,14.8,15.2,15.7,16.1,16.5,17.0,17.4], note:"Meilleur rating pour une comédie historique TVN." },
+  { title:"King the Land", cat:"master", catLabel:"⭐⭐⭐⭐⭐ MASTER", year:2023, network:"JTBC", networkCls:"jtbc", peak:8.8, avg:6.4, eps:16, episodes:[4.1,4.7,5.2,5.7,6.1,6.4,6.7,7.0,7.2,7.4,7.7,7.9,8.1,8.4,8.6,8.8], note:"Meilleur drama JTBC été 2023." },
+  // TRÈS BIEN
+  { title:"Taxi Driver (1,2,3)", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2021, network:"SBS", networkCls:"sbs", peak:15.1, avg:10.8, eps:48, episodes:[6.2,7.1,7.9,8.6,9.2,9.8,10.3,10.8,11.3,11.8,12.3,12.8,13.2,13.7,14.1,14.6,8.4,9.1,9.7,10.2,10.7,11.1,11.5,11.9,12.3,12.7,13.0,13.4,13.8,14.2,14.5,14.9,9.1,9.8,10.4,10.9,11.3,11.7,12.1,12.5,12.9,13.3,13.7,14.1,14.4,14.7,14.9,15.1], note:"Franchise la plus régulière SBS. 3 saisons solides." },
+  { title:"Descendants of the Sun", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2016, network:"KBS2", networkCls:"kbs", peak:30.6, avg:23.1, eps:16, episodes:[14.3,16.8,18.5,19.9,21.0,22.1,23.2,24.3,25.2,26.0,26.8,27.5,28.1,28.7,29.4,30.6], note:"🥇 Record KBS2. Premier drama à dépasser 30% en 10 ans." },
+  { title:"Signal", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2016, network:"TVN", networkCls:"tvn", peak:8.7, avg:6.9, eps:16, episodes:[4.2,4.9,5.5,6.0,6.4,6.8,7.1,7.4,7.6,7.9,8.1,8.3,8.4,8.5,8.6,8.7], note:"Référence du thriller temporel coréen." },
+  { title:"Flower of Evil", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2020, network:"TVN", networkCls:"tvn", peak:6.8, avg:5.3, eps:16, episodes:[3.1,3.6,4.0,4.4,4.7,5.0,5.2,5.5,5.7,5.9,6.1,6.3,6.4,6.6,6.7,6.8], note:"Lee Joon-gi au sommet, chiffres solides malgré la pandémie." },
+  { title:"Reborn Rich", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2022, network:"JTBC", networkCls:"jtbc", peak:26.9, avg:18.4, eps:16, episodes:[8.7,11.2,13.5,15.0,16.3,17.5,18.5,19.4,20.2,21.0,21.9,22.8,23.6,24.5,25.7,26.9], note:"🥇 Record absolu JTBC de tous les temps." },
+  { title:"The Red Sleeve", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2021, network:"MBC", networkCls:"mbc", peak:17.4, avg:12.5, eps:17, episodes:[5.9,7.1,8.3,9.4,10.3,11.1,11.8,12.5,13.2,13.8,14.4,15.0,15.5,16.0,16.5,17.0,17.4], note:"Meilleur drama MBC depuis des années." },
+  { title:"Extraordinary Attorney Woo", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2022, network:"ENA", networkCls:"tvn", peak:17.5, avg:11.2, eps:16, episodes:[0.9,1.8,3.1,5.0,7.2,8.9,10.4,11.8,12.9,13.9,14.7,15.4,16.0,16.5,17.0,17.5], note:"🚀 De 0.9% à 17.5% — décollage spectaculaire. Record ENA absolu." },
+  { title:"A Killer Paradox", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2024, network:"Netflix", networkCls:"netflix", peak:7.2, avg:5.8, eps:8, episodes:[3.4,4.2,5.0,5.7,6.2,6.6,6.9,7.2], note:"Thriller Netflix qui monte à chaque épisode." },
+  { title:"Lovely Runner", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2024, network:"TVN", networkCls:"tvn", peak:12.4, avg:8.9, eps:16, episodes:[4.8,5.5,6.2,6.8,7.3,7.8,8.3,8.8,9.2,9.7,10.2,10.7,11.2,11.7,12.1,12.4], note:"Carton romantique TVN 2024. Byeon Woo-seok révélé." },
+  { title:"When the Phone Rings", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2024, network:"MBC", networkCls:"mbc", peak:10.9, avg:7.8, eps:12, episodes:[4.2,5.1,5.9,6.6,7.2,7.7,8.2,8.7,9.2,9.6,10.3,10.9], note:"Thriller romantique surprise de fin 2024." },
+  { title:"Under the Queen's Umbrella", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2022, network:"TVN", networkCls:"tvn", peak:17.6, avg:12.9, eps:16, episodes:[6.8,8.1,9.3,10.4,11.3,12.1,12.8,13.5,14.1,14.8,15.4,15.9,16.4,16.8,17.2,17.6], note:"Kim Hye-soo royale. Record sageuk TVN 2022." },
+  { title:"Would You Marry Me", cat:"tresbien", catLabel:"⭐⭐⭐⭐ TRÈS BIEN", year:2025, network:"TVN", networkCls:"tvn", peak:10.2, avg:7.5, eps:12, episodes:[4.3,5.2,6.0,6.7,7.3,7.7,8.2,8.7,9.1,9.5,9.8,10.2], note:"Bonne surprise rom-com TVN 2025." },
+  // BIEN
+  { title:"Business Proposal", cat:"bien", catLabel:"⭐⭐⭐ BIEN", year:2022, network:"SBS", networkCls:"sbs", peak:8.9, avg:6.4, eps:12, episodes:[4.3,5.0,5.6,6.1,6.5,6.9,7.2,7.5,7.8,8.1,8.5,8.9], note:"Meilleur rom-com SBS de 2022." },
+  { title:"Little Women", cat:"bien", catLabel:"⭐⭐⭐ BIEN", year:2022, network:"TVN", networkCls:"tvn", peak:9.1, avg:6.8, eps:12, episodes:[4.1,4.8,5.4,5.9,6.4,6.8,7.2,7.5,7.8,8.2,8.6,9.1], note:"Thriller familial solide pour TVN." },
+  { title:"Penthouse (1,2)", cat:"bien", catLabel:"⭐⭐⭐ BIEN", year:2020, network:"SBS", networkCls:"sbs", peak:29.2, avg:20.1, eps:34, episodes:[12.8,14.5,16.2,17.8,19.1,20.4,21.5,22.4,23.3,24.1,24.8,25.5,26.0,26.6,27.0,27.5,27.9,28.2,28.5,28.8,29.0,29.2,15.2,17.1,19.0,20.6,21.9,23.1,24.0,24.8,25.4,25.9,26.4,26.8], note:"Phénomène makjang SBS. Record du genre." },
+  { title:"Doctor Slump", cat:"bien", catLabel:"⭐⭐⭐ BIEN", year:2024, network:"JTBC", networkCls:"jtbc", peak:9.3, avg:7.1, eps:16, episodes:[4.2,4.9,5.5,6.0,6.4,6.8,7.1,7.4,7.7,8.0,8.2,8.5,8.7,9.0,9.2,9.3], note:"Feel-good drama JTBC sur le burnout." },
+];
+
+const R_LIVE_DRAMAS = [
+  { title:"In Your Radiant Season", network:"ENA", networkCls:"tvn", ep:8, rating:4.2, prev:3.8, year:2026 },
+  { title:"Can This Love Be Translated", network:"Netflix", networkCls:"netflix", ep:6, rating:3.5, prev:3.5, year:2026 },
+  { title:"Dynamite Kiss", network:"JTBC", networkCls:"jtbc", ep:4, rating:3.1, prev:2.7, year:2025 },
+  { title:"No Gain No Love", network:"JTBC", networkCls:"jtbc", ep:10, rating:5.8, prev:5.4, year:2024 },
+];
+
+const R_CHANNEL_RECORDS = [
+  { channel:"TVN",     cls:"tvn",     record:28.4, drama:"Reply 1988",                     year:2015 },
+  { channel:"KBS2",    cls:"kbs",     record:30.6, drama:"Descendants of the Sun",          year:2016 },
+  { channel:"MBC",     cls:"mbc",     record:23.1, drama:"My Dearest",                      year:2023 },
+  { channel:"SBS",     cls:"sbs",     record:29.2, drama:"Penthouse (1,2)",                 year:2020 },
+  { channel:"JTBC",    cls:"jtbc",    record:26.9, drama:"Reborn Rich",                     year:2022 },
+  { channel:"Netflix", cls:"netflix", record:9.8,  drama:"When Life Gives You Tangerine",   year:2025 },
+  { channel:"Disney+", cls:"disney",  record:11.2, drama:"Moving",                          year:2023 },
+  { channel:"ENA",     cls:"tvn",     record:17.5, drama:"Extraordinary Attorney Woo",      year:2022 },
+];
+
+function rRatingColor(p) {
+  if (p >= 20) return '#ff6b35';
+  if (p >= 15) return '#ffd700';
+  if (p >= 10) return '#69f0ae';
+  if (p >= 5)  return '#64b5f6';
+  return '#8880a0';
+}
+function rCatColor(cat) {
+  return { king:'#FFD700', master:'#b39ddb', tresbien:'#64b5f6', bien:'#69f0ae', assez:'#ffd54f', passable:'#ef9a9a' }[cat] || '#888';
+}
+
+function openRatingsPageSidebar() { closeSidebar(); openRatingsPage(); }
+function openRatingsPage() {
+  closeAllPages();
+  document.getElementById('ratings-page').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (!window._rInited) { rRenderAll(); window._rInited = true; }
+}
+function closeRatingsPage() {
+  document.getElementById('ratings-page').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function switchRTab(btn) {
+  document.querySelectorAll('.r-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['ranking','charts','live','records'].forEach(t => {
+    document.getElementById('rtab-' + t).style.display = btn.dataset.rtab === t ? '' : 'none';
+  });
+}
+
+function rRenderAll() {
+  rRenderRanking();
+  rRenderCharts();
+  rRenderLive();
+  rRenderRecords();
+}
+
+function rRenderRanking() {
+  const sorted = [...RATINGS_DATA].sort((a,b) => b.peak - a.peak);
+  const max = sorted[0]?.peak || 30;
+  document.getElementById('r-list').innerHTML = sorted.map((d,i) => {
+    const color = rRatingColor(d.peak);
+    return `
+      <div class="r-row" style="--rrow-color:${color}" onclick="rOpenModal('${d.title.replace(/'/g,"\\'")}')">
+        ${i===0 ? '<div class="r-record-badge">🥇 Record</div>' : ''}
+        <div class="r-rank ${i<3?'top3':''}">${i+1}</div>
+        <div style="overflow:hidden;min-width:0">
+          <div class="r-name">
+            ${d.title}
+            <span class="r-net ${d.networkCls}">${d.network}</span>
+            <span class="r-catbadge" style="background:${rCatColor(d.cat)}22;color:${rCatColor(d.cat)}">${d.catLabel}</span>
+          </div>
+          <div class="r-bar-wrap">
+            <div class="r-bar" style="background:${color}" data-w="${(d.peak/max*100).toFixed(1)}"></div>
+          </div>
+          <div class="r-meta">${d.year} · Moy. ${d.avg}% · ${d.eps} ép.</div>
+        </div>
+        <div>
+          <div class="r-pct">${d.peak}<small style="font-size:13px">%</small></div>
+          <div class="r-pct-lbl">peak</div>
+        </div>
+      </div>`;
+  }).join('');
+  setTimeout(() => {
+    document.querySelectorAll('.r-bar[data-w]').forEach(b => { b.style.width = b.dataset.w + '%'; });
+  }, 120);
+}
+
+function rBuildSpark(eps, W, H) {
+  const n = eps.length, max = Math.max(...eps), min = Math.min(...eps), range = max-min||1;
+  const pts = eps.map((v,i) => ({ x:(i/(n-1))*W, y:H-((v-min)/range)*(H-6)-3 }));
+  const line = pts.map((p,i) => `${i?'L':'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  return { line, area: `${line} L${W},${H} L0,${H} Z` };
+}
+
+function rRenderCharts() {
+  const data = RATINGS_DATA.filter(d => ['king','master','tresbien'].includes(d.cat) && d.episodes?.length);
+  document.getElementById('r-chart-grid').innerHTML = data.map(d => {
+    const color = rRatingColor(d.peak);
+    const sp = rBuildSpark(d.episodes, 300, 52);
+    const id = 'rg-' + d.title.replace(/\W/g,'');
+    return `
+      <div class="r-chart-card" onclick="rOpenModal('${d.title.replace(/'/g,"\\'")}')">
+        <div class="r-chart-title">${d.title}</div>
+        <div class="r-chart-meta">
+          <span class="r-net ${d.networkCls}">${d.network}</span>
+          <span>${d.year}</span>
+          <span class="r-chart-peak" style="color:${color}">${d.peak}%</span>
+          <span style="margin-left:auto;font-size:9px;color:var(--muted)">↑${Math.max(...d.episodes)}% ↓${Math.min(...d.episodes)}%</span>
+        </div>
+        <svg class="r-spark" viewBox="0 0 300 52" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${color}" stop-opacity=".25"/>
+              <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="${sp.area}" fill="url(#${id})"/>
+          <path d="${sp.line}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+      </div>`;
+  }).join('');
+}
+
+function rRenderLive() {
+  document.getElementById('r-live-date').textContent =
+    'Semaine du ' + new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('r-live-grid').innerHTML = R_LIVE_DRAMAS.map(d => {
+    const diff = +(d.rating - d.prev).toFixed(1);
+    const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'same';
+    const lbl = diff > 0 ? `▲ +${diff}%` : diff < 0 ? `▼ ${diff}%` : '→ Stable';
+    const color = rRatingColor(d.rating);
+    return `
+      <div class="r-live-card">
+        <div>
+          <div class="r-live-title">${d.title}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">
+            <span class="r-net ${d.networkCls}">${d.network}</span> · Ép. ${d.ep} · ${d.year}
+          </div>
+        </div>
+        <div>
+          <div class="r-live-rating">${d.rating}%</div>
+          <div class="r-live-change ${cls}">${lbl} vs ép. précédent</div>
+        </div>
+        <div class="r-live-bar">
+          <div class="r-live-bar-fill" style="width:${Math.min(100,d.rating/30*100)}%;background:${color}"></div>
+        </div>
+      </div>`;
+  }).join('') || '<div style="color:var(--muted);font-size:13px;padding:30px 0;text-align:center;">Aucun drama en cours actuellement.</div>';
+}
+
+function rRenderRecords() {
+  const sorted = [...R_CHANNEL_RECORDS].sort((a,b) => b.record - a.record);
+  const max = sorted[0]?.record || 30;
+  document.getElementById('r-records-list').innerHTML = sorted.map(c => {
+    const color = rRatingColor(c.record);
+    return `
+      <div class="r-row" style="--rrow-color:${color}">
+        <div class="r-rank"><span class="r-net ${c.cls}" style="font-size:8px">${c.channel}</span></div>
+        <div style="overflow:hidden;min-width:0">
+          <div class="r-name">${c.drama} <span style="font-size:10px;color:var(--muted);font-weight:400">${c.year}</span></div>
+          <div class="r-bar-wrap">
+            <div class="r-bar" style="background:${color};width:${(c.record/max*100).toFixed(1)}%"></div>
+          </div>
+          <div class="r-meta">Record historique ${c.channel}</div>
+        </div>
+        <div>
+          <div class="r-pct">${c.record}<small style="font-size:12px">%</small></div>
+          <div class="r-pct-lbl">record</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function rOpenModal(title) {
+  const d = RATINGS_DATA.find(r => r.title === title);
+  if (!d) return;
+  const color = rRatingColor(d.peak);
+  const maxEp = d.episodes?.length ? Math.max(...d.episodes) : 0;
+  const epsHTML = d.episodes?.length ? `
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px">Évolution épisode par épisode</div>
+      <div class="r-ep-bars">
+        ${d.episodes.map((v,i) => {
+          const h = Math.max(5, (v/maxEp)*68);
+          const c = rRatingColor(v);
+          return `<div class="r-ep-bar-wrap">
+            <div class="r-ep-tooltip">Ép.${i+1} · ${v}%</div>
+            <div class="r-ep-bar" style="height:${h}px;background:${c};opacity:${v===maxEp?1:.6}"></div>
+            ${d.episodes.length<=20?`<div class="r-ep-num">${i+1}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;color:var(--muted)">
+        <span>Ép.1 · ${d.episodes[0]}%</span>
+        <span style="color:${color}">▲ Max ${maxEp}%</span>
+        <span>Ép.${d.episodes.length} · ${d.episodes[d.episodes.length-1]}%</span>
+      </div>
+    </div>` : '';
+  document.getElementById('r-modal-content').innerHTML = `
+    <div class="r-modal-title">${d.title}</div>
+    <div class="r-modal-meta">
+      <span class="r-net ${d.networkCls}">${d.network}</span>
+      <span>${d.year} · ${d.eps} épisodes</span>
+      <span style="color:${rCatColor(d.cat)}">${d.catLabel}</span>
+    </div>
+    <div class="r-modal-peak" style="color:${color}">${d.peak}<span style="font-size:22px">%</span></div>
+    <div class="r-modal-peak-lbl">Peak rating Nielsen Korea · Moyenne : ${d.avg}%</div>
+    <div class="r-modal-note">${d.note}</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:90px;text-align:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:${color}">${d.peak}%</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Peak</div>
+      </div>
+      <div style="flex:1;min-width:90px;text-align:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent)">${d.avg}%</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Moyenne</div>
+      </div>
+      <div style="flex:1;min-width:90px;text-align:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#69f0ae">${d.eps}</div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Épisodes</div>
+      </div>
+    </div>
+    ${epsHTML}
+  `;
+  document.getElementById('r-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeRModal(e) { if (e.target === document.getElementById('r-modal')) closeRModalDirect(); }
+function closeRModalDirect() {
+  document.getElementById('r-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
 </script>
 <button class="random-btn" onclick="openRandomDrama()">🎲 Drama aléatoire</button>
 
@@ -9021,6 +9659,82 @@ async function openOstPage(title, posterUrl) {
   </div>
   <div class="ost-content" id="ost-content">
     <div class="ost-loading">⏳ Chargement...</div>
+  </div>
+</div>
+<!-- RATINGS PAGE -->
+<div class="ratings-page" id="ratings-page">
+  <div class="ratings-page-header">
+    <div class="ratings-page-title">📊 RATINGS TV</div>
+    <button class="ratings-page-close" onclick="closeRatingsPage()">✕</button>
+  </div>
+  <div class="ratings-content">
+
+    <!-- Stats -->
+    <div class="r-stats-bar">
+      <div class="r-stat-item">
+        <div class="r-stat-num" style="color:#ff6b35">30.6%</div>
+        <div class="r-stat-lbl">Record absolu (Descendants of the Sun)</div>
+      </div>
+      <div class="r-stat-item">
+        <div class="r-stat-num" style="color:#ffd700">28.4%</div>
+        <div class="r-stat-lbl">Record câble (Reply 1988 — TVN)</div>
+      </div>
+      <div class="r-stat-item">
+        <div class="r-stat-num" style="color:#69f0ae">TVN</div>
+        <div class="r-stat-lbl">Chaîne dominante</div>
+      </div>
+      <div class="r-stat-item">
+        <div class="r-stat-num" style="color:#b39ddb">2025</div>
+        <div class="r-stat-lbl">Données les plus récentes</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="r-tabs">
+      <button class="r-tab active" data-rtab="ranking" onclick="switchRTab(this)">🏆 Classement</button>
+      <button class="r-tab" data-rtab="charts" onclick="switchRTab(this)">📈 Évolution</button>
+      <button class="r-tab" data-rtab="live" onclick="switchRTab(this)">🔴 En cours</button>
+      <button class="r-tab" data-rtab="records" onclick="switchRTab(this)">🥇 Records par chaîne</button>
+    </div>
+
+    <!-- Tab: Classement -->
+    <div id="rtab-ranking">
+      <div class="r-ratings-list" id="r-list"></div>
+      <div class="r-source-note">Source : Nielsen Korea / TNmS · Peak rating = meilleur taux national sur un épisode</div>
+    </div>
+
+    <!-- Tab: Évolution -->
+    <div id="rtab-charts" style="display:none">
+      <div class="r-chart-grid" id="r-chart-grid"></div>
+      <div class="r-source-note">Cliquer sur un graphique pour le détail complet</div>
+    </div>
+
+    <!-- Tab: En cours -->
+    <div id="rtab-live" style="display:none">
+      <div class="r-live-badge"><div class="r-live-dot"></div> Diffusion en cours · <span id="r-live-date"></span></div>
+      <div class="r-live-grid" id="r-live-grid"></div>
+      <div class="r-source-note">Mis à jour chaque semaine après diffusion · Source Soompi / Wikipedia</div>
+    </div>
+
+    <!-- Tab: Records -->
+    <div id="rtab-records" style="display:none">
+      <div class="r-ratings-list" id="r-records-list"></div>
+      <div class="r-records-note">
+        <strong style="color:var(--text)">Hertzien (KBS, MBC, SBS)</strong> — mesurés sur toute la population. Scores > 20% réalistes.<br>
+        <strong style="color:var(--text)">Câble (TVN, JTBC)</strong> — mesure sur les foyers câblés. Seuil de hit : 10%.<br>
+        <strong style="color:var(--text)">Streaming (Netflix, Disney+)</strong> — Nielsen mesure les vues SVOD depuis 2022. Record : ~10%.<br><br>
+        Les chiffres ne sont <em>pas directement comparables</em> entre hertzien, câble et streaming.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL RATINGS -->
+<div class="r-modal-overlay" id="r-modal" onclick="closeRModal(event)">
+  <div class="r-modal-box">
+    <button class="r-modal-close" onclick="closeRModalDirect()">✕</button>
+    <div id="r-modal-content"></div>
   </div>
 </div>
 </body>
