@@ -9131,16 +9131,22 @@ function openNouveauModal(d) {
       <div class="modal-label" style="margin-top:16px">Où regarder</div>
       <div class="modal-platforms">${platformBadges}${vdBadge}${fsBadge}</div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)">
-        <button onclick="markNouveauComplet(${d.tmdb_id},'${d.title.replace(/'/g,"\\'")}','${(d.synopsis||'').replace(/'/g,"\\'").replace(/\n/g,' ')}','${(d.genre||'').replace(/'/g,"\\'")}','${(d.eps||'').replace(/'/g,"\\'")}',${d.year||0},'${d.poster||''}',${JSON.stringify(platformsArray)})"
-          style="padding:10px 20px;border-radius:50px;border:1px solid rgba(105,240,174,.4);background:rgba(105,240,174,.1);color:#69f0ae;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;">
-          ✅ Tous les épisodes sont disponibles
-        </button>
+     <button id="nouveau-complet-btn"
+    style="padding:10px 20px;border-radius:50px;border:1px solid rgba(105,240,174,.4);background:rgba(105,240,174,.1);color:#69f0ae;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;">
+     ✅ Tous les épisodes sont disponibles
+     </button>
         <div style="font-size:11px;color:var(--muted);margin-top:8px;">Ce drama sera déplacé en "Sans classement" pour que la communauté puisse le classer.</div>
       </div>
     </div>
   `;
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  const completBtn = document.getElementById('nouveau-complet-btn');
+if (completBtn) {
+  completBtn.addEventListener('click', () => {
+    markNouveauComplet(d.tmdb_id, d.title, d.synopsis, d.genre, d.eps, d.year, d.poster, platformsArray);
+  });
+}
 }
 function addToNouveauxById(tmdbId) {
   const drama = _upcomingData.find(d => d.id === tmdbId);
