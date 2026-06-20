@@ -8995,35 +8995,60 @@ async function addToNouveaux(drama) {
 
 async function markNouveauComplet(tmdbId, title, synopsis, genre, eps, year, poster, platforms) {
   if (!confirm(`Marquer "${title}" comme complet ? Il sera ajouté en Sans classement.`)) return;
+
   try {
-    const url = `${API_BASE}/nouveaux/${tmdbId}/complet`;
-    alert('Appel vers : ' + url);
-    const res = await fetch(url, { method: 'PATCH' });
-    alert('Statut réponse : ' + res.status);
-    const bodyText = await res.text();
-    alert('Contenu réponse : ' + bodyText.slice(0, 300));
+    const res = await fetch(`${API_BASE}/nouveaux/${tmdbId}/complet`, { method: 'PATCH' });
+    if (!res.ok) {
+      alert('Erreur serveur (code ' + res.status + ')');
+      return;
+    }
+  } catch(e) {
+    alert('Erreur réseau lors du PATCH : ' + e.message);
+    return;
+  }
 
-    if (!res.ok) return;
-
+  try {
     if (!UNSEEN_DRAMAS.find(d => d.title === title)) {
-      const platformsList = (platforms || []).map(p => Array.isArray(p) ? p : [p.name || p, '', 'pb-other']);
-      platformsList.push(["VoirDrama", `https://voirdrama.to/drama/${title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-')}/`, "pb-voirdrama"]);
+      let platformsList = [];
+      try {
+        platformsList = (platforms || []).map(p => Array.isArray(p) ? p : [p.name || p, p.url || '', 'pb-other']);
+      } catch(e) {
+        console.error('platforms map error', e, platforms);
+        platformsList = [];
+      }
+      const vdSlug = title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-');
+      platformsList.push(["VoirDrama", `https://voirdrama.to/drama/${vdSlug}/`, "pb-voirdrama"]);
+
       UNSEEN_DRAMAS.unshift({
-        title, synopsis: synopsis || '', year, genre: genre || 'K-Drama',
-        eps: eps || '', platforms: platformsList
+        title,
+        synopsis: synopsis || '',
+        year: year || '',
+        genre: genre || 'K-Drama',
+        eps: eps || '',
+        platforms: platformsList
       });
     }
-
-    _nouveauxData = _nouveauxData.filter(d => d.tmdb_id !== tmdbId);
-    closeModalBtn();
-    buildNouveauxSection();
-    rebuildUnseenSection();
-    updateCounts();
-    await loadNouveaux();
-    alert(`"${title}" déplacé en Sans classement !`);
   } catch(e) {
-    alert('ERREUR JS : ' + e.message);
+    alert('Erreur lors de l\'ajout au tableau UNSEEN : ' + e.message);
+    return;
   }
+
+  // Persiste la promotion pour qu'elle survive au rechargement
+  try {
+    const promotions = JSON.parse(localStorage.getItem('drama_promotions_unseen')) || [];
+    if (!promotions.find(p => p.title === title)) {
+      promotions.push({ title, synopsis: synopsis || '', year: year || '', genre: genre || 'K-Drama', eps: eps || '' });
+      localStorage.setItem('drama_promotions_unseen', JSON.stringify(promotions));
+    }
+  } catch(e) {}
+
+  _nouveauxData = _nouveauxData.filter(d => d.tmdb_id !== tmdbId);
+  closeModalBtn();
+  buildNouveauxSection();
+  rebuildUnseenSection();
+  updateCounts();
+
+  alert(`"${title}" déplacé en Sans classement !`);
 }
 
 function buildNouveauxSection() {
