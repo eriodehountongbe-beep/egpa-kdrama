@@ -8996,15 +8996,15 @@ async function addToNouveaux(drama) {
 async function markNouveauComplet(tmdbId, title, synopsis, genre, eps, year, poster, platforms) {
   if (!confirm(`Marquer "${title}" comme complet ? Il sera ajouté en Sans classement.`)) return;
   try {
-    const res = await fetch(`${API_BASE}/nouveaux/${tmdbId}/complet`, { method: 'PATCH' });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('markNouveauComplet PATCH failed:', res.status, errText);
-      alert('Erreur serveur lors du déplacement (code ' + res.status + ')');
-      return;
-    }
+    const url = `${API_BASE}/nouveaux/${tmdbId}/complet`;
+    alert('Appel vers : ' + url);
+    const res = await fetch(url, { method: 'PATCH' });
+    alert('Statut réponse : ' + res.status);
+    const bodyText = await res.text();
+    alert('Contenu réponse : ' + bodyText.slice(0, 300));
 
-    // Ajoute dans UNSEEN_DRAMAS
+    if (!res.ok) return;
+
     if (!UNSEEN_DRAMAS.find(d => d.title === title)) {
       const platformsList = (platforms || []).map(p => Array.isArray(p) ? p : [p.name || p, '', 'pb-other']);
       platformsList.push(["VoirDrama", `https://voirdrama.to/drama/${title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-')}/`, "pb-voirdrama"]);
@@ -9014,20 +9014,15 @@ async function markNouveauComplet(tmdbId, title, synopsis, genre, eps, year, pos
       });
     }
 
-    // Retire des nouveaux en mémoire ET recharge depuis le serveur pour être sûr
     _nouveauxData = _nouveauxData.filter(d => d.tmdb_id !== tmdbId);
     closeModalBtn();
     buildNouveauxSection();
     rebuildUnseenSection();
     updateCounts();
-
-    // Recharge depuis le serveur pour confirmer la synchro
     await loadNouveaux();
-
     alert(`"${title}" déplacé en Sans classement !`);
   } catch(e) {
-    console.error('markNouveauComplet error:', e);
-    alert('Erreur réseau : ' + e.message);
+    alert('ERREUR JS : ' + e.message);
   }
 }
 
